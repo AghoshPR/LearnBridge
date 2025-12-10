@@ -1,0 +1,8 @@
+**/LearnBridgeEnv/
+**/venv/
+**/.venv/
+
+# Node / React
+node_modules/
+dist/
+build/
