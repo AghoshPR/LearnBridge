@@ -1,20 +1,19 @@
 
-from decouple import config
-from pathlib import Path
 
+from pathlib import Path
+from decouple import config
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 
-
-
 SECRET_KEY = config("SECRET_KEY")
-
-
 DEBUG = config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = []
+
+AUTH_USER_MODEL = "authapp.User"
 
 
 # Application definition
@@ -27,23 +26,29 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # apps
+    'rest_framework',
+    'corsheaders',
 
     'authapp',
-    'adminapp'
+    'adminapp',
     'teacherapp',
     'studentapp',
     'courses',
     'qna',
+    'payments',
     'promotions',
     'wallet',
-    'notifications',
     'liveclass',
-    'chat',
-    'ai_assistant'
+    'notifications',
+    'ai_assistant',
+    'chat'
+
+
+
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,7 +58,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'learnbridge.urls'
+CORS_ALLOW_ALL_ORIGINS = True
+
+ROOT_URLCONF = 'LearnBridge.urls'
 
 TEMPLATES = [
     {
@@ -70,26 +77,32 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'learnbridge.wsgi.application'
+
+
+
+
+
+
+WSGI_APPLICATION = 'LearnBridge.wsgi.application'
 
 
 # Database
-
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'NAME': config("DB_NAME"),
+        'USER': config("DB_USER"),
+        'PASSWORD': config("DB_PASSWORD"),
+        'HOST': config("DB_HOST"),
+        'PORT': config("DB_PORT"),
     }
 }
 
 
 # Password validation
-
+# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -107,7 +120,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
+# Internationalization
+# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -118,6 +132,22 @@ USE_I18N = True
 USE_TZ = True
 
 
-
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
