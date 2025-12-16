@@ -2,32 +2,25 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import StudentLogin from './Pages/Auth/StudentLogin'
+import StudentRegister from './Pages/Auth/StudentRegister'
+import OtpVerify from './Pages/Auth/OtpVerify'
+import TeacherLogin from './Pages/Auth/TeacherLogin'
+import TeacherRegister from './Pages/Auth/TeacherRegister'
+import TeacherForgotPass from './Pages/Auth/TeacherForgotPass'
+import ForgotPassword from './Pages/Auth/ForgotPassword'
+import AdminLogin from './Pages/Auth/AdminLogin'
+import AdminTeachers from './Pages/Admin/AdminTeachers'
+import AdminDashboard from './Pages/Admin/AdminDashboard'
+import TeacherVerify from './Pages/Auth/TeacherVerify'
+
 
 function App() {
-  const [count, setCount] = useState(0)
+
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <AdminTeachers/>
     </>
   )
 }
