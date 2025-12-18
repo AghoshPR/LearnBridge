@@ -8,7 +8,7 @@ from .models import *
 class RegisterStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        models=User
+        model=User
         fields=('username','email','password')
 
     def create(self,validated_data):
@@ -37,9 +37,11 @@ class RegisterTeacherSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             role='teacher',
-            is_active=True
+            is_active=False,
+            status='blocked'
         )
         return user
+    
 
 class LoginSerializer(serializers.Serializer):
 
@@ -63,6 +65,9 @@ class LoginSerializer(serializers.Serializer):
 
         if user.role != data['role']:
             raise serializers.ValidationError('Role Mismatch')
+        
+        if not user.is_active:
+            raise serializers.ValidationError("Account not verified")
     
         if user.role == 'teacher' and user.status !='active':
             raise serializers.ValidationError("Teacher not Approved")
