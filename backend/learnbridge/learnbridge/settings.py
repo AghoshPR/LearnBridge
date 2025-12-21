@@ -85,6 +85,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'LearnBridge.wsgi.application'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases

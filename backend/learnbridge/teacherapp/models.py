@@ -27,7 +27,7 @@ class TeacherProfile(models.Model):
 
     bio = models.TextField(help_text="Short introduction about the teacher")
 
-    years_of_exp = models.PositiveIntegerField(null=True,blank=True,help_text="Required only if teacher is experienced")
+    years_of_experience = models.PositiveIntegerField(null=True,blank=True,help_text="Required only if teacher is experienced")
 
     resume = models.FileField(upload_to='teacher_resumes/',null=True,blank=True)
 

@@ -42,13 +42,13 @@ class TeacherRegisterView(APIView):
         serializer=RegisterTeacherSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        teacher=serializer.save()
+        user=serializer.save()
 
-        send_otp(teacher.email)
+        send_otp(user.email)
 
         return Response({
             "message":"OTP sent. Please verify. Waiting for admin approval after verification",
-            "email":teacher.email
+            "email":user.email
         })
 
 
@@ -67,12 +67,29 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            "access":str(refresh.access_token),
-            "refresh":str(refresh),
-            "role":user.role,
-            "username":user.username
+        response =  Response({
+            "message": "Login successful",
+            "role": user.role,
+            "username": user.username
         })
+    
+        response.set_cookie(
+
+            key="access_token",
+            httponly=True,
+            secure=False,
+            samesite="Lax"
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly=True,
+            secure=False,
+            samesite="Lax"
+        )
+
+        return Response
 
     
 class VerifyOTPView(APIView):
@@ -107,7 +124,7 @@ class VerifyOTPView(APIView):
             user = User.objects.get(email=email)
             user.is_active=True
             user.save()
-            cache.delete(f'otp :{email}')
+            cache.delete(f'otp:{email}')
         
         except User.DoesNotExist:
             return Response(
