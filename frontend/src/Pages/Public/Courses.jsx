@@ -1,0 +1,220 @@
+import React, { useState } from 'react';
+import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star } from 'lucide-react';
+import Logo from '../../assets/learnbridge-logo.png';
+
+const Courses = () => {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    const courses = [
+        {
+            id: 1,
+            title: 'Complete Web Development Bootcamp 2024',
+            instructor: 'Dr. Angela Yu',
+            rating: 4.8,
+            reviews: '45,230',
+            duration: '52h',
+            price: '$89.99',
+            level: 'Beginner',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600'
+        },
+        {
+            id: 2,
+            title: 'Data Science and Machine Learning with Python',
+            instructor: 'Jose Portilla',
+            rating: 4.9,
+            reviews: '38,450',
+            duration: '43h',
+            price: '$94.99',
+            level: 'Intermediate',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600'
+        },
+        {
+            id: 3,
+            title: 'UI/UX Design Masterclass: Design Thinking to Prototyping',
+            instructor: 'Sarah Chen',
+            rating: 4.7,
+            reviews: '29,340',
+            duration: '38h',
+            price: '$79.99',
+            level: 'All Levels',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600'
+        },
+        {
+            id: 4,
+            title: 'Advanced React and TypeScript Development',
+            instructor: 'Maximilian Schwarzmüller',
+            rating: 4.9,
+            reviews: '52,100',
+            duration: '48h',
+            price: '$99.99',
+            level: 'Advanced',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600'
+        },
+        {
+            id: 5,
+            title: 'Digital Marketing Masterclass 2024',
+            instructor: 'Phil Ebiner',
+            rating: 4.6,
+            reviews: '31,200',
+            duration: '35h',
+            price: '$74.99',
+            level: 'Beginner',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600'
+        },
+        {
+            id: 6,
+            title: 'Professional Photography Fundamentals',
+            instructor: 'Chris Parker',
+            rating: 4.8,
+            reviews: '18,900',
+            duration: '28h',
+            price: '$69.99',
+            level: 'Beginner',
+            levelColor: 'bg-orange-500',
+            image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600'
+        }
+    ];
+
+    return (
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+            {/* Navbar (Same as Home) */}
+            <nav className="bg-white sticky top-0 z-50 border-b border-gray-100">
+                <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                        <a href="/" className="flex items-center gap-2">
+                            <img src={Logo} alt="LearnBridge Logo" className="h-8" />
+                            <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+                        </a>
+                        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                            <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
+                            <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+                            <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <ShoppingCart className="w-5 h-5" />
+                        </button>
+                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <Bell className="w-5 h-5" />
+                        </button>
+                        <div className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
+                            <button className="px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                Sign In
+                            </button>
+                            <button className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">
+                                Sign Up
+                            </button>
+                        </div>
+                        <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
+                </div>
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
+                        <a href="#" className="text-gray-700 font-medium">Explore</a>
+                        <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
+                        <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+                        <hr className="border-gray-100" />
+                        <div className="flex flex-col gap-3">
+                            <button className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                Sign In
+                            </button>
+                            <button className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">
+                                Sign Up
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </nav>
+
+            {/* Main Content */}
+            <main className="container mx-auto px-4 md:px-6 py-8">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Explore Courses</h1>
+                    <p className="text-gray-500">Discover thousands of courses across various categories</p>
+                </div>
+
+                {/* Search and Filters */}
+                <div className="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="flex gap-2 w-full md:w-2/3 lg:w-1/2">
+                        <div className="flex-1 relative">
+                            <input
+                                type="text"
+                                placeholder="Search resources"
+                                className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm"
+                            />
+                        </div>
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
+                            Search
+                        </button>
+                    </div>
+
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <div className="relative flex-1 md:flex-none">
+                            <select className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
+                                <option>All Categories</option>
+                                <option>Web Development</option>
+                                <option>Data Science</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        </div>
+                        <div className="relative flex-1 md:flex-none">
+                            <select className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
+                                <option>Most Popular</option>
+                                <option>Newest</option>
+                                <option>Highest Rated</option>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Course Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {courses.map((course) => (
+                        <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
+                            <div className="relative h-48 overflow-hidden">
+                                <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
+                                    {course.level}
+                                </span>
+                            </div>
+
+                            <div className="p-5 flex flex-col flex-1">
+                                <h3 className="font-bold text-gray-900 mb-2 leading-tight line-clamp-2 min-h-[3rem] text-lg">{course.title}</h3>
+                                <p className="text-sm text-gray-500 mb-3">{course.instructor}</p>
+
+                                <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
+                                    <span className="flex items-center gap-1 text-orange-500">
+                                        <Star className="w-3.5 h-3.5 fill-current" /> {course.rating}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <User className="w-3.5 h-3.5" /> {course.reviews}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-3.5 h-3.5" /> {course.duration}
+                                    </span>
+                                </div>
+
+                                <div className="mt-auto pt-4 border-t border-gray-50">
+                                    <span className="text-xl font-bold text-blue-600">{course.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default Courses;

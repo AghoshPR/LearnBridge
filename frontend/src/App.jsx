@@ -13,6 +13,10 @@ import AdminLogin from './Pages/Auth/AdminLogin'
 import AdminTeachers from './Pages/Admin/AdminTeachers'
 import AdminDashboard from './Pages/Admin/AdminDashboard'
 import TeacherVerify from './Pages/Auth/TeacherVerify'
+import Home from './Pages/Public/Home'
+import Courses from './Pages/Public/Courses'
+import CourseDetail from './Pages/Public/CourseDetail'
+
 
 
 function App() {
@@ -20,7 +24,7 @@ function App() {
 
   return (
     <>
-      <TeacherVerify/>
+      <CourseDetail />
     </>
   )
 }
