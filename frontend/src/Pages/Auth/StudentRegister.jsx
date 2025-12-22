@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { BookOpen, Users, TrendingUp, Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
+import Api from "../Services/Api"
+import { useNavigate } from 'react-router-dom'
 
 const StudentRegister = () => {
   const [fullName, setFullName] = useState('');
@@ -11,9 +13,38 @@ const StudentRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleCreateAccount = (e) => {
+  const navigate = useNavigate()
+
+  const handleCreateAccount = async (e) => {
     e.preventDefault();
-    console.log('Create account clicked', { fullName, email, password, confirmPassword });
+    
+    if(password !== confirmPassword){
+      alert("Password do not match")
+      return
+    }
+
+    try{
+
+      const res= await Api.post("/auth/student/register/",{
+          username : fullName,
+          email,
+          password,
+
+      })
+
+      sessionStorage.getItem("otp_email",res.data.email)
+
+      navigate("/otp-verify")
+
+    } catch(err){
+      alert("Registration failed")
+    }
+
+
+
+
+
+
   };
 
   return (

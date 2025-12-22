@@ -16,6 +16,10 @@ import TeacherVerify from './Pages/Auth/TeacherVerify'
 import Home from './Pages/Public/Home'
 import Courses from './Pages/Public/Courses'
 import CourseDetail from './Pages/Public/CourseDetail'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ProtectedRoute from './ProtectedRoute'
+import StudentDashboard from './Pages/Student/StudentDashboard'
+import TeacherDashBoard from './Pages/Teacher/TeacherDashBoard'
 
 
 
@@ -24,7 +28,61 @@ function App() {
 
   return (
     <>
-      <CourseDetail />
+      <Routes>
+
+        {/* Public */}
+
+        <Route path="/" element={<Home/>}/>
+
+        {/* Auth */}
+
+        <Route path="/student/register" element={<StudentRegister/>}/>
+        <Route path="/otp-verify" element={<OtpVerify/>}/>
+
+        <Route path="/student/login" element={<StudentLogin/>}/>
+        <Route path="/teacher/login" element={<TeacherLogin/>}/>
+        <Route path="/admin/login" element={<AdminLogin/>}/>
+
+        {/* Student */}
+
+        <Route path="/student/dashboard" element={
+
+            <ProtectedRoute role="student">
+              <StudentDashboard/>
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* Teacher */}
+
+
+        <Route
+
+          path="/teacher/dashboard"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherDashBoard/>
+            </ProtectedRoute>
+
+          }/>
+
+          {/* Admin */}
+
+          <Route
+
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard/>
+            </ProtectedRoute>
+          }/>
+
+
+      </Routes>
+
+
+
     </>
   )
 }

@@ -3,15 +3,52 @@ import React, { useState } from 'react';
 import { BookOpen, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
+import { useDispatch } from 'react-redux';
+import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
+import Api from '../Services/Api';
+import { useNavigate } from 'react-router-dom'
 
 const StudentLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = (e) => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    console.log('Sign in clicked', { email, password });
+    
+    dispatch(loginStart())
+
+    try {
+      const res = await Api.post("/auth/login/",{
+        email,
+        password,
+        role:"student",
+      })
+
+      dispatch(
+        loginSuccess({
+          role:res.data.role,
+          username:res.data.username,
+        })
+      )
+
+      navigate("/student/home")
+
+
+    } 
+    
+    catch (err){
+      dispatch(loginFailure("Invalid Credentials"))
+    }
+
+    
+
+
+
   };
 
   return (

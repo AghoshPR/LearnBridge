@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import bgImage from '../../assets/otp-background.jpg';
 
+import Api from '../Services/Api';
+
+import { useNavigate } from 'react-router-dom';
+
+const OTP_EXPIRY = 60
+
+
 const OtpVerify = () => {
+
     const [otp, setOtp] = useState(new Array(6).fill(""));
+
+    const [timer, setTimer] = useState(OTP_EXPIRY);
+    const [expired, setExpired] = useState(false);
+    const [error, setError] = useState("");
+
+    const navigate = useNavigate()
+    const email = sessionStorage.getItem("otp_email")
+
+
+
+    useEffect(()=>{
+
+        if(timer===0){
+            setExpired(true)
+            return
+        }
+
+        const interval = setInterval(()=>{
+            setTimer((prev)=>prev-1)
+        },1000)
+
+        return ()=>clearInterval(interval)
+
+    },[timer])
+
 
     const handleChange = (element, index) => {
         if (isNaN(element.value)) return false;
 
-        setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
+        const newOtp = [...otp]
+        newOtp[index]= element.value
+        setOtp(newOtp)
 
         // Focus next input
         if (element.nextSibling && element.value !== "") {
@@ -15,14 +50,73 @@ const OtpVerify = () => {
         }
     };
 
+
+
     // Handle backspace
     const handleKeyDown = (e) => {
-        if (e.key === "Backspace") {
-            if (e.target.previousSibling && e.target.value === "") {
-                e.target.previousSibling.focus();
-            }
+    if (e.key === "Backspace" && e.target.previousSibling && !e.target.value) {
+      e.target.previousSibling.focus();
+    }
+  };
+
+   /* ---------------- VERIFY OTP ---------------- */
+
+
+   const handleVerifyOtp = async ()=>{
+
+        if (expired){
+            setError("OTP expired. Please send OTP");
+            return
         }
-    };
+
+        const enteredOtp =otp.join("");
+
+        try{
+
+            await Api.post("/auth/verify-otp/",{
+                email,
+                otp:enteredOtp,
+            })
+
+            sessionStorage.removeItem("otp_email")
+            navigate("/student/login")
+        }
+
+        catch(err){
+            setError("invalid OTP")
+        }
+
+
+    /* ---------------- Resend OTP ---------------- */
+
+
+    const handleResendOtp = async ()=>{
+
+        try{
+            await Api.post("/auth/resend-otp/,",{email})
+
+            setOtp(new Array(6).fill(""))
+            setTimer(OTP_EXPIRY)
+            setExpired(false)
+            setError("")
+        }
+        catch(err){
+            setError("Failed to resend OTP")
+        }
+        
+
+
+    }
+
+
+
+
+
+
+   }
+
+
+
 
     return (
         <div
@@ -63,15 +157,52 @@ const OtpVerify = () => {
                         ))}
                     </div>
 
+                    {/* Timer */}
+
+                    {!expired?(
+
+                        <p className="text-gray-400 mb-4">
+                        OTP expires in <span className="text-white">{timer}s</span>
+                        </p>
+
+                        ):(
+                        
+                        <p className="text-red-400 mb-4">OTP expired</p>
+                        
+                    )}
+
+                    {/* ERROR MESSAGE */}
+                    {error && <p className="text-red-500 mb-3">{error}</p>}
+                    
+
+
                     {/* Verify Button */}
-                    <button className="w-full py-3.5 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl text-white font-semibold text-lg shadow-lg hover:shadow-cyan-500/25 hover:opacity-95 transition-all transform hover:-translate-y-0.5 mb-6 active:translate-y-0 cursor-pointer">
-                        Verify
+                    
+                    <button
+                    onClick={handleVerifyOtp}
+                    disabled={expired}
+                    className={`w-full py-3 rounded-xl font-semibold text-lg mb-4
+                        ${
+                        expired
+                            ? "bg-gray-500 cursor-not-allowed"
+                            : "bg-gradient-to-r from-teal-500 to-cyan-600 hover:opacity-95"
+                        }`}
+                    >
+                    Verify
                     </button>
 
-                    {/* Resend Link */}
-                    <p className="text-gray-400 text-sm">
-                        Didn't receive the code? <button className="text-cyan-400 hover:text-cyan-300 font-medium ml-1 transition-colors cursor-pointer">Resend OTP</button>
-                    </p>
+                    {/* RESEND OTP (only after expiry) */}
+
+                        {expired && (
+                        <button
+                            onClick={handleResendOtp}
+                            className="text-cyan-400 hover:text-cyan-300 text-sm"
+                        >
+                            Resend OTP
+                        </button>
+                        )}
+
+
                 </div>
             </div>
         </div>
