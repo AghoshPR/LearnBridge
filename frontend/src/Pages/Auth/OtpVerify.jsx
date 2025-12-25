@@ -19,6 +19,8 @@ const OtpVerify = () => {
     const navigate = useNavigate()
     const email = sessionStorage.getItem("otp_email")
 
+    const role = sessionStorage.getItem("otp_role")
+
 
 
     useEffect(()=>{
@@ -79,21 +81,29 @@ const OtpVerify = () => {
             })
 
             sessionStorage.removeItem("otp_email")
-            navigate("/student/login")
+            sessionStorage.removeItem("otp_role")
+
+            if(role==="teacher"){
+                navigate("/teacher/verify")
+            }else{
+                navigate("/student/login")
+            }
+            
         }
 
         catch(err){
             setError("invalid OTP")
         }
 
+   }
 
-    /* ---------------- Resend OTP ---------------- */
+   /* ---------------- Resend OTP ---------------- */
 
 
     const handleResendOtp = async ()=>{
 
         try{
-            await Api.post("/auth/resend-otp/,",{email})
+            await Api.post("/auth/resend-otp/",{email})
 
             setOtp(new Array(6).fill(""))
             setTimer(OTP_EXPIRY)
@@ -107,13 +117,6 @@ const OtpVerify = () => {
 
 
     }
-
-
-
-
-
-
-   }
 
 
 

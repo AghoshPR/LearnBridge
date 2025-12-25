@@ -36,7 +36,12 @@ const TeacherVerify = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Verification Data:', { teacherType, ...formData });
+        
+
+        const form = new FormData
+        
+
+
     };
 
     return (

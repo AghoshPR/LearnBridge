@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { BookOpen, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
-import { useDispatch } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
 import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { useNavigate } from 'react-router-dom'
@@ -13,8 +13,16 @@ const StudentLogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const { isAuthenticated } = useSelector((state)=>state.auth)
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    navigate("/", { replace: true });
+  }
+  }, [isAuthenticated, navigate]);
 
 
   const handleSignIn = async (e) => {
@@ -36,7 +44,7 @@ const StudentLogin = () => {
         })
       )
 
-      navigate("/student/home")
+      navigate("/",{replace:true})
 
 
     } 

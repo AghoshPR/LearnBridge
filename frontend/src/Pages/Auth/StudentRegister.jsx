@@ -32,7 +32,8 @@ const StudentRegister = () => {
 
       })
 
-      sessionStorage.getItem("otp_email",res.data.email)
+      sessionStorage.setItem("otp_email",res.data.email)
+      sessionStorage.setItem("otp_role","student")
 
       navigate("/otp-verify")
 

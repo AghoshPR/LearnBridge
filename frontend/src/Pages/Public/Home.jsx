@@ -2,8 +2,21 @@ import React, { useState } from 'react';
 import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
+import { useSelector,useDispatch } from 'react-redux';
+import { logout } from '../../Store/authSlice';
+import { useNavigate,Link } from 'react-router-dom';
+
+
+
+
+
+
 const Home = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    const { isAuthenticated, username } = useSelector((state)=>state.auth)
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const categories = [
         { name: 'Web Development', count: '2,543 courses', icon: <Code className="w-6 h-6 text-white" />, color: 'bg-blue-500' },
@@ -102,7 +115,9 @@ const Home = () => {
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
+            
+                            <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
+                            
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
                         </div>
@@ -115,34 +130,100 @@ const Home = () => {
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
                         </button>
+
+
                         <div className="relative group">
                             <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                                <span className="text-sm font-medium">Hi, Aghosh</span>
+                                <span className="text-sm font-medium">{ isAuthenticated ? `Hi, ${username}` : "User" }</span>
+
                                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                    A
+                                    {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                                 </div>
                             </button>
 
                             {/* Profile Dropdown */}
+
+
+
+
                             <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
-                                <a href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                    <User className="w-4 h-4" /> Profile
-                                </a>
-                                <a href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                    <BookOpen className="w-4 h-4" /> My Courses
-                                </a>
-                                <a href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                    <Heart className="w-4 h-4" /> Wishlist
-                                </a>
-                                <a href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                                    <Package className="w-4 h-4" /> Orders
-                                </a>
-                                <hr className="my-1 border-gray-100" />
-                                <a href="#" className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                    <LogOut className="w-4 h-4" /> Logout
-                                </a>
+
+
+                                {/* Not Logged In */}
+
+                                {!isAuthenticated && (
+
+                                    <>
+                                        <button
+                                            onClick={()=>navigate("/student/login")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                            >
+                                            <User className='w-4 h-4'/>
+                                            Login
+
+                                        </button>
+
+                                         <button
+                                            onClick={() => navigate("/student/register")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                            >
+                                            <BookOpen className="w-4 h-4" />
+                                            Sign Up
+                                        </button>
+
+
+                                    </>
+                                )}
+
+
+                                {/*  LOGGED IN */}
+
+                                
+                                {isAuthenticated  && (
+                                    <>
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <User className="w-4 h-4" />
+                                        Profile
+                                        </button>
+
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <BookOpen className="w-4 h-4" />
+                                        My Courses
+                                        </button>
+
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <Heart className="w-4 h-4" />
+                                        Wishlist
+                                        </button>
+
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <Package className="w-4 h-4" />
+                                        Orders
+                                        </button>
+
+                                        <hr className="my-1 border-gray-100" />
+
+                                        <button
+                                        onClick={() => {
+                                            dispatch(logout());
+                                            navigate("/student/login");
+                                        }}
+                                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                                        >
+                                        <LogOut className="w-4 h-4" />
+                                        Logout
+                                        </button>
+                                    </>
+                                    )}
+
+                                
+
+
+
                             </div>
                         </div>
+
+
                         <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
@@ -155,12 +236,16 @@ const Home = () => {
                         <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
                         <a href="#" className="text-gray-700 font-medium">Live Classes</a>
                         <hr className="border-gray-100" />
+
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                 A
                             </div>
                             <span className="text-sm font-medium">Aghosh</span>
                         </div>
+
+
+
                     </div>
                 )}
             </nav>

@@ -8,9 +8,11 @@ from .models import *
 from django.core.cache import cache
 from rest_framework import status
 from .utils import send_otp
-
+from .authentication import CsrfExemptSessionAuthentication
 
 class StudentRegisterView(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
 
     permission_classes=[AllowAny]
 
@@ -76,6 +78,7 @@ class LoginView(APIView):
         response.set_cookie(
 
             key="access_token",
+            value=str(refresh.access_token),
             httponly=True,
             secure=False,
             samesite="Lax"
@@ -89,7 +92,7 @@ class LoginView(APIView):
             samesite="Lax"
         )
 
-        return Response
+        return response
 
     
 class VerifyOTPView(APIView):

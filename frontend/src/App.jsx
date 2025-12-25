@@ -33,6 +33,7 @@ function App() {
         {/* Public */}
 
         <Route path="/" element={<Home/>}/>
+        <Route path="/courses" element={<Courses/>}/>
 
         {/* Auth */}
 
@@ -41,6 +42,8 @@ function App() {
 
         <Route path="/student/login" element={<StudentLogin/>}/>
         <Route path="/teacher/login" element={<TeacherLogin/>}/>
+        <Route path="/teacher/verify" element={<TeacherVerify/>}/>
+
         <Route path="/admin/login" element={<AdminLogin/>}/>
 
         {/* Student */}

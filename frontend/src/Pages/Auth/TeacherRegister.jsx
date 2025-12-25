@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Api from '../Services/Api';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
     FileText,
     CheckCircle,
@@ -17,15 +19,35 @@ const TeacherRegister = () => {
         password: '',
         confirmPassword: ''
     });
+
+    const navigate=useNavigate()
     const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Teacher register:', formData);
+        
+
+        if (formData.password !== formData.confirmPassword){
+            alert("password do not match")
+            return
+        }
+
+        const res = await Api.post("/auth/teacher/register/",{
+            username:formData.fullName,
+            email:formData.email,
+            password:formData.password
+        })
+
+        sessionStorage.setItem("otp_email",res.data.email)
+        sessionStorage.setItem("otp_role","teacher")
+        navigate("/otp-verify")
+        
+
+
     };
 
     return (

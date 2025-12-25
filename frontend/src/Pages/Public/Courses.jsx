@@ -91,7 +91,7 @@ const Courses = () => {
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
+                            <a href="/courses" className="hover:text-blue-600 transition-colors">Explore</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
                         </div>
