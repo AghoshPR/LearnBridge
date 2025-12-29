@@ -10,6 +10,8 @@ import {
     FileText,
     Sparkles
 } from 'lucide-react';
+import Api from '../Services/Api';
+import { useNavigate } from 'react-router-dom';
 
 const TeacherVerify = () => {
     const [teacherType, setTeacherType] = useState('fresher'); // 'fresher' or 'experienced'
@@ -21,6 +23,8 @@ const TeacherVerify = () => {
         experienceYears: '', // Only for experienced
         resume: null
     });
+
+    const navigate = useNavigate()
 
     const handleTypeChange = (type) => {
         setTeacherType(type);
@@ -34,12 +38,44 @@ const TeacherVerify = () => {
         setFormData({ ...formData, resume: e.target.files[0] });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
 
-        const form = new FormData
-        
+        const form = new FormData()
+
+        form.append("teacher_type",teacherType)
+        form.append("phone",formData.phoneNumber)
+        form.append("qualification",formData.qualification)
+        form.append("subjects",formData.subjects)
+        form.append("bio",formData.bio)
+
+
+        if (teacherType==="experienced"){
+            form.append("years_of_experience",formData.experienceYears)
+        }
+
+        if (formData.resume){
+            form.append("resume",formData.resume)
+        }
+
+        try{
+            await Api.post("/teacher/profile/",form,{
+                headers:{"Content-Type":"multipart/form-data"},
+            })
+
+
+            alert(
+            "Profile submitted successfully.\n\nPlease wait for admin approval before logging in."
+            );
+
+            navigate("/teacher/login")
+        }catch(error){
+            alert("profile submission fails")
+        }
+
+
+
 
 
     };

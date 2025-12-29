@@ -42,6 +42,7 @@ function App() {
 
         <Route path="/student/login" element={<StudentLogin/>}/>
         <Route path="/teacher/login" element={<TeacherLogin/>}/>
+        <Route path="/teacher/register" element={<TeacherRegister/>}/>
         <Route path="/teacher/verify" element={<TeacherVerify/>}/>
 
         <Route path="/admin/login" element={<AdminLogin/>}/>

@@ -6,15 +6,23 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import TeacherProfileSerializer
 from .models import TeacherProfile
+from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
 
 
 class SubmitTeacherProfileView(APIView):
 
+    authentication_classes = [
+        CookieJWTAuthentication,
+        CsrfExemptSessionAuthentication,
+    ]
     permission_classes = [IsAuthenticated]
 
     def post(self,request):
 
         user=request.user
+
+        print("USER:", request.user)
+        print("AUTH:", request.user.is_authenticated)
 
         if user.role != 'teacher':
             return Response(

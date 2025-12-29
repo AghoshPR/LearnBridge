@@ -36,6 +36,7 @@ class StudentRegisterView(APIView):
 
 class TeacherRegisterView(APIView):
 
+    authentication_classes=[CsrfExemptSessionAuthentication]
     permission_classes=[AllowAny]
 
 
@@ -96,49 +97,68 @@ class LoginView(APIView):
 
     
 class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]
 
-    permission_classes=[AllowAny]
+    def post(self, request):
+        email = request.data.get("email")
+        otp = request.data.get("otp")
 
-
-    def post(self,request):
-
-        email=request.data.get('email')
-        otp=request.data.get('otp')
-
-        cached_otp = cache.get(f'otp:{email}')
+        cached_otp = cache.get(f"otp:{email}")
 
         if not cached_otp:
             return Response(
-                {"error":"OTP expired or not found"},
+                {"error": "OTP expired or not found"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        if cached_otp != otp:
 
+        if cached_otp != otp:
             return Response(
-                {"error":"invalid OTP"},
+                {"error": "Invalid OTP"},
                 status=status.HTTP_400_BAD_REQUEST
-                    
             )
-        
 
         try:
-
             user = User.objects.get(email=email)
-            user.is_active=True
+            user.is_active = True
             user.save()
-            cache.delete(f'otp:{email}')
-        
+            cache.delete(f"otp:{email}")
         except User.DoesNotExist:
             return Response(
-                {"error":"User not found"},
+                {"error": "User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
         
-        return Response(
-            {"message":"Account verified successfully"},
+        refresh = RefreshToken.for_user(user)
+
+        response = Response(
+            {
+                "message": "Account verified successfully",
+                "role": user.role
+            },
             status=status.HTTP_200_OK
         )
+
+        
+        response.set_cookie(
+            key="access_token",
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=False,      # True in production
+            samesite="Lax"
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly=True,
+            secure=False,
+            samesite="Lax"
+        )
+
+        return response
+
+        
 
 class ResendOTPView(APIView):
 

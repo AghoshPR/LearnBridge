@@ -1,4 +1,10 @@
-import React from 'react';
+import React,{useState,useEffect} from 'react';
+
+import Api from '../Services/Api';
+
+
+
+
 import {
     LayoutDashboard,
     BookOpen,
@@ -21,6 +27,47 @@ import {
 } from 'lucide-react';
 
 const AdminTeachers = () => {
+
+    const [pendingTeachers,setPendingTeacher]=useState([])
+
+    useEffect(()=>{
+        fetchPendingTeachers()
+    },[])
+
+    const fetchPendingTeachers = async ()=>{
+
+        try{
+            const res = await Api.get("/admin/teachers/pending/")
+            setPendingTeacher(res.data)
+
+        }catch(err){
+            console.log("failed to loead teachers");
+            
+        }
+    }
+
+
+    const approveTeacher = async (id)=>{
+
+        try{
+            await Api.post(`/admin/teachers/approve/${id}`)
+            fetchPendingTeachers()
+        }catch(err){
+            alert("approval Failed")
+        }
+
+
+        const rejectTeacher = async (id)=>{
+            try{
+                await Api.post(`/admin/teachers/reject/${id}`)
+                fetchPendingTeachers()
+            }
+            catch(err){
+                alert("Rejection Failed")
+            }
+        }
+    }
+
     return (
         <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
 
@@ -103,47 +150,47 @@ const AdminTeachers = () => {
                                         <th className="px-6 py-4 font-medium border-b border-gray-800">Actions</th>
                                     </tr>
                                 </thead>
+
                                 <tbody className="text-sm">
-                                    <tr className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Emma Wilson</td>
-                                        <td className="px-6 py-4 text-gray-400">emma@example.com</td>
-                                        <td className="px-6 py-4 text-gray-300">Web Development</td>
-                                        <td className="px-6 py-4 text-gray-400">5 years</td>
-                                        <td className="px-6 py-4 text-gray-400">2024-05-01</td>
+
+                                    {pendingTeachers.map((teacher)=>(
+
+                                        <tr key={teacher.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
+                                        <td className="px-6 py-4 font-medium text-white">{teacher.name}</td>
+                                        <td className="px-6 py-4 text-gray-400">{teacher.email}</td>
+                                        <td className="px-6 py-4 text-gray-300">{teacher.subjects}</td>
+                                        <td className="px-6 py-4 text-gray-400">{teacher.experience}</td>
+                                        <td className="px-6 py-4 text-gray-400">{teacher.applied_at}</td>
                                         <td className="px-6 py-4">
+
                                             <div className="flex items-center gap-2">
-                                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors">
+                                                <button
+                                                onClick={()=>approveTeacher(teacher.id)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors">
                                                     <CheckCircle size={14} /> Approve
                                                 </button>
-                                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors">
+
+
+                                                <button 
+                                                onClick={()=>rejectTeacher(teacher.id)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors">
                                                     <XCircle size={14} /> Reject
                                                 </button>
+
                                                 <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
                                                     <Ban size={14} /> Block
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr className="hover:bg-gray-800/20 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Michael Chen</td>
-                                        <td className="px-6 py-4 text-gray-400">michael@example.com</td>
-                                        <td className="px-6 py-4 text-gray-300">Data Science</td>
-                                        <td className="px-6 py-4 text-gray-400">8 years</td>
-                                        <td className="px-6 py-4 text-gray-400">2024-05-03</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors">
-                                                    <CheckCircle size={14} /> Approve
-                                                </button>
-                                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors">
-                                                    <XCircle size={14} /> Reject
-                                                </button>
-                                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
-                                                    <Ban size={14} /> Block
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+
+                                    ))}
+
+
+
+
+
+                                    
                                 </tbody>
                             </table>
                         </div>

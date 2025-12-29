@@ -36,16 +36,25 @@ const TeacherRegister = () => {
             return
         }
 
-        const res = await Api.post("/auth/teacher/register/",{
-            username:formData.fullName,
+        try{
+
+             const res = await Api.post("/auth/teacher/register/",{
+            username:formData.email,
             email:formData.email,
             password:formData.password
-        })
+            })
 
-        sessionStorage.setItem("otp_email",res.data.email)
-        sessionStorage.setItem("otp_role","teacher")
-        navigate("/otp-verify")
-        
+            sessionStorage.setItem("otp_email",res.data.email)
+            sessionStorage.setItem("otp_role","teacher")
+            navigate("/otp-verify")
+        }
+        catch(error){
+
+            console.log("Teacher register error",error.response?.data);
+
+            alert(error.response?.data?.email?.[0] ||  error.response?.data?.message ||
+            "Teacher registration failed")
+        }
 
 
     };
