@@ -186,7 +186,7 @@ const TeacherRegister = () => {
 
                     <div className="mt-8 text-center pt-6 border-t border-gray-100">
                         <p className="text-gray-500 text-sm">
-                            Already have an account? <a href="#" className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Sign in here</a>
+                            Already have an account? <button onClick={()=>navigate("/teacher/login")} className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Sign in here</button>
                         </p>
                     </div>
 

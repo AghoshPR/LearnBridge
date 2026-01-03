@@ -83,10 +83,10 @@ const OtpVerify = () => {
             sessionStorage.removeItem("otp_email")
             sessionStorage.removeItem("otp_role")
 
-            if(role==="teacher"){
-                navigate("/teacher/verify")
-            }else{
-                navigate("/student/login")
+            if (role === "teacher") {
+                navigate("/teacher/verify", { replace: true })
+            } else {
+                navigate("/student/login", { replace: true })
             }
             
         }

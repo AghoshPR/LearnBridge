@@ -1,14 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Crown, Shield, Lock, Key, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'
+import Api from "../Services/Api"
+import { useDispatch,useSelector } from 'react-redux';
+import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
+
+
 
 const AdminLogin = () => {
+    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
-    const handleLogin = (e) => {
+    const { isAuthenticated, role } = useSelector(state => state.auth);
+
+    useEffect(() => {
+    if (isAuthenticated && role === "admin") {
+        navigate("/admin/teachers", { replace: true });
+    }
+    }, [isAuthenticated, role, navigate]);
+
+
+    const handleLogin = async (e) => {
         e.preventDefault();
-        console.log('Admin login attempt', { email });
+
+        dispatch(loginStart())
+
+        
+
+        
+
+        try{
+            const res = await Api.post("/auth/admin/login/",{
+                email,
+                password,
+            })
+
+            dispatch(loginSuccess({
+            role:"admin",
+            username:res.data.email
+            }))
+            
+
+            if(res.data.role==='admin'){
+                navigate("/admin/teachers", { replace: true })
+
+            }
+
+        }
+        
+        catch (err) {
+            dispatch(loginFailure(
+                err.response?.data?.error || "Admin login failed"
+            ));
+            alert(err.response?.data?.error || "Admin login failed");
+        }
+        
+
     };
 
     return (

@@ -187,7 +187,8 @@ const StudentLogin = () => {
 
             <div className="mt-6 text-center space-y-6">
               <p className="text-sm text-gray-400">
-                Don't have an account? <a href="#" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline">Sign up</a>
+                Don't have an account? 
+                <button onClick={()=>navigate("/student/register")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"> Sign up</button>
               </p>
 
               {/* Divider */}

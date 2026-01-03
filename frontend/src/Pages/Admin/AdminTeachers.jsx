@@ -1,4 +1,8 @@
 import React,{useState,useEffect} from 'react';
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from '../../Store/authSlice';
+
 
 import Api from '../Services/Api';
 
@@ -29,10 +33,13 @@ import {
 const AdminTeachers = () => {
 
     const [pendingTeachers,setPendingTeacher]=useState([])
+    const [approvedTeacher,setApproveTeacher]=useState([])
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    useEffect(()=>{
-        fetchPendingTeachers()
-    },[])
+
+
+    /* ---------------- FETCH PENDING TEACHERS ---------------- */
 
     const fetchPendingTeachers = async ()=>{
 
@@ -41,32 +48,99 @@ const AdminTeachers = () => {
             setPendingTeacher(res.data)
 
         }catch(err){
-            console.log("failed to loead teachers");
+            console.error("failed to loead teachers");
             
         }
     }
 
 
+    /* ---------------- FETCH APPROVE TEACHER ---------------- */
+
+    const fetchApprovedTeachers = async ()=>{
+        try{
+            const res = await Api.get("/admin/teachers/approved/")
+            setApproveTeacher(res.data)
+
+        }catch(err){
+            console.error("failed to load approved teachers");
+            
+        }
+
+    }
+
+    useEffect(()=>{
+        fetchPendingTeachers()
+        fetchApprovedTeachers()
+    },[])
+
+    
+
+    /* ---------------- APPROVE TEACHER ---------------- */
+
+
     const approveTeacher = async (id)=>{
 
         try{
-            await Api.post(`/admin/teachers/approve/${id}`)
+            await Api.post(`/admin/teachers/approve/${id}/`)
             fetchPendingTeachers()
         }catch(err){
             alert("approval Failed")
         }
 
+    }
+
+    
+    /* ---------------- REJECT TEACHER ---------------- */
+
+
 
         const rejectTeacher = async (id)=>{
             try{
-                await Api.post(`/admin/teachers/reject/${id}`)
+                await Api.post(`/admin/teachers/reject/${id}/`)
                 fetchPendingTeachers()
             }
             catch(err){
-                alert("Rejection Failed")
+                alert(err.response?.data?.error ||"Rejection failed")
             }
         }
-    }
+
+        const blockTeacher = async(id)=>{
+
+            try{
+                await Api.post(`/admin/teachers/block/${id}/`)
+                fetchApprovedTeachers()
+            }catch(err){
+                alert("Block failed")
+            }
+
+            
+        }
+
+        const unBlockTeacher = async(id)=>{
+
+            try{
+                await Api.post(`/admin/teachers/unblock/${id}/`)
+                fetchApprovedTeachers()
+            }catch(err){
+                alert("Unblock failed")
+            }
+
+        }
+
+        const handleLogout = async()=>{
+
+            try{
+                await Api.post("/logout/")
+            }catch(err){
+                console.log("Logout API failed");
+                
+            }finally{
+                dispatch(logout())
+                navigate("/admin/login")
+            }
+        }
+
+
 
     return (
         <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
@@ -111,9 +185,15 @@ const AdminTeachers = () => {
                                     <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
                                 </div>
                             </div>
-                            <button className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+
+                            <button
+                                onClick={handleLogout}
+                                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                                title="Logout"
+                            >
                                 <LogOut size={18} />
                             </button>
+
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                         </div>
                     </div>
@@ -199,7 +279,7 @@ const AdminTeachers = () => {
                     {/* Approved Teachers Table */}
                     <div className="bg-[#111216] border border-gray-800 rounded-2xl overflow-hidden">
                         <div className="p-6 border-b border-gray-800">
-                            <h2 className="text-lg font-bold text-white">Approved Teachers (2)</h2>
+                            <h2 className="text-lg font-bold text-white">Approved Teachers {approvedTeacher.length}</h2>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
@@ -216,52 +296,53 @@ const AdminTeachers = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
-                                    <tr className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">Dr. Angela Yu</td>
-                                        <td className="px-6 py-4 text-gray-400">angela@example.com</td>
-                                        <td className="px-6 py-4 text-gray-300">Full Stack Development</td>
-                                        <td className="px-6 py-4 text-gray-400">12</td>
-                                        <td className="px-6 py-4 text-gray-400">245,000</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1 text-amber-400">
-                                                <Star size={14} fill="currentColor" />
-                                                <span className="text-gray-300">4.8</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-xs font-semibold">
-                                                Active
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
-                                                <Ban size={14} /> Block
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr className="hover:bg-gray-800/20 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-white">John Smith</td>
-                                        <td className="px-6 py-4 text-gray-400">john@example.com</td>
-                                        <td className="px-6 py-4 text-gray-300">React & Frontend</td>
-                                        <td className="px-6 py-4 text-gray-400">8</td>
-                                        <td className="px-6 py-4 text-gray-400">95,000</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1 text-amber-400">
-                                                <Star size={14} fill="currentColor" />
-                                                <span className="text-gray-300">4.7</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 text-xs font-semibold">
-                                                Active
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
-                                                <Ban size={14} /> Block
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    {approvedTeacher.map((teacher) => (
+                                        <tr
+                                            key={teacher.id}
+                                            className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors"
+                                        >
+                                            <td className="px-6 py-4 font-medium text-white">{teacher.name}</td>
+                                            <td className="px-6 py-4 text-gray-400">{teacher.email}</td>
+                                            <td className="px-6 py-4 text-gray-300">{teacher.subjects}</td>
+                                            <td className="px-6 py-4 text-gray-400">{teacher.courses_count}</td>
+                                            <td className="px-6 py-4 text-gray-400">{teacher.students_count}</td>
+
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-1 text-amber-400">
+                                                    <Star size={14} fill="currentColor" />
+                                                    <span className="text-gray-300">{teacher.rating}</span>
+                                                </div>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border
+                                                    ${teacher.is_blocked
+                                                        ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                        : 'bg-green-500/10 text-green-500 border-green-500/20'
+                                                    }`}>
+                                                    {teacher.is_blocked ? 'Blocked' : 'Active'}
+                                                </span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                {teacher.is_blocked ? (
+                                                    <button
+                                                        onClick={() => unBlockTeacher(teacher.id)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                                                    >
+                                                        <CheckCircle size={14} /> Unblock
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => blockTeacher(teacher.id)}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                                                    >
+                                                        <Ban size={14} /> Block
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

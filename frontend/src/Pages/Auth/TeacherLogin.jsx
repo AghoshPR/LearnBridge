@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import { useDispatch,useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+import { loginStart, loginSuccess, loginFailure, logout } from "../../Store/authSlice";
 import {
     BookOpen,
     Users,
@@ -8,16 +12,54 @@ import {
     EyeOff,
     Briefcase
 } from 'lucide-react';
+import Api from '../Services/Api';
 
 const TeacherLogin = () => {
+
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const { isAuthenticated, role } = useSelector(state => state.auth);
 
-    const handleLogin = (e) => {
+
+    const dispatch=useDispatch()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+    if (isAuthenticated && role === "teacher") {
+        navigate("/teacher/dashboard", { replace: true });
+    }
+    }, [isAuthenticated, role, navigate]);
+
+
+    const handleLogin = async(e) => {
         e.preventDefault();
-        console.log('Teacher login:', { email });
+        dispatch(loginStart())
+
+        try{
+            const res = await Api.post("/auth/teacher/login/",{
+                email,
+                password
+            }) 
+
+            dispatch(loginSuccess({
+                role:res.data.role,
+                username:res.data.username
+            }))
+
+            navigate("/teacher/dashboard")
+        }catch(err){
+            dispatch(
+                loginFailure(
+                    err.response?.data?.error ||"Login failed"
+                )
+            )
+            alert(err.response?.data?.error || "Login failed" )
+        }
     };
+
+    
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 md:p-8 font-sans">
@@ -111,7 +153,7 @@ const TeacherLogin = () => {
                                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30 cursor-pointer" />
                                 <span className="text-gray-500 group-hover:text-gray-700 transition-colors">Remember me</span>
                             </label>
-                            <a href="#" className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors">Forgot password?</a>
+                            <button onClick={()=>navigate("/teacher/forgotpass")} className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer">Forgot password?</button>
                         </div>
 
                         <button
@@ -125,7 +167,7 @@ const TeacherLogin = () => {
 
                     <div className="mt-8 text-center">
                         <p className="text-gray-500 text-sm">
-                            New teacher? <a href="#" className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Create an account</a>
+                            New teacher? <button onClick={()=>navigate("/teacher/register")} className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer">Create an account</button>
                         </p>
                     </div>
 

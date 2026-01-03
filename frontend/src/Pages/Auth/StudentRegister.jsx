@@ -226,7 +226,7 @@ const StudentRegister = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-400">
-                Already have an account? <a href="#" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline">Login</a>
+                Already have an account? <button onClick={()=>navigate("/student/login")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer">Login</button>
               </p>
             </div>
           </div>

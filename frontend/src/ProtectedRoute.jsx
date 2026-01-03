@@ -13,17 +13,16 @@ const ProtectedRoute = ({ children, role }) => {
 
     
   // Not logged in
-    if(!isAuthenticated){
-
-        if(role==="admin") return <Navigate to="/admin/login"/>
-        if(role==="teacher") return <Navigate to="/teacher/login" />
-        return <Navigate to="/student/login"/>
+    if (!isAuthenticated) {
+        if (role === "admin") return <Navigate to="/admin/login" replace />
+        if (role === "teacher") return <Navigate to="/teacher/login" replace />
+        return <Navigate to="/student/login" replace />
     }
 
     // Logged in but wrong role
 
     if (role && userRole !== role ){
-        return <Navigate to ="/" />
+        return <Navigate to ="/" replace  />
     }
 
     return children
