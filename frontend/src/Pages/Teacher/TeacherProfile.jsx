@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     User,
@@ -17,9 +18,12 @@ import {
 } from 'lucide-react';
 
 const TeacherProfile = () => {
+
+      const navigate = useNavigate();
+
     const sidebarItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', active: false },
-        { icon: User, label: 'My Profile', active: true },
+        { icon: LayoutDashboard, label: 'Dashboard',path: '/teacher/dashboard', active: false },
+        { icon: User, label: 'My Profile',path: '/teacher/profile', active: true },
         { icon: BookOpen, label: 'My Courses', active: false },
         { icon: Video, label: 'Live Classes', active: false },
         { icon: MessageSquare, label: 'Q&A', active: false },
@@ -62,7 +66,8 @@ const TeacherProfile = () => {
                     {sidebarItems.map((item, index) => (
                         <button
                             key={index}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${item.active
+                            onClick={() => navigate(item.path)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                                     ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
                                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                 }`}

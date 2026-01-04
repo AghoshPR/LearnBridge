@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from teacherapp.models import TeacherProfile
 from authapp.permissions import IsAdmin
+from rest_framework import status
 
 
 class PendingTeachersView(APIView):
@@ -44,9 +45,61 @@ class ApproveTeacherView(APIView):
     permission_classes = [IsAdmin]
 
 
+    def get(self,request):
+
+        profiles = TeacherProfile.objects.select_related("user").filter(status="approved")
+
+        data = []
+
+        for profile in profiles:
+
+            data.append({
+
+                "id":profile.id,
+                "name":profile.user.username,
+                'email':profile.user.email,
+                "subjects":profile.subjects,
+                "courses": 0,
+                "students": 0,
+                "rating": 5.0,
+                "status":profile.user.status,
+                "is_blocked": profile.user.status == "blocked"
+
+            })
+        return Response(data)
+
+
     def post(self,request,id):
 
-        profile = TeacherProfile.objects.get(id=id)
+        
+
+        try:
+
+            profile = TeacherProfile.objects.select_related('user').get(id=id)
+        
+        except TeacherProfile.DoesNotExist:
+
+            return Response(
+                {"error":"Teacher profile not found"},
+                status=404
+            )
+        
+        if profile.status != 'pending':
+
+            return Response(
+                {"error":"Teacher Already processed"},
+                status=400
+            )
+        
+        if not profile.user.is_active:
+            return Response(
+                {"error": "Teacher has not verified OTP"},
+                status=400
+            )
+        
+
+
+
 
         profile.status = 'approved'
         profile.save()
@@ -69,12 +122,70 @@ class RejectTeacherView(APIView):
     permission_classes=[IsAdmin]
 
     def post(self,request,id):
+        
 
-        profile = TeacherProfile.objects.get(id=id)
-        profile.status='rejected'
-        profile.save()
+        try:
+
+            profile = TeacherProfile.objects.select_related("user").get(id=id)
+        except TeacherProfile.DoesNotExist:
+            return Response(
+                {"error":"Teacher profile not found"},
+                status=404
+            )
+
+
+        # profile.status='rejected'
+        user=profile.user
+        user.delete()
+        
 
 
         return Response({
             "message":"Teacher Rejected"
+        })
+    
+class BlockTeacherView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,id):
+
+        try:
+            profile = TeacherProfile.objects.select_related("user").get(id=id)
+
+        except TeacherProfile.DoesNotExist:
+
+            return Response(
+                {"error":"Teacher profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        profile.user.status="blocked"
+        profile.user.save()
+
+        return Response({
+            "message":"Teacher Blocked Successfully"
+        })
+    
+class UnBlockTeacherView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,id):
+
+        try:
+
+            profile = TeacherProfile.objects.select_related("user").get(id=id)
+
+        except TeacherProfile.DoesNotExist:
+            return Response(
+                {"error":"Teacher profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        profile.user.status="active"
+        profile.user.save()
+
+
+        return Response({
+            "message":"Teacher unblocked successfully"
         })

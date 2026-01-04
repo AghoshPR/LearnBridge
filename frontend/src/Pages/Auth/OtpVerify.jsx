@@ -139,7 +139,7 @@ const OtpVerify = () => {
 
                     <div className="flex flex-col items-center mb-8 space-y-1">
                         <p className="text-gray-300 text-sm md:text-base">Enter the 6-digit code sent to</p>
-                        <p className="text-cyan-400 text-sm md:text-base font-medium">user@example.com</p>
+                        <p className="text-cyan-400 text-sm md:text-base font-medium">{email}</p>
                     </div>
 
                     {/* OTP Inputs */}

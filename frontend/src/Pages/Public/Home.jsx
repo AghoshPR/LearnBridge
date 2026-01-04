@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
@@ -17,6 +17,9 @@ const Home = () => {
     const { isAuthenticated, username } = useSelector((state)=>state.auth)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+
+
+  
 
     const categories = [
         { name: 'Web Development', count: '2,543 courses', icon: <Code className="w-6 h-6 text-white" />, color: 'bg-blue-500' },
@@ -232,7 +235,7 @@ const Home = () => {
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-                        <a href="#" className="text-gray-700 font-medium">Explore</a>
+                        <button onClick={()=>navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
                         <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
                         <a href="#" className="text-gray-700 font-medium">Live Classes</a>
                         <hr className="border-gray-100" />

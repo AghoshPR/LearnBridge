@@ -118,7 +118,7 @@ const TeacherDashBoard = () => {
             <button
               key={index}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
                 item.active
                   ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
                   : 'text-slate-400 hover:bg-slate-800 hover:text-white'

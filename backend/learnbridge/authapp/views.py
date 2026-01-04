@@ -1,14 +1,18 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import *
 from .models import *
+from teacherapp.models import TeacherProfile 
 from django.core.cache import cache
 from rest_framework import status
 from .utils import send_otp
-from .authentication import CsrfExemptSessionAuthentication
+from .authentication import CsrfExemptSessionAuthentication,CookieJWTAuthentication
+
+
+
 
 class StudentRegisterView(APIView):
 
@@ -60,6 +64,7 @@ class TeacherRegisterView(APIView):
     
 class LoginView(APIView):
 
+    authentication_classes=[CsrfExemptSessionAuthentication]
     permission_classes=[AllowAny]
 
     def post(self,request):
@@ -97,6 +102,8 @@ class LoginView(APIView):
 
     
 class VerifyOTPView(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -163,6 +170,7 @@ class VerifyOTPView(APIView):
 class ResendOTPView(APIView):
 
     permission_classes=[AllowAny]
+    authentication_classes = [CsrfExemptSessionAuthentication]
 
 
     def post(self,request):
@@ -182,3 +190,169 @@ class ResendOTPView(APIView):
             {"message":"OTP resent successfully"},
             status=status.HTTP_200_OK
         )
+
+
+
+# Admin Login 
+
+
+class AdminLogin(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self,request):
+
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        try:
+            user=User.objects.get(email=email)
+
+        except User.DoesNotExist:
+
+            return Response(
+                {"error":"Invalid credetials"},
+                status=400
+            )
+        
+        if not user.is_superuser:
+            return Response(
+                {"error":"Not admin account"},
+                status=403
+            )
+        
+        user=authenticate(
+            username=user.username,
+            password=password
+        )
+
+
+        if not user:
+            return Response(
+                {"error": "Invalid credentials"},
+                status=400
+            )
+        
+        refresh=RefreshToken.for_user(user)
+
+        response=Response({
+            "message":"Admin Login successful",
+            "role":"admin"
+        })
+
+        response.set_cookie(
+            key="access_token",
+            value=str(refresh.access_token),
+            httponly=True,
+            secure=False,
+            samesite="Lax"
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly=True,
+            secure=False,
+            samesite="Lax"
+        )
+
+
+        return response
+    
+
+class AdminLogout(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+
+        response = Response({"message":"Logout Successfully"})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+    
+# Teacher Login
+
+class TeacherLogin(APIView):
+    
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes=[AllowAny]
+
+    def post(self,request):
+
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            return Response({"error":"Invalid Credentials"},status=400)
+        
+
+        if user.role !="teacher":
+            return Response({"error":"Not a teacher account"},status=403)
+        
+        if not user.is_active:
+            return Response({"error":"Account not verified"},status=403)
+        
+
+        user = authenticate(username=user.username,password=password)
+
+        if not user:
+            return Response({"error":"Invalid credentials"},status=400)
+        
+        try:
+
+            TeacherProfile.objects.get(user=user)
+
+        except TeacherProfile.DoesNotExist:
+            return Response({"error":"Teacher Profile not found"},status=403)
+        
+
+        if user.status == "blocked":
+            return Response({"error":"Account is blocked"},status=403)
+        
+        refresh =  RefreshToken.for_user(user)
+
+        response = Response({
+            "message":"Teacher login successful",
+            "role":"teacher",
+            "username":user.username
+
+        })
+
+
+        response.set_cookie(
+            key="access_token",
+            value=str(refresh.access_token),
+            httponly=True,
+            samesite="Lax"
+
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh),
+            httponly=True,
+            samesite="Lax"
+        )
+
+        return response
+        
+
+
+
+class TeacherLogout(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+
+        response = Response({"message":"Logged out"})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response
+    

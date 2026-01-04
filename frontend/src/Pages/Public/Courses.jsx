@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
+import { useSelector,useDispatch } from 'react-redux';
+import { useNavigate,Link } from 'react-router-dom';
+import { logout } from '../../Store/authSlice';
 
 const Courses = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isAuthenticated, username } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+
+
 
     const courses = [
         {
@@ -89,6 +98,7 @@ const Courses = () => {
                         <a href="/" className="flex items-center gap-2">
                             <img src={Logo} alt="LearnBridge Logo" className="h-8" />
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+                            
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                             <a href="/courses" className="hover:text-blue-600 transition-colors">Explore</a>
@@ -104,14 +114,56 @@ const Courses = () => {
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
                         </button>
-                        <div className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                            <button className="px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                                Sign In
+                        <div className="relative group hidden md:block pl-2 border-l border-gray-200">
+                            <button className="flex items-center gap-3">
+                                <span className="text-sm font-medium">
+                                {isAuthenticated ? `Hi, ${username}` : "User"}
+                                </span>
+
+                                <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+                                </div>
                             </button>
-                            <button className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">
-                                Sign Up
-                            </button>
-                        </div>
+
+                            {/* Dropdown */}
+                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100
+                                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+
+                                {!isAuthenticated ? (
+                                <>
+                                    <button
+                                    onClick={() => navigate("/student/login")}
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                                    >
+                                    Login
+                                    </button>
+                                    <button
+                                    onClick={() => navigate("/student/register")}
+                                    className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                                    >
+                                    Sign Up
+                                    </button>
+                                </>
+                                ) : (
+                                <>
+                                    <button className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50">
+                                    Profile
+                                    </button>
+
+                                    <button
+                                    onClick={() => {
+                                        dispatch(logout());
+                                        navigate("/student/login", { replace: true });
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                    Logout
+                                    </button>
+                                </>
+                                )}
+                            </div>
+                            </div>
+
                         <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verify your email</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding:40px 0;">
+
+        <table width="100%" max-width="500px" style="background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.08);">
+          
+          <!-- Logo / Title -->
+          <tr>
+            <td align="center" style="font-size:26px; font-weight:bold; color:#1e293b;">
+              LearnBridge
+            </td>
+          </tr>
+
+          <tr><td height="20"></td></tr>
+
+          <!-- Message -->
+          <tr>
+            <td style="font-size:15px; color:#475569; text-align:center;">
+              Use the OTP below to verify your email address.
+            </td>
+          </tr>
+
+          <tr><td height="25"></td></tr>
+
+          <!-- OTP Box -->
+          <tr>
+            <td align="center">
+              <div style="
+                display:inline-block;
+                padding:15px 30px;
+                font-size:28px;
+                font-weight:bold;
+                letter-spacing:6px;
+                background:#0f172a;
+                color:#ffffff;
+                border-radius:8px;
+              ">
+                {{ otp }}
+              </div>
+            </td>
+          </tr>
+
+          <tr><td height="25"></td></tr>
+
+          <!-- Expiry -->
+          <tr>
+            <td style="font-size:13px; color:#64748b; text-align:center;">
+              This OTP is valid for <b>1 minutes</b>.  
+              Do not share it with anyone.
+            </td>
+          </tr>
+
+          <tr><td height="30"></td></tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="font-size:12px; color:#94a3b8; text-align:center;">
+              © {{ year }} LearnBridge. All rights reserved.
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
