@@ -13,6 +13,8 @@ urlpatterns = [
     #student Register
     
     path('student/register/',StudentRegisterView.as_view()),
+    path("student/forgot-password/",ForgotPasswordView.as_view()),
+    path("student/reset-password/",ResetPasswordView.as_view()),
 
     # teacher login/logout
 

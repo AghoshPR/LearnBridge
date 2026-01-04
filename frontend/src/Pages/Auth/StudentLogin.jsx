@@ -1,10 +1,10 @@
 
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
-import { useSelector,useDispatch } from 'react-redux';
-import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { loginStart, loginSuccess, loginFailure } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { useNavigate } from 'react-router-dom'
 
@@ -13,47 +13,47 @@ const StudentLogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isAuthenticated } = useSelector((state)=>state.auth)
+  const { isAuthenticated } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   useEffect(() => {
-  if (isAuthenticated) {
-    navigate("/", { replace: true });
-  }
+    if (isAuthenticated) {
+      navigate("/", { replace: true });
+    }
   }, [isAuthenticated, navigate]);
 
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    
+
     dispatch(loginStart())
 
     try {
-      const res = await Api.post("/auth/login/",{
+      const res = await Api.post("/auth/login/", {
         email,
         password,
-        role:"student",
+        role: "student",
       })
 
       dispatch(
         loginSuccess({
-          role:res.data.role,
-          username:res.data.username,
+          role: res.data.role,
+          username: res.data.username,
         })
       )
 
-      navigate("/",{replace:true})
+      navigate("/")
 
 
-    } 
-    
-    catch (err){
+    }
+
+    catch (err) {
       dispatch(loginFailure("Invalid Credentials"))
     }
 
-    
+
 
 
 
@@ -176,6 +176,12 @@ const StudentLogin = () => {
                 </div>
               </div>
 
+              <div className="flex justify-end">
+                <button onClick={()=>navigate("/student/forgotpass")} type="button" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer hover:underline">
+                  Forgot Password?
+                </button>
+              </div>
+
               {/* Sign In Button */}
               <button
                 type="submit"
@@ -187,8 +193,8 @@ const StudentLogin = () => {
 
             <div className="mt-6 text-center space-y-6">
               <p className="text-sm text-gray-400">
-                Don't have an account? 
-                <button onClick={()=>navigate("/student/register")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"> Sign up</button>
+                Don't have an account?
+                <button onClick={() => navigate("/student/register")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"> Sign up</button>
               </p>
 
               {/* Divider */}

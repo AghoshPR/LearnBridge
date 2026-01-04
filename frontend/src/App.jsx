@@ -22,6 +22,8 @@ import StudentDashboard from './Pages/Student/StudentDashboard'
 import TeacherDashBoard from './Pages/Teacher/TeacherDashBoard'
 import TeacherProfile from './Pages/Teacher/TeacherProfile'
 import TeacherCourses from './Pages/Teacher/TeacherCourses'
+import TeacherResetPassword from './Pages/Auth/TeacherResetPassword'
+import StudentResetPassword from './Pages/Auth/StudentResetPassword'
 
 
 
@@ -44,14 +46,25 @@ function App() {
         <Route path="/otp-verify" element={<OtpVerify />} />
 
         <Route path="/student/login" element={<StudentLogin />} />
+
+        <Route path="/student/forgotpass" element={<ForgotPassword />} />
+        <Route path="/student/reset-password" element={<StudentResetPassword />} />
+
         <Route path="/teacher/login" element={<TeacherLogin />} />
+
         <Route path="/teacher/register" element={<TeacherRegister />} />
         <Route path="/teacher/verify" element={<TeacherVerify />} />
         <Route path="/teacher/forgotpass" element={<TeacherForgotPass />} />
+        <Route path="/teacher/reset-password" element={<TeacherResetPassword />} />
+
 
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        
+
+
+
+
+
 
         {/* Student */}
 

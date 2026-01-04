@@ -8,7 +8,7 @@ import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
 
 
 const AdminLogin = () => {
-    
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +41,7 @@ const AdminLogin = () => {
 
             dispatch(loginSuccess({
             role:"admin",
-            username:res.data.email
+            username:"Admin"
             }))
             
 

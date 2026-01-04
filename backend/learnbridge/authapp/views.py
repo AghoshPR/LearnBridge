@@ -10,32 +10,10 @@ from django.core.cache import cache
 from rest_framework import status
 from .utils import send_otp
 from .authentication import CsrfExemptSessionAuthentication,CookieJWTAuthentication
+from django.contrib.auth.hashers import make_password
 
 
 
-
-class StudentRegisterView(APIView):
-
-    authentication_classes = [CsrfExemptSessionAuthentication]
-
-    permission_classes=[AllowAny]
-
-    def post(self,request):
-
-        serializer = RegisterStudentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user=serializer.save()
-        
-        user.is_active=False
-        user.save()
-
-        send_otp(user.email)
-
-        return Response({
-            "message":"OTP send to email",
-            "email":user.email
-        })
 
 
 class TeacherRegisterView(APIView):
@@ -99,6 +77,30 @@ class LoginView(APIView):
         )
 
         return response
+    
+class StudentRegisterView(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
+
+    permission_classes=[AllowAny]
+
+    def post(self,request):
+
+        serializer = RegisterStudentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user=serializer.save()
+        
+        user.is_active=False
+        user.save()
+
+        send_otp(user.email)
+
+        return Response({
+            "message":"OTP send to email",
+            "email":user.email
+        })
+
 
     
 class VerifyOTPView(APIView):
@@ -188,6 +190,66 @@ class ResendOTPView(APIView):
 
         return Response(
             {"message":"OTP resent successfully"},
+            status=status.HTTP_200_OK
+        )
+    
+
+
+class ForgotPasswordView(APIView):
+
+    permission_classes=[AllowAny]
+    authentication_classes=[CsrfExemptSessionAuthentication]
+
+    def post(self,request):
+
+        email=request.data.get("email")
+
+        try:
+
+            User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"error":"User not found"},status=404)
+        
+        send_otp(email)
+
+        return Response({
+            "message":"OTP send for password reset",
+            "email":email
+        })
+    
+class ResetPasswordView(APIView):
+
+    authentication_classes=[CsrfExemptSessionAuthentication]
+    permission_classes=[AllowAny]
+
+    def post(self,request):
+
+        email = request.data.get("email")
+        password = request.data.get("password")
+        confirm_password=request.data.get("password")
+
+        if password != confirm_password:
+
+            return Response(
+                {"error":"Password do not match"},
+                status=status.HTTP_400_BAD_REQUEST
+
+            )
+        
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            return Response(
+                {"error":"User not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        user.password=make_password(password)
+        user.save()
+
+        return Response(
+            {"message":"Password reset successful"},
             status=status.HTTP_200_OK
         )
 
