@@ -36,6 +36,11 @@ urlpatterns = [
     # admin login/logout
     path('admin/login/',AdminLogin.as_view()),
     path("admin/logout/", AdminLogout.as_view()),
+
+
+    # GooleAuth
+
+    path("google-login/",GoogleLoginView.as_view()),
     
 
 ]

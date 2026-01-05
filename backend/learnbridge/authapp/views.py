@@ -11,8 +11,10 @@ from rest_framework import status
 from .utils import send_otp
 from .authentication import CsrfExemptSessionAuthentication,CookieJWTAuthentication
 from django.contrib.auth.hashers import make_password
-
-
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from django.conf import settings
+import requests as py_requests
 
 
 
@@ -418,3 +420,104 @@ class TeacherLogout(APIView):
         response.delete_cookie("refresh_token")
         return response
     
+
+
+# Google Authentication
+
+class GoogleLoginView(APIView):
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get("token")
+        role = request.data.get("role", "student")
+
+        if not token:
+            return Response(
+                {"error": "Token not provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # ✅ Verify Google ID Token
+            idinfo = id_token.verify_oauth2_token(
+                token,
+                requests.Request(),
+                settings.GOOGLE_CLIENT_ID
+            )
+
+            email = idinfo.get("email")
+            name = idinfo.get("name", "")
+
+            if not email:
+                return Response(
+                    {"error": "Email not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ✅ Split Google name into first_name & last_name
+            first_name = ""
+            last_name = ""
+
+            if name:
+                parts = name.split(" ", 1)
+                first_name = parts[0]
+                if len(parts) > 1:
+                    last_name = parts[1]
+
+            # ✅ Create or get user
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    "username": email.split("@")[0],
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "role": role,
+                    "is_active": True,
+                }
+            )
+
+            # ❌ Role mismatch protection
+            if user.role != role:
+                return Response(
+                    {"error": f"This email is registered as {user.role}"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # ❌ Blocked user protection
+            if user.status == "blocked":
+                return Response(
+                    {"error": "Account is blocked"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # ✅ Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+
+            response = Response({
+                "message": "Google login successful",
+                "role": user.role,
+                "username": user.username,
+            })
+
+            response.set_cookie(
+                key="access_token",
+                value=str(refresh.access_token),
+                httponly=True,
+                samesite="Lax"
+            )
+
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                samesite="Lax"
+            )
+
+            return response
+
+        except ValueError:
+            return Response(
+                {"error": "Invalid Google token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
