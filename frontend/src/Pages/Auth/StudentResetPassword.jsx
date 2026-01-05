@@ -2,14 +2,55 @@ import React, { useState } from 'react';
 import { Shield, Clock, CheckCircle, Lock, Key, ArrowLeft } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
+import { replace, useNavigate } from 'react-router-dom';
+import Api from '../Services/Api';
 
 const StudentResetPassword = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate=useNavigate()
 
-  const handleReset = (e) => {
+// get the email from session storage
+
+  const email = sessionStorage.getItem("otp_email");
+
+
+  const handleReset = async(e) => {
     e.preventDefault();
-    console.log('Reset password:', { password, confirmPassword });
+
+    if (!email) {
+      alert("Session expired. Please restart reset process.");
+      navigate("/student/forgotpass", { replace: true });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+
+
+    try{
+        await Api.post("/auth/student/reset-password/",{
+            email,
+            password,
+            confirmPassword:confirm,
+
+            
+        })
+
+        sessionStorage.removeItem("otp_email")
+        sessionStorage.removeItem("otp_flow")
+
+        alert("Password changed successfully")
+        navigate("/student/login",{replace:true})
+
+    }catch(err){
+        alert(err.response?.data?.error || "Reset failed")
+    }
+
+    
   };
 
   return (
@@ -154,10 +195,10 @@ const StudentResetPassword = () => {
               </form>
 
               <div className="mt-8 text-center">
-                <a href="#" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium group/link">
+                <button onClick={()=>navigate("/student/login")} className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium group/link cursor-pointer">
                   <ArrowLeft size={16} className="group-hover/link:-translate-x-1 transition-transform" />
                   Back to Login
-                </a>
+                </button>
               </div>
             </div>
           </div>

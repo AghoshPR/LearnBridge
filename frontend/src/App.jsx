@@ -44,9 +44,9 @@ function App() {
 
         <Route path="/student/register" element={<StudentRegister />} />
         <Route path="/otp-verify" element={<OtpVerify />} />
+        
 
         <Route path="/student/login" element={<StudentLogin />} />
-
         <Route path="/student/forgotpass" element={<ForgotPassword />} />
         <Route path="/student/reset-password" element={<StudentResetPassword />} />
 

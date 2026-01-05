@@ -66,6 +66,9 @@ const OtpVerify = () => {
 
    const handleVerifyOtp = async ()=>{
 
+
+        const flow = sessionStorage.getItem("otp_flow")
+
         if (expired){
             setError("OTP expired. Please send OTP");
             return
@@ -79,6 +82,13 @@ const OtpVerify = () => {
                 email,
                 otp:enteredOtp,
             })
+
+            if(flow==="reset"){
+                navigate("/student/reset-password")
+                return
+            }
+
+            // NORMAL REGISTRATION FLOW
 
             sessionStorage.removeItem("otp_email")
             sessionStorage.removeItem("otp_role")
@@ -183,7 +193,7 @@ const OtpVerify = () => {
                     <button
                     onClick={handleVerifyOtp}
                     disabled={expired}
-                    className={`w-full py-3 rounded-xl font-semibold text-lg mb-4
+                    className={`w-full py-3 rounded-xl font-semibold text-lg mb-4 cursor-pointer
                         ${
                         expired
                             ? "bg-gray-500 cursor-not-allowed"

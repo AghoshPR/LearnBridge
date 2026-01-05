@@ -2,13 +2,28 @@ import React, { useState } from 'react';
 import { Shield, Clock, CheckCircle, Mail, Key, ArrowLeft } from 'lucide-react';
 import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
+import { useNavigate } from 'react-router-dom';
+import Api from '../Services/Api';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
 
-    const handleReset = (e) => {
+    const navigate=useNavigate()
+
+    const handleReset = async(e) => {
         e.preventDefault();
-        console.log('Reset password for', email);
+
+        try{
+            await Api.post("/auth/student/forgot-password/",{email})
+
+            sessionStorage.setItem("otp_email",email)
+            sessionStorage.setItem("otp_flow","reset")
+
+            navigate("/otp-verify")
+        }catch(err){
+            alert(err.response?.data?.error)
+        }
+        
     };
 
     return (
@@ -134,10 +149,10 @@ const ForgotPassword = () => {
                             </form>
 
                             <div className="mt-8 text-center">
-                                <a href="#" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium group/link">
+                                <button onClick={()=>navigate("/student/login")} className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-medium group/link cursor-pointer">
                                     <ArrowLeft size={16} className="group-hover/link:-translate-x-1 transition-transform" />
                                     Back to Login
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
