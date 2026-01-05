@@ -6,6 +6,8 @@ import { store } from './Store/store.js'
 import { Provider } from "react-redux"
 import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "./components/ui/sonner";
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -16,11 +18,15 @@ createRoot(document.getElementById('root')).render(
       
       <BrowserRouter>
 
-      <GoogleOAuthProvider clientId='36732645618-5qr0979u7a6lm42i0apu8u8vsgp9fb0q.apps.googleusercontent.com'>
-          <App />
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+
+        
+            <App />
+            <Toaster position="top-right" />
+          
 
       </GoogleOAuthProvider>
-      
+
       </BrowserRouter>
       
 

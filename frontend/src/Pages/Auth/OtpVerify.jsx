@@ -4,6 +4,8 @@ import bgImage from '../../assets/otp-background.jpg';
 import Api from '../Services/Api';
 
 import { useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
+
 
 const OTP_EXPIRY = 60
 
@@ -14,7 +16,7 @@ const OtpVerify = () => {
 
     const [timer, setTimer] = useState(OTP_EXPIRY);
     const [expired, setExpired] = useState(false);
-    const [error, setError] = useState("");
+    // const [error, setError] = useState("");
 
     const navigate = useNavigate()
     const email = sessionStorage.getItem("otp_email")
@@ -69,9 +71,19 @@ const OtpVerify = () => {
         //for the reset pass concept
         const flow = sessionStorage.getItem("otp_flow")
 
-        if (expired){
-            setError("OTP expired. Please send OTP");
-            return
+        // if (expired){
+        //     setError("OTP expired. Please send OTP");
+        //     return
+        // }
+
+        if (expired) {
+            toast.error("OTP has expired. Please request a new one.");
+            return;
+        }
+
+        if (enteredOtp.length !== 6) {
+            toast.error("Please enter the complete 6-digit OTP");
+            return;
         }
 
         const enteredOtp =otp.join("");
@@ -83,9 +95,13 @@ const OtpVerify = () => {
                 otp:enteredOtp,
             })
 
+            toast.success("OTP verified successfully ✅");
+
             //RESET FLOW
 
             if(flow==="reset"){
+
+                toast.success("OTP verified. Please reset your password");
 
                 if(role==="teacher"){
                     navigate("/teacher/reset-password",{ replace: true })
@@ -106,14 +122,17 @@ const OtpVerify = () => {
 
             if (role === "teacher") {
                 navigate("/teacher/verify", { replace: true })
+                toast.success("Teacher registered successfully!!");
             } else {
                 navigate("/student/login", { replace: true })
+                toast.success("Student registered successfully!!");
             }
             
         }
 
         catch(err){
-            setError("invalid OTP")
+            toast.error("Invalid OTP. Please check and try again.");
+            // setError("invalid OTP")
         }
 
    }
@@ -129,9 +148,11 @@ const OtpVerify = () => {
             setOtp(new Array(6).fill(""))
             setTimer(OTP_EXPIRY)
             setExpired(false)
+            toast.success("A new OTP has been sent to your email 📧");
             setError("")
         }
         catch(err){
+            toast.error("Failed to resend OTP. Please try again.");
             setError("Failed to resend OTP")
         }
         
@@ -195,7 +216,7 @@ const OtpVerify = () => {
                     )}
 
                     {/* ERROR MESSAGE */}
-                    {error && <p className="text-red-500 mb-3">{error}</p>}
+                    {/* {error && <p className="text-red-500 mb-3">{error}</p>} */}
                     
 
 

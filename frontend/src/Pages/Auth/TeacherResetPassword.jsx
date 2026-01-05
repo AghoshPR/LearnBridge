@@ -10,20 +10,46 @@ import {
     CheckCircle
 } from 'lucide-react';
 import Api from '../Services/Api';
+import { toast } from "sonner";
 
 const TeacherResetPassword = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const navigate = useNavigate()
+    
 
     const email=sessionStorage.getItem("otp_email")
+
+    const isStrongPassword = (password) => {
+        const regex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
+        return regex.test(password);
+        };
 
     const handleSubmit = async(e) => {
         e.preventDefault();
         
-        if(password !=confirmPassword){
-            alert("Password do not match")
-            return
+         if (!email) {
+        toast.error("Session expired. Please restart the reset process.");
+        navigate("/teacher/forgotpass", { replace: true });
+        return;
+        }
+
+        if (!password.trim()) {
+            toast.error("Password is required");
+            return;
+        }
+
+        if (!isStrongPassword(password)) {
+            toast.error(
+                "Password must contain uppercase, lowercase, number & special character"
+            );
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
         }
 
         try{
@@ -39,12 +65,14 @@ const TeacherResetPassword = () => {
             sessionStorage.removeItem("otp_flow")
             sessionStorage.removeItem("otp_role")
 
-            alert("Password changed succesfully")
+            toast.success("Password changed successfully 🔐");
             navigate("/teacher/login",{replace:true})
 
 
         }catch(err){
-            alert(err.response?.data?.error||"Reset failed")
+            toast.error(
+            err.response?.data?.error || "Password reset failed. Please try again."
+        );
         }
 
     };

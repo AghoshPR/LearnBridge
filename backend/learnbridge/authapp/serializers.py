@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 
 from .models import *
 
@@ -13,6 +14,18 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
         model=User
         fields=('username','email','password')
 
+
+    def validate_email(self,value):
+
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already registered")
+        return value
+    
+    def validate_password(self, value):
+        validate_password(value)  
+        return value
+    
+
     def create(self,validated_data):
 
         user = User.objects.create_user(
@@ -20,6 +33,8 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password'],
             role='student',
+            is_active=False,
+            status="active"
         )
 
         return user
@@ -27,6 +42,15 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
 class RegisterTeacherSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already registered")
+        return value
+    
+    def validate_password(self, value):
+        validate_password(value)
+        return value
 
     class Meta:
 

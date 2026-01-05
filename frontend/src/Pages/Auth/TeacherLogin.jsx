@@ -1,6 +1,8 @@
 import React, { useState,useEffect } from 'react';
 import { useDispatch,useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
 
 import { loginStart, loginSuccess, loginFailure, logout } from "../../Store/authSlice";
 import {
@@ -35,7 +37,24 @@ const TeacherLogin = () => {
 
     const handleLogin = async(e) => {
         e.preventDefault();
+
+        if (!email.trim()) {
+        toast.error("Email is required");
+        return;
+        }
+
+        if (!email.includes("@")) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
+        if (!password) {
+            toast.error("Password is required");
+            return;
+        }
+
         dispatch(loginStart())
+        
 
         try{
             const res = await Api.post("/auth/teacher/login/",{
@@ -47,16 +66,15 @@ const TeacherLogin = () => {
                 role:res.data.role,
                 username:res.data.username
             }))
-
+             toast.success("Welcome back, Educator 👨‍🏫");
             navigate("/teacher/dashboard")
-        }catch(err){
-            dispatch(
-                loginFailure(
-                    err.response?.data?.error ||"Login failed"
-                )
-            )
-            alert(err.response?.data?.error || "Login failed" )
-        }
+        }catch (err) {
+        const message =
+            err.response?.data?.error || "Invalid email or password";
+
+        dispatch(loginFailure(message));
+        toast.error(message);
+    }
     };
 
     

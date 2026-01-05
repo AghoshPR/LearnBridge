@@ -8,6 +8,7 @@ import { loginStart, loginSuccess, loginFailure } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from "@react-oauth/google";
+import { toast } from "sonner";
 
 
 
@@ -31,7 +32,30 @@ const StudentLogin = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
 
+
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (!password.trim()){
+      toast.error("Password is required!")
+    }
+
+    if (!isValidEmail(email)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
+    
+
     dispatch(loginStart())
+    toast.success("Welcome User")
 
     try {
       const res = await Api.post("/auth/login/", {
@@ -65,12 +89,13 @@ const StudentLogin = () => {
 
   const hangleGoogle = async (credentialResponse) => {
             dispatch(loginStart());
+            toast("Loggin with google")
 
             try {
               const res = await Api.post(
                 "/auth/google-login/",
                 {
-                  token: credentialResponse.credential, // ✅ ID TOKEN
+                  token: credentialResponse.credential, 
                   role: "student",
                 },
                 { withCredentials: true }
@@ -245,7 +270,13 @@ const StudentLogin = () => {
                 dispatch(loginFailure("Google login cancelled"));
               }}
           useOneTap={false}
-/>
+          
+          />
+
+              
+
+              
+
             </div>
           </div>
         </div>

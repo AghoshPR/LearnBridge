@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Api from '../Services/Api';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
+
 import {
     FileText,
     CheckCircle,
@@ -27,13 +29,47 @@ const TeacherRegister = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const isStrongPassword = (password) => {
+        const regex =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
+        return regex.test(password);
+        };
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
 
+        if (!formData.fullName.trim()) {
+        toast.error("Full name is required");
+        return;
+        }
+
+        if (!formData.email.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+
+        if (!formData.email.includes("@")) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
+        if (!formData.password) {
+            toast.error("Password is required");
+            return;
+        }
+
+        if (!isStrongPassword(formData.password)) {
+            toast.error(
+                "Password must contain uppercase, lowercase, number & special character"
+            );
+            return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
-            alert("password do not match")
-            return
+            toast.error("Passwords do not match");
+            return;
         }
 
         try {
@@ -46,14 +82,18 @@ const TeacherRegister = () => {
 
             sessionStorage.setItem("otp_email", res.data.email)
             sessionStorage.setItem("otp_role", "teacher")
+            toast.success("OTP sent to your email 📧");
             navigate("/otp-verify")
         }
         catch (error) {
 
             console.log("Teacher register error", error.response?.data);
 
-            alert(error.response?.data?.email?.[0] || error.response?.data?.message ||
-                "Teacher registration failed")
+             toast.error(
+            error.response?.data?.email?.[0] ||
+            error.response?.data?.message ||
+            "Teacher registration failed"
+            );
         }
 
 

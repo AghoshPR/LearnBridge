@@ -15,6 +15,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from django.conf import settings
 import requests as py_requests
+from django.contrib.auth.password_validation import validate_password
 
 
 
@@ -228,7 +229,7 @@ class ResetPasswordView(APIView):
 
         email = request.data.get("email")
         password = request.data.get("password")
-        confirm_password=request.data.get("password")
+        confirm_password=request.data.get("confirm_password")
 
         if password != confirm_password:
 
@@ -246,7 +247,7 @@ class ResetPasswordView(APIView):
                 {"error":"User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
+        validate_password(password, user)
         user.password=make_password(password)
         user.save()
 
@@ -439,7 +440,7 @@ class GoogleLoginView(APIView):
             )
 
         try:
-            # ✅ Verify Google ID Token
+            
             idinfo = id_token.verify_oauth2_token(
                 token,
                 requests.Request(),
@@ -454,8 +455,15 @@ class GoogleLoginView(APIView):
                     {"error": "Email not found"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            
+            if not idinfo.get("email_verified"):
+                return Response(
+                    {"error": "Google email not verified"},
+                    status=status.HTTP_400_BAD_REQUEST
+    )
 
-            # ✅ Split Google name into first_name & last_name
+
+            
             first_name = ""
             last_name = ""
 
@@ -465,7 +473,7 @@ class GoogleLoginView(APIView):
                 if len(parts) > 1:
                     last_name = parts[1]
 
-            # ✅ Create or get user
+            
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
@@ -477,21 +485,21 @@ class GoogleLoginView(APIView):
                 }
             )
 
-            # ❌ Role mismatch protection
+            #  Role mismatch protection
             if user.role != role:
                 return Response(
                     {"error": f"This email is registered as {user.role}"},
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # ❌ Blocked user protection
+            #  Blocked user protection
             if user.status == "blocked":
                 return Response(
                     {"error": "Account is blocked"},
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # ✅ Generate JWT tokens
+            #  Generate JWT tokens
             refresh = RefreshToken.for_user(user)
 
             response = Response({

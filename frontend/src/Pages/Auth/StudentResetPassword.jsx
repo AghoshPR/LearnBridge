@@ -4,6 +4,8 @@ import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
 import { replace, useNavigate } from 'react-router-dom';
 import Api from '../Services/Api';
+import { toast } from "sonner";
+
 
 const StudentResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -14,20 +16,44 @@ const StudentResetPassword = () => {
 
   const email = sessionStorage.getItem("otp_email");
 
+  const isStrongPassword = (password) => {
+  const regex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
+  return regex.test(password);
+  };
+
 
   const handleReset = async(e) => {
     e.preventDefault();
 
     if (!email) {
-      alert("Session expired. Please restart reset process.");
-      navigate("/student/forgotpass", { replace: true });
+    toast.error("Session expired. Please restart password reset.");
+    navigate("/student/forgotpass", { replace: true });
+    return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Password is required");
+      return;
+    }
+
+    if (!confirmPassword.trim()) {
+      toast.error("Confirm password is required");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      toast.error(
+        "Password must contain uppercase, lowercase, number & special character"
+      );
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
+
 
 
 

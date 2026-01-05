@@ -4,6 +4,9 @@ import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
 import Api from "../Services/Api"
 import { useNavigate } from 'react-router-dom'
+import { toast } from "sonner";
+
+
 
 const StudentRegister = () => {
   const [fullName, setFullName] = useState('');
@@ -12,17 +15,57 @@ const StudentRegister = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+
 
   const navigate = useNavigate()
 
+  const isStrongPassword = (password) => {
+  const regex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
+  return regex.test(password);
+};
+
+
   const handleCreateAccount = async (e) => {
     e.preventDefault();
-    
-    if(password !== confirmPassword){
-      alert("Password do not match")
-      return
+
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
     }
 
+    if (!email.includes("@")) {
+    toast.error("Please enter a valid email address");
+    return;
+  }
+
+  
+  if (!isStrongPassword(password)) {
+    toast.error(
+      "Password must contain uppercase, lowercase, number & special character"
+    );
+    return;
+  }
+
+  
+  if (!fullName.trim()) {
+    toast.error("Full name is required");
+    return;
+  }
+
+  
+  if (!password) {
+    toast.error("Password is required");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    toast.error("Passwords do not match");
+    return;
+  }
+    
+    
     try{
 
       const res= await Api.post("/auth/student/register/",{
@@ -233,6 +276,9 @@ const StudentRegister = () => {
         </div>
       </div>
     </div>
+    
+
+    
   );
 };
 

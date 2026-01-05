@@ -4,6 +4,8 @@ import bgImage from '../../assets/otp-background.jpg';
 import logo from '../../assets/learnbridge-logo.png';
 import { useNavigate } from 'react-router-dom';
 import Api from '../Services/Api';
+import { toast } from "sonner";
+
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -13,15 +15,26 @@ const ForgotPassword = () => {
     const handleReset = async(e) => {
         e.preventDefault();
 
+         if (!email.trim()) {
+            toast.error("Email is required");
+            return;
+        }
+
+        if (!email.includes("@")) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+
         try{
             await Api.post("/auth/student/forgot-password/",{email})
 
             sessionStorage.setItem("otp_email",email)
             sessionStorage.setItem("otp_flow","reset")
 
+            toast.success("OTP sent to your email 📧");
             navigate("/otp-verify")
         }catch(err){
-            alert(err.response?.data?.error)
+            toast.error(err.response?.data?.error)
         }
         
     };

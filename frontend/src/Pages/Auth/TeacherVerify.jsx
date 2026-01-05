@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import Api from '../Services/Api';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
+
 
 const TeacherVerify = () => {
     const [teacherType, setTeacherType] = useState('fresher'); // 'fresher' or 'experienced'
@@ -40,6 +42,38 @@ const TeacherVerify = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+
+        if (!formData.phoneNumber.trim()) {
+        toast.error("Phone number is required");
+        return;
+        }
+
+        if (!formData.qualification.trim()) {
+            toast.error("Qualification is required");
+            return;
+        }
+
+        if (!formData.subjects.trim()) {
+            toast.error("Please enter at least one subject");
+            return;
+        }
+
+        if (!formData.bio.trim()) {
+            toast.error("Bio is required");
+            return;
+        }
+
+        if (teacherType === "experienced" && !formData.experienceYears.trim()) {
+            toast.error("Please enter your years of experience");
+            return;
+        }
+
+        // Optional resume size validation (5MB)
+        if (formData.resume && formData.resume.size > 5 * 1024 * 1024) {
+            toast.error("Resume must be less than 5MB");
+            return;
+        }
         
 
         const form = new FormData()
@@ -65,13 +99,13 @@ const TeacherVerify = () => {
             })
 
 
-            alert(
-            "Profile submitted successfully.\n\nPlease wait for admin approval before logging in."
-            );
+            toast.success(
+            "Profile submitted successfully, Please wait for admin approval."
+        );
 
             navigate("/teacher/login")
         }catch(error){
-            alert("profile submission fails")
+            toast.error("profile submission fails")
         }
 
 

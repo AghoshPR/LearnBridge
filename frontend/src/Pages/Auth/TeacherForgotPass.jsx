@@ -10,13 +10,23 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Api from '../Services/Api';
-
+import { toast } from 'sonner';
 const TeacherForgotPass = () => {
     const [email, setEmail] = useState('');
     const navigate = useNavigate()
 
     const handleSubmit = async(e) => {
         e.preventDefault();
+
+        if (!email.trim()) {
+        toast.error("Email is required");
+        return;
+        }
+
+        if (!email.includes("@")) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
         
         try{
 
@@ -26,10 +36,13 @@ const TeacherForgotPass = () => {
             sessionStorage.setItem("otp_flow","reset")
             sessionStorage.setItem("otp_role","teacher")
 
+            toast.success("OTP sent to your email 📧");
             navigate("/otp-verify")
 
         }catch(err){
-            alert(err?.response?.data?.error || "Failed to send OTP" )
+            toast.error(
+            err?.response?.data?.error || "Failed to send OTP. Please try again."
+        );
         }
     };
 
