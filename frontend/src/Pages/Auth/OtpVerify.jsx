@@ -66,7 +66,7 @@ const OtpVerify = () => {
 
    const handleVerifyOtp = async ()=>{
 
-
+        //for the reset pass concept
         const flow = sessionStorage.getItem("otp_flow")
 
         if (expired){
@@ -83,10 +83,21 @@ const OtpVerify = () => {
                 otp:enteredOtp,
             })
 
+            //RESET FLOW
+
             if(flow==="reset"){
-                navigate("/student/reset-password")
+
+                if(role==="teacher"){
+                    navigate("/teacher/reset-password",{ replace: true })
+                }
+                
+                else{
+                    navigate("/student/reset-password",{ replace: true })
+                }
                 return
+
             }
+        
 
             // NORMAL REGISTRATION FLOW
 
@@ -208,7 +219,7 @@ const OtpVerify = () => {
                         {expired && (
                         <button
                             onClick={handleResendOtp}
-                            className="text-cyan-400 hover:text-cyan-300 text-sm"
+                            className="text-cyan-400 hover:text-cyan-300 text-sm cursor-pointer"
                         >
                             Resend OTP
                         </button>

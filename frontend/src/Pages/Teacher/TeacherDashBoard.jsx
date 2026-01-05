@@ -17,7 +17,7 @@ import {
   TrendingUp,
   Book
 } from 'lucide-react';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Api from '../Services/Api';
 import { logout } from '../../Store/authSlice';
@@ -28,26 +28,27 @@ import { logout } from '../../Store/authSlice';
 const TeacherDashBoard = () => {
 
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { username } = useSelector((state) => state.auth);
 
 
-    const handleLogout = async () => {
+  const handleLogout = async () => {
 
-      try {
-        await Api.post("/auth/teacher/logout/");
-      } catch (err) {
-        console.log("Logout failed");
-      } finally {
-        dispatch(logout());
-        navigate("/teacher/login", { replace: true });
-      }
-    };
+    try {
+      await Api.post("/auth/teacher/logout/");
+    } catch (err) {
+      console.log("Logout failed");
+    } finally {
+      dispatch(logout());
+      navigate("/teacher/login", { replace: true });
+    }
+  };
 
 
   const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Dashboard',path: '/teacher/dashboard', active: true },
-    { icon: User, label: 'My Profile',path: '/teacher/profile', active: false },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: true },
+    { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', active: false },
     { icon: Video, label: 'Live Classes', active: false },
     { icon: MessageSquare, label: 'Q&A', active: false },
@@ -118,11 +119,10 @@ const TeacherDashBoard = () => {
             <button
               key={index}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                item.active
-                  ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
+                ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
             >
               <item.icon size={20} className={item.active ? 'text-white' : 'text-slate-500 group-hover:text-white'} />
               <span className="font-medium text-sm">{item.label}</span>
@@ -131,10 +131,26 @@ const TeacherDashBoard = () => {
         </div>
 
         <div className="p-4 border-t border-slate-800">
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors cursor-pointer">
-            <LogOut size={20} />
-            <span className="font-medium text-sm">Logout</span>
-          </button>
+          <div className="relative p-[1px] rounded-xl bg-gradient-to-r from-purple-600/50 to-blue-600/50 hover:from-purple-500 hover:to-blue-500 transition-all group shadow-lg shadow-purple-900/20 hover:shadow-purple-500/30 select-none">
+            <div className="bg-slate-900 p-3 rounded-[10px] flex items-center justify-between group-hover:bg-slate-800 transition-colors relative">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/20 text-lg">
+                  {username ? username.charAt(0).toUpperCase() : 'T'}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-white leading-none">{username || 'Teacher'}</span>
+                  <span className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-wide">Instructor</span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-slate-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
 

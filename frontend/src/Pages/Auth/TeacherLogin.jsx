@@ -153,7 +153,7 @@ const TeacherLogin = () => {
                                 <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500/30 cursor-pointer" />
                                 <span className="text-gray-500 group-hover:text-gray-700 transition-colors">Remember me</span>
                             </label>
-                            <button onClick={()=>navigate("/teacher/forgotpass")} className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer">Forgot password?</button>
+                            <button type="button" onClick={()=>navigate("/teacher/forgotpass")} className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer">Forgot password?</button>
                         </div>
 
                         <button

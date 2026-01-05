@@ -20,7 +20,7 @@ const TeacherRegister = () => {
         confirmPassword: ''
     });
 
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
@@ -29,31 +29,31 @@ const TeacherRegister = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
 
-        if (formData.password !== formData.confirmPassword){
+
+        if (formData.password !== formData.confirmPassword) {
             alert("password do not match")
             return
         }
 
-        try{
+        try {
 
-             const res = await Api.post("/auth/teacher/register/",{
-            username:formData.email,
-            email:formData.email,
-            password:formData.password
+            const res = await Api.post("/auth/teacher/register/", {
+                username: formData.fullName,
+                email: formData.email,
+                password: formData.password
             })
 
-            sessionStorage.setItem("otp_email",res.data.email)
-            sessionStorage.setItem("otp_role","teacher")
+            sessionStorage.setItem("otp_email", res.data.email)
+            sessionStorage.setItem("otp_role", "teacher")
             navigate("/otp-verify")
         }
-        catch(error){
+        catch (error) {
 
-            console.log("Teacher register error",error.response?.data);
+            console.log("Teacher register error", error.response?.data);
 
-            alert(error.response?.data?.email?.[0] ||  error.response?.data?.message ||
-            "Teacher registration failed")
+            alert(error.response?.data?.email?.[0] || error.response?.data?.message ||
+                "Teacher registration failed")
         }
 
 
@@ -186,7 +186,7 @@ const TeacherRegister = () => {
 
                     <div className="mt-8 text-center pt-6 border-t border-gray-100">
                         <p className="text-gray-500 text-sm">
-                            Already have an account? <button onClick={()=>navigate("/teacher/login")} className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Sign in here</button>
+                            Already have an account? <button onClick={() => navigate("/teacher/login")} className="font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Sign in here</button>
                         </p>
                     </div>
 

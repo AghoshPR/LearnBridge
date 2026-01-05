@@ -8,13 +8,29 @@ import {
     ArrowLeft,
     Send
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Api from '../Services/Api';
 
 const TeacherForgotPass = () => {
     const [email, setEmail] = useState('');
+    const navigate = useNavigate()
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        console.log('Reset password for:', email);
+        
+        try{
+
+            await Api.post("/auth/student/forgot-password/",{email})
+
+            sessionStorage.setItem("otp_email",email)
+            sessionStorage.setItem("otp_flow","reset")
+            sessionStorage.setItem("otp_role","teacher")
+
+            navigate("/otp-verify")
+
+        }catch(err){
+            alert(err?.response?.data?.error || "Failed to send OTP" )
+        }
     };
 
     return (
@@ -103,9 +119,9 @@ const TeacherForgotPass = () => {
                     </form>
 
                     <div className="mt-8 text-center pt-6 border-t border-gray-100">
-                        <a href="#" className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group">
+                        <button onClick={()=>navigate("/teacher/login")} className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group cursor-pointer">
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Teacher Login
-                        </a>
+                        </button>
                     </div>
 
                 </div>

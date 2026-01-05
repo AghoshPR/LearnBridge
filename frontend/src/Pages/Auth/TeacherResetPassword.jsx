@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck,
     Clock,
@@ -8,14 +9,44 @@ import {
     ArrowLeft,
     CheckCircle
 } from 'lucide-react';
+import Api from '../Services/Api';
 
 const TeacherResetPassword = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const navigate = useNavigate()
 
-    const handleSubmit = (e) => {
+    const email=sessionStorage.getItem("otp_email")
+
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        console.log('Reset password:', { password, confirmPassword });
+        
+        if(password !=confirmPassword){
+            alert("Password do not match")
+            return
+        }
+
+        try{
+
+            await Api.post("/auth/student/reset-password/",{
+                email,
+                password,
+                confirmPassword
+
+            })
+
+            sessionStorage.removeItem("otp_email")
+            sessionStorage.removeItem("otp_flow")
+            sessionStorage.removeItem("otp_role")
+
+            alert("Password changed succesfully")
+            navigate("/teacher/login",{replace:true})
+
+
+        }catch(err){
+            alert(err.response?.data?.error||"Reset failed")
+        }
+
     };
 
     return (
