@@ -57,11 +57,12 @@ const StudentResetPassword = () => {
 
 
 
+
     try{
         await Api.post("/auth/student/reset-password/",{
             email,
             password,
-            confirmPassword:confirm,
+            confirm_password: confirmPassword,
 
             
         })
@@ -69,7 +70,7 @@ const StudentResetPassword = () => {
         sessionStorage.removeItem("otp_email")
         sessionStorage.removeItem("otp_flow")
 
-        alert("Password changed successfully")
+        toast.success("Password changed successfully")
         navigate("/student/login",{replace:true})
 
     }catch(err){

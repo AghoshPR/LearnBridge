@@ -24,6 +24,7 @@ import TeacherProfile from './Pages/Teacher/TeacherProfile'
 import TeacherCourses from './Pages/Teacher/TeacherCourses'
 import TeacherResetPassword from './Pages/Auth/TeacherResetPassword'
 import StudentResetPassword from './Pages/Auth/StudentResetPassword'
+import AdminUsers from './Pages/Admin/AdminUsers'
 
 
 
@@ -44,7 +45,7 @@ function App() {
 
         <Route path="/student/register" element={<StudentRegister />} />
         <Route path="/otp-verify" element={<OtpVerify />} />
-        
+
 
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student/forgotpass" element={<ForgotPassword />} />
@@ -60,6 +61,9 @@ function App() {
 
         <Route path="/admin/login" element={<AdminLogin />} />
 
+        
+
+        
 
 
 
@@ -82,13 +86,7 @@ function App() {
 
         <Route
 
-          path="/teacher/dashboard"
-          element={
-            <ProtectedRoute role="teacher">
-              <TeacherDashBoard />
-            </ProtectedRoute>
-
-          } />
+          path="/teacher/dashboard" element={ <ProtectedRoute role="teacher"><TeacherDashBoard /></ProtectedRoute>} />
 
         <Route
           path="/teacher/profile"
@@ -98,25 +96,23 @@ function App() {
             </ProtectedRoute>
           } />
 
-        <Route
-          path="/teacher/courses"
+        <Route path="/teacher/courses"
           element={
             <ProtectedRoute role="teacher">
               <TeacherCourses />
             </ProtectedRoute>
           } />
+          
 
         {/* Admin */}
 
-        <Route
 
-          path="/admin/teachers"
-          element={
-            <ProtectedRoute role="admin">
+        <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
 
-              <AdminTeachers />
-            </ProtectedRoute>
-          } />
+        <Route path="/admin/teachers" element={ <ProtectedRoute role="admin"> <AdminTeachers /> </ProtectedRoute>} />
+
+
+        <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>}  />
 
 
       </Routes>

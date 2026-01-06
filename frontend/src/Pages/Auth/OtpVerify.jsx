@@ -69,6 +69,7 @@ const OtpVerify = () => {
    const handleVerifyOtp = async ()=>{
 
         //for the reset pass concept
+        
         const flow = sessionStorage.getItem("otp_flow")
 
         // if (expired){
@@ -81,12 +82,15 @@ const OtpVerify = () => {
             return;
         }
 
+        const enteredOtp =otp.join("");
+        
+
         if (enteredOtp.length !== 6) {
             toast.error("Please enter the complete 6-digit OTP");
             return;
         }
 
-        const enteredOtp =otp.join("");
+        
 
         try{
 

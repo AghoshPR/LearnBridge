@@ -40,12 +40,21 @@ const TeacherVerify = () => {
         setFormData({ ...formData, resume: e.target.files[0] });
     };
 
+    const isValidPhoneNumber = (phone) => {
+    return /^[0-9]{10}$/.test(phone);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
 
         if (!formData.phoneNumber.trim()) {
         toast.error("Phone number is required");
+        return;
+        }
+
+        if (!isValidPhoneNumber(formData.phoneNumber)) {
+        toast.error("Phone number must be exactly 10 digits");
         return;
         }
 
@@ -73,6 +82,16 @@ const TeacherVerify = () => {
         if (formData.resume && formData.resume.size > 5 * 1024 * 1024) {
             toast.error("Resume must be less than 5MB");
             return;
+        }
+
+        if (formData.resume) {
+        const allowedTypes = ["application/pdf", "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+
+        if (!allowedTypes.includes(formData.resume.type)) {
+            toast.error("Resume must be a PDF or Word document");
+            return;
+        }
         }
         
 
@@ -203,6 +222,7 @@ const TeacherVerify = () => {
                             icon={Phone}
                             type="tel"
                             name="phoneNumber"
+                            maxLength={10}
                             value={formData.phoneNumber}
                             onChange={handleChange}
                             placeholder="+1 (555) 000-0000"

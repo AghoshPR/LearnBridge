@@ -19,4 +19,11 @@ urlpatterns = [
 
     # POST → unblock teacher
     path("teachers/unblock/<int:id>/", UnBlockTeacherView.as_view()),
+
+
+    path("users/", AdminUsers.as_view()),
+    path("users/<int:user_id>/user-status/", UserActions.as_view()),
+    path("users/<int:user_id>/delete/", DeleteUserView.as_view()),
+
+
 ]

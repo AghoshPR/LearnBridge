@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   User,
@@ -36,12 +37,19 @@ const TeacherDashBoard = () => {
   const handleLogout = async () => {
 
     try {
-      await Api.post("/auth/teacher/logout/");
+      await Api.post("/auth/logout/");
+
+      toast.success("Logged out successfully 👋", {
+        description: "See you again!",
+        duration: 2500,
+      });
     } catch (err) {
-      console.log("Logout failed");
+      toast.error("Logout failed", {
+        description: "Something went wrong. Please try again.",
+      });
     } finally {
-      dispatch(logout());
-      navigate("/teacher/login", { replace: true });
+      dispatch(logout());          
+      navigate("/admin/login", { replace: true });
     }
   };
 

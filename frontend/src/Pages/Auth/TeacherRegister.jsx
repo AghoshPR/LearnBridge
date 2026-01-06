@@ -24,6 +24,7 @@ const TeacherRegister = () => {
 
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,7 +34,7 @@ const TeacherRegister = () => {
         const regex =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
         return regex.test(password);
-        };
+    };
 
 
     const handleSubmit = async (e) => {
@@ -41,8 +42,8 @@ const TeacherRegister = () => {
 
 
         if (!formData.fullName.trim()) {
-        toast.error("Full name is required");
-        return;
+            toast.error("Full name is required");
+            return;
         }
 
         if (!formData.email.trim()) {
@@ -89,10 +90,10 @@ const TeacherRegister = () => {
 
             console.log("Teacher register error", error.response?.data);
 
-             toast.error(
-            error.response?.data?.email?.[0] ||
-            error.response?.data?.message ||
-            "Teacher registration failed"
+            toast.error(
+                error.response?.data?.email?.[0] ||
+                error.response?.data?.message ||
+                "Teacher registration failed"
             );
         }
 
@@ -201,14 +202,23 @@ const TeacherRegister = () => {
                             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1 flex items-center gap-1.5">
                                 <Lock size={12} /> Confirm Password
                             </label>
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder-gray-500"
-                                placeholder="••••••••"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    className="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all font-medium placeholder-gray-500 pr-12"
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors cursor-pointer"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
                         <button

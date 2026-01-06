@@ -28,22 +28,23 @@ const StudentLogin = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
 
   const handleSignIn = async (e) => {
     e.preventDefault();
 
 
     if (!email.trim()) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (!password.trim()){
-      toast.error("Password is required!")
+    toast.error("Email is required");
+    return;
     }
 
     if (!isValidEmail(email)) {
-      toast.error("Enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
 
@@ -55,7 +56,7 @@ const StudentLogin = () => {
     
 
     dispatch(loginStart())
-    toast.success("Welcome User")
+    
 
     try {
       const res = await Api.post("/auth/login/", {
@@ -70,15 +71,21 @@ const StudentLogin = () => {
           username: res.data.username,
         })
       )
-
+      toast.success(`Welcome back, ${res.data.username}`);
       navigate("/")
 
 
     }
 
     catch (err) {
-      dispatch(loginFailure("Invalid Credentials"))
-    }
+    const message =
+      err.response?.data?.error ||
+      err.response?.data?.detail ||
+      "Invalid email or password";
+
+    dispatch(loginFailure(message));
+    toast.error(message);
+  }
 
 
 

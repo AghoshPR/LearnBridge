@@ -5,7 +5,7 @@ import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector,useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate,Link } from 'react-router-dom';
-
+import { toast } from "sonner";
 
 
 
@@ -210,10 +210,14 @@ const Home = () => {
                                         onClick={() => {
                                             dispatch(logout());
                                             navigate("/student/login",{ replace: true });
+                                            toast.success("Logged out successfully 👋", {
+                                                description: "See you again!",
+                                                duration: 2500,
+                                            });
                                         }}
                                         className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
                                         >
-                                        <LogOut className="w-4 h-4" />
+                                        <LogOut className="w-4 h-4 cursor-pointer" />
                                         Logout
                                         </button>
                                     </>

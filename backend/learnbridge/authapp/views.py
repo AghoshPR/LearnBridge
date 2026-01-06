@@ -247,7 +247,7 @@ class ResetPasswordView(APIView):
                 {"error":"User not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        validate_password(password, user)
+        
         user.password=make_password(password)
         user.save()
 
@@ -326,16 +326,7 @@ class AdminLogin(APIView):
         return response
     
 
-class AdminLogout(APIView):
 
-    permission_classes=[IsAuthenticated]
-
-    def post(self,request):
-
-        response = Response({"message":"Logout Successfully"})
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
-        return response
     
 # Teacher Login
 
@@ -410,16 +401,7 @@ class TeacherLogin(APIView):
 
 
 
-class TeacherLogout(APIView):
 
-    permission_classes=[IsAuthenticated]
-
-    def post(self,request):
-
-        response = Response({"message":"Logged out"})
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
-        return response
     
 
 
@@ -529,3 +511,17 @@ class GoogleLoginView(APIView):
                 {"error": "Invalid Google token"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+class LogoutView(APIView):
+    authentication_classes = [
+        CookieJWTAuthentication,
+        CsrfExemptSessionAuthentication
+    ]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        response = Response({"message": "Logged out successfully"})
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
+        return response

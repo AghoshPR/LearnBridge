@@ -6,6 +6,10 @@ from rest_framework.response import Response
 from teacherapp.models import TeacherProfile
 from authapp.permissions import IsAdmin
 from rest_framework import status
+from authapp.models import User
+from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
+from .serializers import AdminUserSerializer
+from rest_framework.response import Response
 
 
 class PendingTeachersView(APIView):
@@ -189,3 +193,60 @@ class UnBlockTeacherView(APIView):
         return Response({
             "message":"Teacher unblocked successfully"
         })
+
+
+# AdminUsers
+
+class AdminUsers(APIView):
+    
+    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
+
+    permission_classes=[IsAdmin]
+
+    def get(self,request):
+
+        
+        
+        users=User.objects.filter(role="student").order_by("-date_joined")
+        serializer=AdminUserSerializer(users,many=True)
+        return Response(serializer.data)
+    
+
+class UserActions(APIView):
+
+    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
+    permission_classes=[IsAdmin]
+
+    def patch(self,request,user_id):
+
+        
+        
+        try:
+
+            user = User.objects.get(id=user_id,role="student")
+        except User.DoesNotExist:
+            return Response({"error":"Usernot found"},status=404)
+        
+
+        user.is_active = not user.is_active
+        user.save()
+
+        return Response({
+            "id": user.id,
+            "is_active": user.is_active
+        })
+
+
+
+class DeleteUserView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id, role="student")
+            user.delete()
+            return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+

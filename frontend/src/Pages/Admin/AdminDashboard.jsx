@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '@/Store/authSlice';
+import { useDispatch } from 'react-redux';
 import {
     LayoutDashboard,
     BookOpen,
@@ -24,6 +26,28 @@ const AdminDashboard = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const navigate = useNavigate()
+    const dispatch=useDispatch()
+
+
+    const handleLogout = async () => {
+    try {
+        await Api.post("/auth/logout/");
+
+        toast.success("Logged out successfully 👋", {
+        description: "See you again, Admin!",
+        duration: 2500,
+        });
+
+    } catch (err) {
+        toast.error("Logout failed", {
+        description: "Something went wrong. Please try again.",
+        });
+    } finally {
+        dispatch(logout()); // Redux clear
+        navigate("/admin/login", { replace: true });
+    }
+
+}
 
     return (
         <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
@@ -73,18 +97,74 @@ const AdminDashboard = () => {
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-                    <NavItem icon={LayoutDashboard} label="Dashboard" active />
-                    <NavItem icon={BookOpen} label="Courses" />
-                    <NavItem icon={Folder} label="Categories" />
-                    <NavItem icon={Users} label="Users" />
-                    <NavItem icon={GraduationCap} label="Teachers" />
-                    <NavItem icon={MessageSquare} label="Q&A Moderation" />
-                    <NavItem icon={Tag} label="Tags Management" />
-                    <NavItem icon={Percent} label="Offers" />
-                    <NavItem icon={Ticket} label="Coupons" />
-                    <NavItem icon={Wallet} label="Wallet" />
-                    <NavItem icon={Settings} label="Settings" />
+                    <NavItem
+                        icon={LayoutDashboard}
+                        label="Dashboard"
+                        active
+                        onClick={() => navigate("/admin/dashboard")}
+                    />
+
+                    <NavItem
+                        icon={BookOpen}
+                        label="Courses"
+                        // onClick={() => navigate("/admin/courses")}
+                    />
+
+                    <NavItem
+                        icon={Folder}
+                        label="Categories"
+                        // onClick={() => navigate("/admin/categories")}
+                    />
+
+                    <NavItem
+                        icon={Users}
+                        label="Users"
+                        onClick={() => navigate("/admin/users")}
+                    />
+
+                    <NavItem
+                        icon={GraduationCap}
+                        label="Teachers"
+                        onClick={() => navigate("/admin/teachers")}
+                    />
+
+                    <NavItem
+                        icon={MessageSquare}
+                        label="Q&A Moderation"
+                        // onClick={() => navigate("/admin/qna")}
+                    />
+
+                    <NavItem
+                        icon={Tag}
+                        label="Tags Management"
+                        // onClick={() => navigate("/admin/tags")}
+                    />
+
+                    <NavItem
+                        icon={Percent}
+                        label="Offers"
+                        // onClick={() => navigate("/admin/offers")}
+                    />
+
+                    <NavItem
+                        icon={Ticket}
+                        label="Coupons"
+                        // onClick={() => navigate("/admin/coupons")}
+                    />
+
+                    <NavItem
+                        icon={Wallet}
+                        label="Wallet"
+                        // onClick={() => navigate("/admin/wallet")}
+                    />
+
+                    <NavItem
+                        icon={Settings}
+                        label="Settings"
+                        // onClick={() => navigate("/admin/settings")}
+                    />
                 </nav>
+
 
                 {/* Sidebar Footer */}
                 <div className="p-4 border-t border-gray-800">
@@ -99,7 +179,7 @@ const AdminDashboard = () => {
                                     <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
                                 </div>
                             </div>
-                            <button className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+                            <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
                                 <LogOut size={18} />
                             </button>
 
@@ -219,8 +299,10 @@ const AdminDashboard = () => {
 
 // Helper Components
 
-const NavItem = ({ icon: Icon, label, active = false }) => (
-    <div className={`
+const NavItem = ({ icon: Icon, label, active = false,onClick  }) => (
+    <div 
+    onClick={onClick}
+    className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
         ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
     `}>

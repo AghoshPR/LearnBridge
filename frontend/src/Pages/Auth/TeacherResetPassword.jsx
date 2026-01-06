@@ -57,7 +57,7 @@ const TeacherResetPassword = () => {
             await Api.post("/auth/student/reset-password/",{
                 email,
                 password,
-                confirmPassword
+                confirm_password: confirmPassword,
 
             })
 
@@ -177,10 +177,10 @@ const TeacherResetPassword = () => {
 
                     </form>
 
-                    <div className="mt-8 text-center pt-6 border-t border-gray-100">
-                        <a href="#" className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group">
+                    <div className="mt-8 text-center pt-6 border-t border-gray-100 ">
+                        <button onClick={()=>navigate("/teacher/login")} className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors group cursor-pointer">
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Login
-                        </a>
+                        </button>
                     </div>
 
                 </div>

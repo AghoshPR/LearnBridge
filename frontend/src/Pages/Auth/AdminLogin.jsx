@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Api from "../Services/Api"
 import { useDispatch,useSelector } from 'react-redux';
 import { loginStart,loginSuccess,loginFailure } from '../../Store/authSlice';
-
+import { toast } from "sonner";
 
 
 const AdminLogin = () => {
@@ -19,13 +19,27 @@ const AdminLogin = () => {
 
     useEffect(() => {
     if (isAuthenticated && role === "admin") {
-        navigate("/admin/teachers", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
     }
     }, [isAuthenticated, role, navigate]);
 
+    
+    
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+
+        if (!email.trim()) {
+            toast.error("Admin email is required");
+            return;
+        }
+
+        if (!password.trim()) {
+            toast.error("Password is required");
+            return;
+        }
+
 
         dispatch(loginStart())
 
@@ -43,20 +57,22 @@ const AdminLogin = () => {
             role:"admin",
             username:"Admin"
             }))
-            
+
+             toast.success("Welcome Admin");
 
             if(res.data.role==='admin'){
-                navigate("/admin/teachers", { replace: true })
+                navigate("/admin/dashboard", { replace: true })
 
             }
 
         }
         
         catch (err) {
-            dispatch(loginFailure(
-                err.response?.data?.error || "Admin login failed"
-            ));
-            alert(err.response?.data?.error || "Admin login failed");
+            const message =
+            err.response?.data?.error || "Invalid admin credentials";
+
+            dispatch(loginFailure(message));
+            toast.error(message);
         }
         
 

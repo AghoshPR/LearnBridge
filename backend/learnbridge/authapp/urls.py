@@ -19,7 +19,7 @@ urlpatterns = [
     # teacher login/logout
 
     path("teacher/login/", TeacherLogin.as_view()),
-    path("teacher/logout/",TeacherLogout.as_view()),
+    
 
     #teacher_register
     path('teacher/register/',TeacherRegisterView.as_view()),
@@ -35,12 +35,15 @@ urlpatterns = [
 
     # admin login/logout
     path('admin/login/',AdminLogin.as_view()),
-    path("admin/logout/", AdminLogout.as_view()),
+    
 
 
     # GooleAuth
 
     path("google-login/",GoogleLoginView.as_view()),
+
+    # LogoutUrls
+    path("logout/", LogoutView.as_view()),
     
 
 ]
