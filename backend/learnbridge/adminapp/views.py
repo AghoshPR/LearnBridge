@@ -213,7 +213,7 @@ class AdminCreateUser(APIView):
                 "id":user.id,
                 "username":user.username,
                 "email":user.email,
-                
+
             },status=status.HTTP_201_CREATED
         )
 
@@ -323,3 +323,19 @@ class DeleteUserView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+
+class AdminCreateTeacher(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request):
+
+        serializers = AdminCreateTeacherSerializer(data=request.data)
+        serializers.is_valid(raise_exception=True)
+        serializers.save()
+
+        return Response(
+            {"message":"Teacher created and approved successfully"},
+            status=status.HTTP_201_CREATED
+        )

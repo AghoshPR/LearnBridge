@@ -48,6 +48,68 @@ const AdminTeachers = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    // admin teacher add
+
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        qualification: "",
+        subjects: "",
+        bio: "",
+        years_of_experience: ""
+        });
+    
+    
+    
+
+    const handleCreateTeacher = async (e)=>{
+
+        e.preventDefault()
+
+        if (formData.password !== formData.confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
+
+        const payload = new FormData()
+
+        payload.append("username", formData.username);
+        payload.append("email", formData.email);
+        payload.append("password", formData.password);
+        payload.append("teacher_type", teacherType);
+        payload.append("qualification", formData.qualification);
+        payload.append("subjects", formData.subjects);
+        payload.append("bio", formData.bio);
+
+        if (teacherType === "experienced") {
+            payload.append(
+            "years_of_experience",
+            formData.years_of_experience
+            );
+        }
+
+
+        try{
+            await Api.post("/admin/teachers/create/",payload,{
+                headers: { "Content-Type": "multipart/form-data" }
+            })
+
+            toast.success("Teacher created successfully");
+            setIsCreateModalOpen(false);
+            fetchApprovedTeachers();
+        }catch (err) {
+            toast.error(
+            err.response?.data?.error || "Failed to create teacher"
+            );
+        }
+
+    }
+    
+
+    // admin teacher add
+    
 
 
     /* ---------------- FETCH PENDING TEACHERS ---------------- */
@@ -511,122 +573,226 @@ const AdminTeachers = () => {
             {/* Create Teacher Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
+                    <div
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    ></div>
+
                     <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-lg p-6 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold text-white">Create New Teacher</h3>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-white">
-                                <X size={20} />
-                            </button>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-white">Create New Teacher</h3>
+                        <button
+                        onClick={() => setIsCreateModalOpen(false)}
+                        className="text-gray-400 hover:text-white"
+                        >
+                        <X size={20} />
+                        </button>
+                    </div>
+
+                    
+                    <form className="space-y-4" onSubmit={handleCreateTeacher}>
+
+                        {/* NAME */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Name
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.username}
+                            onChange={(e) =>
+                            setFormData({ ...formData, username: e.target.value })
+                            }
+                            placeholder="Enter teacher name"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
                         </div>
 
-                        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsCreateModalOpen(false); }}>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Name</label>
-                                <input type="text" placeholder="Enter teacher name" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Email</label>
-                                <input type="email" placeholder="Enter email address" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Password</label>
-                                <input type="password" placeholder="Enter password" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                            </div>
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Confirm Password</label>
-                                <input type="password" placeholder="Confirm password" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                            </div>
+                        {/* EMAIL */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                            }
+                            placeholder="Enter email address"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
 
-                            {/* Teacher Type Toggle */}
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Experience Level</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <label className={`
-                                        flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all
-                                        ${teacherType === 'fresher'
-                                            ? 'bg-blue-600/10 border-blue-500 text-blue-400'
-                                            : 'bg-[#0F1014] border-gray-800 text-gray-400 hover:border-gray-700'}
-                                    `}>
-                                        <input
-                                            type="radio"
-                                            name="teacherType"
-                                            value="fresher"
-                                            className="hidden"
-                                            checked={teacherType === 'fresher'}
-                                            onChange={(e) => setTeacherType(e.target.value)}
-                                        />
-                                        <GradCapIcon size={18} />
-                                        <span className="font-medium text-sm">Fresher</span>
-                                    </label>
-                                    <label className={`
-                                        flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer transition-all
-                                        ${teacherType === 'experienced'
-                                            ? 'bg-blue-600/10 border-blue-500 text-blue-400'
-                                            : 'bg-[#0F1014] border-gray-800 text-gray-400 hover:border-gray-700'}
-                                    `}>
-                                        <input
-                                            type="radio"
-                                            name="teacherType"
-                                            value="experienced"
-                                            className="hidden"
-                                            checked={teacherType === 'experienced'}
-                                            onChange={(e) => setTeacherType(e.target.value)}
-                                        />
-                                        <Briefcase size={18} />
-                                        <span className="font-medium text-sm">Experienced</span>
-                                    </label>
-                                </div>
-                            </div>
+                        {/* PASSWORD */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) =>
+                            setFormData({ ...formData, password: e.target.value })
+                            }
+                            placeholder="Enter password"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
 
+                        {/* CONFIRM PASSWORD */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Confirm Password
+                        </label>
+                        <input
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={(e) =>
+                            setFormData({ ...formData, confirmPassword: e.target.value })
+                            }
+                            placeholder="Confirm password"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
 
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Expertise</label>
-                                <input type="text" placeholder="e.g. Web Development" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                            </div>
+                        {/* TEACHER TYPE */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
+                            Experience Level
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <label className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer
+                            ${teacherType === "fresher"
+                                ? "bg-blue-600/10 border-blue-500 text-blue-400"
+                                : "bg-[#0F1014] border-gray-800 text-gray-400"}`}>
+                            <input
+                                type="radio"
+                                value="fresher"
+                                checked={teacherType === "fresher"}
+                                onChange={() => setTeacherType("fresher")}
+                                className="hidden"
+                            />
+                            <GradCapIcon size={18} /> Fresher
+                            </label>
 
-                            {teacherType === 'experienced' && (
-                                <div>
-                                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Experience (Years)</label>
-                                    <input type="number" placeholder="e.g. 5" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
-                                </div>
-                            )}
+                            <label className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer
+                            ${teacherType === "experienced"
+                                ? "bg-blue-600/10 border-blue-500 text-blue-400"
+                                : "bg-[#0F1014] border-gray-800 text-gray-400"}`}>
+                            <input
+                                type="radio"
+                                value="experienced"
+                                checked={teacherType === "experienced"}
+                                onChange={() => setTeacherType("experienced")}
+                                className="hidden"
+                            />
+                            <Briefcase size={18} /> Experienced
+                            </label>
+                        </div>
+                        </div>
 
-                            {/* Resume Upload - Always visible as requested */}
-                            <div>
-                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Resume / CV</label>
-                                <label className="flex flex-col items-center justify-center w-full h-32 bg-[#0F1014] border-2 border-gray-700 border-dashed rounded-xl cursor-pointer hover:bg-gray-800/50 hover:border-gray-600 transition-all group">
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <div className="bg-gray-800 p-2 rounded-full mb-2 group-hover:scale-110 transition-transform">
-                                            <Upload className="w-5 h-5 text-gray-400" />
-                                        </div>
-                                        <p className="mb-1 text-sm text-gray-400"><span className="font-semibold text-blue-500">Click to upload</span> or drag and drop</p>
-                                        <p className="text-xs text-gray-500">PDF, DOC (MAX. 5MB)</p>
-                                    </div>
-                                    <input type="file" className="hidden" accept=".pdf,.doc,.docx" />
-                                </label>
-                            </div>
+                        {/* QUALIFICATION */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Qualification
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.qualification}
+                            onChange={(e) =>
+                            setFormData({ ...formData, qualification: e.target.value })
+                            }
+                            placeholder="Highest qualification"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
 
+                        {/* SUBJECTS */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Subjects
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.subjects}
+                            onChange={(e) =>
+                            setFormData({ ...formData, subjects: e.target.value })
+                            }
+                            placeholder="Subjects teacher can teach"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
 
-                            <div className="flex items-center gap-3 pt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="flex-1 py-2.5 rounded-lg bg-gray-800 text-gray-300 font-medium hover:bg-gray-700 transition-colors border border-gray-700"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20"
-                                >
-                                    Create Teacher
-                                </button>
-                            </div>
-                        </form>
+                        {/* BIO */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Bio
+                        </label>
+                        <textarea
+                            value={formData.bio}
+                            onChange={(e) =>
+                            setFormData({ ...formData, bio: e.target.value })
+                            }
+                            placeholder="Short introduction"
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                        />
+                        </div>
+
+                        {/* EXPERIENCE */}
+                        {teacherType === "experienced" && (
+                        <div>
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Experience (Years)
+                            </label>
+                            <input
+                            type="number"
+                            value={formData.years_of_experience}
+                            onChange={(e) =>
+                                setFormData({ ...formData, years_of_experience: e.target.value })
+                            }
+                            className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                            />
+                        </div>
+                        )}
+
+                        {/* RESUME */}
+                        <div>
+                        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">
+                            Resume / CV
+                        </label>
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) =>
+                            setFormData({ ...formData, resume: e.target.files[0] })
+                            }
+                            className="w-full text-gray-400"
+                        />
+                        </div>
+
+                        {/* ACTIONS */}
+                        <div className="flex items-center gap-3 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setIsCreateModalOpen(false)}
+                            className="flex-1 py-2.5 rounded-lg bg-gray-800 text-gray-300"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-bold"
+                        >
+                            Create Teacher
+                        </button>
+                        </div>
+
+                    </form>
                     </div>
                 </div>
-            )}
+                )}
+
 
             {/* Delete Confirmation Modal */}
             {teacherToDelete && (
