@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import TeacherProfileSerializer
 from .models import TeacherProfile
+from rest_framework import status
 from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
 
 
@@ -45,3 +46,43 @@ class SubmitTeacherProfileView(APIView):
         })
 
 
+class TeacherProfileView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+
+        try:
+
+            profile =request.user.teacher_profile
+        
+        except TeacherProfile.DoesNotExist:
+            return Response(
+                {"error":"Profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = TeacherProfileSerializer(profile)
+
+        return Response(serializer.data)
+    
+
+    def put(self,request):
+
+        profile,created = TeacherProfile.objects.get_or_create(
+            user=request.user
+        )
+
+        serializer = TeacherProfileSerializer(
+            profile,
+            data = request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {"message":"Profile updated successfully"},
+            status=status.HTTP_200_OK
+        )

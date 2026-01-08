@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from "sonner";
 import {
     LayoutDashboard,
@@ -34,15 +34,81 @@ const TeacherProfile = () => {
 
     // Mock Data
     const [profileData, setProfileData] = useState({
-        name: 'Dr. Sarah Johnson',
-        email: 'sarah.johnson@learnbridge.com',
-        phone: '+91 98765 43210',
-        qualification: 'Ph.D. in Computer Science',
-        subjects: 'Web Development, Data Structures, Algorithms',
-        experience: '8 years',
-        bio: 'Passionate educator with expertise in modern web technologies and computer science fundamentals. I love teaching complex concepts in simple ways.',
-        avatar: null
+        name: "",
+        email: "",
+        phone: "",
+        qualification: "",
+        subjects: "",
+        experience: "",
+        bio: "",
+        avatar: null,          
+        avatarPreview: null,   
     });
+
+
+
+    useEffect(()=>{
+        const fetchProfile = async ()=>{
+            try{
+                const res = await Api.get("/teacher/profileview/")
+                setProfileData(prev=>({
+                    ...prev,
+                    ...res.data,
+                    experience: res.data.years_of_experience
+            ? `${res.data.years_of_experience}`
+            : "",
+
+            avatarPreview: res.data.avatar || null,
+            avatar: null,
+                }))
+
+            }catch(err){
+                toast.error("Failed to load profile")
+            }
+        }
+        fetchProfile()
+    },[])
+
+
+    const handleSaveProfile = async()=>{
+
+        try{
+            const payload = new FormData()
+
+            payload.append("phone", profileData.phone);
+            payload.append("qualification", profileData.qualification);
+            payload.append("subjects", profileData.subjects);
+            payload.append("bio", profileData.bio);
+
+            if (profileData.experience) {
+            payload.append(
+                "years_of_experience",
+                parseInt(profileData.experience)
+            );
+            }
+
+            if (profileData.avatar instanceof File) {
+            payload.append("resume", profileData.avatar);
+            }
+
+            await Api.put("/teacher/profileview/",payload,{
+                headers: { "Content-Type": "multipart/form-data" }
+            })
+
+            toast.success("Profile updated successfully")
+            setIsEditModalOpen(false)
+
+        }catch(err){
+            toast.error(
+            err.response?.data?.error ||
+            "Failed to update profile"
+            );
+        }
+
+       
+
+    }
+
 
     const sidebarItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
@@ -68,10 +134,13 @@ const TeacherProfile = () => {
 
     const handlePhotoUpload = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setProfileData(prev => ({ ...prev, avatar: imageUrl }));
-        }
+        if (!file) return;
+
+        setProfileData(prev => ({
+            ...prev,
+            avatar: file,
+            avatarPreview: URL.createObjectURL(file)
+        }));
     };
 
     const handleLogout = async () => {
@@ -292,7 +361,7 @@ const TeacherProfile = () => {
                                 <div className="relative group cursor-pointer">
                                     <div className="w-28 h-28 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-700 group-hover:border-purple-500 transition-colors">
                                         {profileData.avatar ? (
-                                            <img src={profileData.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                            <img src={profileData.avatar||"/default-avatar.png"} alt="Preview" className="w-full h-full object-cover" />
                                         ) : (
                                             <Camera size={32} className="text-slate-500 group-hover:text-purple-500" />
                                         )}
@@ -300,6 +369,9 @@ const TeacherProfile = () => {
                                     <div className="absolute bottom-0 right-0 p-2 bg-purple-600 rounded-full text-white shadow-lg">
                                         <Upload size={14} />
                                     </div>
+                                    <span className="text-4xl font-bold text-white">
+                                    {username?.charAt(0).toUpperCase()}
+                                    </span>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -400,7 +472,7 @@ const TeacherProfile = () => {
                                 Cancel
                             </button>
                             <button
-                                onClick={() => setIsEditModalOpen(false)}
+                                onClick={handleSaveProfile}
                                 className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-white font-bold shadow-lg hover:shadow-purple-900/40 transition-all"
                             >
                                 Save Changes

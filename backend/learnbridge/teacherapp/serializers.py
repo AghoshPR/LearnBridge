@@ -18,3 +18,28 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             'resume'
         ]
 
+
+class TeacherProfileSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(source="user.username",read_only=True)
+    email=serializers.EmailField(source="user.email",read_only=True)
+    avatar=serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = TeacherProfile
+        fields=[
+            "name",
+            "email",
+            "phone",
+            "qualification",
+            "subjects",
+            "bio",
+            "years_of_experience",
+            "avatar",
+        ]
+
+    def get_avatar(self, obj):
+        if obj.resume:
+            return obj.resume.url
+        return None
