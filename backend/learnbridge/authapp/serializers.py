@@ -80,10 +80,21 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self,data):
 
+       
+
         try:
             user_obj = User.objects.get(email=data['email'])
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid Credentials")
+        
+
+        if user_obj.status == "blocked":
+            raise serializers.ValidationError(
+                "Your account is blocked. Contact admin."
+            )
+        
+        if not user_obj.is_active:
+            raise serializers.ValidationError("Account not verified")
         
 
         user=authenticate(
@@ -91,6 +102,8 @@ class LoginSerializer(serializers.Serializer):
             password=data['password']
 
         )
+
+        
         
     
         if not user:

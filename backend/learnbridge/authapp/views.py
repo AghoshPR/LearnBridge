@@ -48,11 +48,28 @@ class LoginView(APIView):
     authentication_classes=[CsrfExemptSessionAuthentication]
     permission_classes=[AllowAny]
 
+
+   
+
     def post(self,request):
 
         serializer=LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data
+
+        if not user.is_active:
+            return Response(
+                {"error": "Account not verified or deactivated"},
+                status=status.HTTP_403_FORBIDDEN
+        )
+
+        if user.status == "blocked":
+            return Response(
+                {"error": "Your account is blocked. Contact admin."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+
 
         refresh = RefreshToken.for_user(user)
 

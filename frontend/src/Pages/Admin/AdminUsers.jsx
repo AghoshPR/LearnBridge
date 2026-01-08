@@ -26,7 +26,8 @@ import {
   MoreVertical,
   Ban,
   CheckCircle,
-  Trash
+  Trash,
+  Pencil
 } from 'lucide-react';
 import Api from '../Services/Api';
 
@@ -80,19 +81,54 @@ const AdminUsers = () => {
     setUserToDelete(user);
   };
 
-  const confirmDeleteAction = async () => {
-    if (!userToDelete) return;
+  // const confirmDeleteAction = async () => {
+  //   if (!userToDelete) return;
+
+  //   try {
+  //     await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
+  //     toast.success("User deleted successfully");
+  //     setUsers(users.filter(u => u.id !== userToDelete.id));
+  //     setUserToDelete(null);
+  //   } catch (err) {
+  //     toast.error("Failed to delete user");
+  //     console.error(err);
+  //   }  
+  // };
+
+  const blockUser = async (user) => {
 
     try {
-      await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
-      toast.success("User deleted successfully");
-      setUsers(users.filter(u => u.id !== userToDelete.id));
-      setUserToDelete(null);
+      await Api.patch(`/admin/users/${user.id}/block/`)
+      toast.success("User blocked Successfully")
+
+      setUsers(users.map(u =>
+        u.id === user.id ? { ...u, status: "Blocked" } : u
+      ))
+
     } catch (err) {
-      toast.error("Failed to delete user");
+      toast.error("Failed to block user")
+      console.log(err)
+    }
+
+  }
+
+
+  const unblockUser = async (user) => {
+
+    try {
+      await Api.patch(`/admin/users/${user.id}/unblock/`)
+      toast.success("User unblocked successfully");
+
+      setUsers(users.map(u =>
+        u.id === user.id ? { ...u, status: "Active" } : u
+      ))
+
+
+    } catch (err) {
+      toast.error("Failed to unblock user");
       console.error(err);
     }
-  };
+  }
 
 
 
@@ -109,15 +145,16 @@ const AdminUsers = () => {
     setDeleteModalUser(user);
   };
 
-  const confirmBlockAction = () => {
-    if (deleteModalUser) {
-      setUsers(users.map(u =>
-        u.id === deleteModalUser.id
-          ? { ...u, status: u.status === 'Active' ? 'Blocked' : 'Active' }
-          : u
-      ));
-      setDeleteModalUser(null);
+  const confirmBlockAction = async () => {
+
+    if (!deleteModalUser) return
+
+    if (deleteModalUser.status === "Active") {
+      await blockUser(deleteModalUser)
+    } else {
+      await unblockUser(deleteModalUser)
     }
+    setDeleteModalUser(null)
   };
 
   const handleLogout = async () => {
@@ -134,7 +171,7 @@ const AdminUsers = () => {
         description: "Something went wrong. Please try again.",
       });
     } finally {
-      dispatch(logout()); // Redux clear
+      dispatch(logout());
       navigate("/admin/login", { replace: true });
     }
   };
@@ -250,11 +287,7 @@ const AdminUsers = () => {
           // onClick={() => navigate("/admin/wallet")}
           />
 
-          <NavItem
-            icon={Settings}
-            label="Settings"
-          // onClick={() => navigate("/admin/settings")}
-          />
+
         </nav>
 
         {/* Sidebar Footer */}
@@ -315,23 +348,22 @@ const AdminUsers = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Join Date</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Courses</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-                  <th className="p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Delete</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Join Date</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Courses</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50">
                 {filteredUsers.length > 0 ? filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-800/20 transition-colors group">
-                    <td className="p-4 text-sm font-medium text-white">{user.name}</td>
-                    <td className="p-4 text-sm text-gray-400">{user.email}</td>
-                    <td className="p-4 text-sm text-gray-400">{user.joinDate}</td>
-                    <td className="p-4 text-sm text-gray-400 pl-8">{user.courses}</td>
-                    <td className="p-4">
+                    <td className="px-3 py-3 text-sm font-medium text-white">{user.name}</td>
+                    <td className="px-3 py-3 text-sm text-gray-400">{user.email}</td>
+                    <td className="px-3 py-3 text-sm text-gray-400">{user.joinDate}</td>
+                    <td className="px-3 py-3 text-sm text-gray-400 pl-8">{user.courses}</td>
+                    <td className="px-3 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${user.status === 'Active'
                         ? 'bg-green-500/10 text-green-400 border-green-500/20'
                         : 'bg-red-500/10 text-red-400 border-red-500/20'
@@ -339,30 +371,48 @@ const AdminUsers = () => {
                         {user.status}
                       </span>
                     </td>
-                    <td className="p-4">
+                    <td className="px-3 py-3">
                       {user.status === 'Active' ? (
-                        <button
-                          onClick={() => handleBlockToggle(user)}
-                          className="text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1.5 text-xs font-medium"
-                        >
-                          <Ban size={14} /> Block
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleBlockToggle(user)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <Ban size={14} /> Block
+                          </button>
+                          <button
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <Pencil size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(user)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <Trash size={14} /> Delete
+                          </button>
+                        </div>
                       ) : (
-                        <button
-                          onClick={() => handleBlockToggle(user)}
-                          className="text-gray-500 hover:text-green-400 transition-colors flex items-center gap-1.5 text-xs font-medium"
-                        >
-                          <CheckCircle size={14} /> Unblock
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleBlockToggle(user)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <CheckCircle size={14} /> Unblock
+                          </button>
+                          <button
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <Pencil size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(user)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <Trash size={14} /> Delete
+                          </button>
+                        </div>
                       )}
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => handleDeleteClick(user)}
-                        className="text-gray-500 hover:text-red-500 transition-colors flex items-center gap-1.5 text-xs font-medium"
-                      >
-                        <Trash size={14} /> Delete
-                      </button>
                     </td>
                   </tr>
                 )) : (

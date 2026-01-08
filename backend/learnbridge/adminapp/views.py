@@ -212,7 +212,7 @@ class AdminUsers(APIView):
         return Response(serializer.data)
     
 
-class UserActions(APIView):
+class BlockUser(APIView):
 
     authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
     permission_classes=[IsAdmin]
@@ -224,18 +224,69 @@ class UserActions(APIView):
         try:
 
             user = User.objects.get(id=user_id,role="student")
+
         except User.DoesNotExist:
             return Response({"error":"Usernot found"},status=404)
         
+        # if user.is_superuser:
+        #     return Response(
+        #         {"error": "Superuser cannot be blocked"},
+        #         status=status.HTTP_403_FORBIDDEN
+        #     )
+        
+        if user.status =="blocked":
+            return Response(
+                {"error":"User already blocked"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
 
-        user.is_active = not user.is_active
+        user.is_active = False
+        user.status="blocked"
         user.save()
 
         return Response({
+            "message":"User blocked successfully",
             "id": user.id,
-            "is_active": user.is_active
-        })
+            "status": user.status
 
+        },status=status.HTTP_200_OK)
+
+
+class UnBlockUser(APIView):
+
+    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
+    permission_classes=[IsAdmin]
+
+    def patch(self,request,user_id):
+
+        try:
+
+            user=User.objects.get(id=user_id,role="student")
+
+        except User.DoesNotExist:
+            return Response(
+                {"error":"User not found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if user.status != "blocked":
+
+            return Response(
+                {"error":"User is not blocked"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.is_active=True
+        user.status="active"
+        user.save()
+
+        return Response({
+            "message":"User Unblocked Successfully",
+            "id":user.id,
+            "status":user.status
+        },status=status.HTTP_200_OK)
+        
 
 
 class DeleteUserView(APIView):

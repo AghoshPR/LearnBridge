@@ -184,7 +184,7 @@ const Home = () => {
                                 
                                 {isAuthenticated  && (
                                     <>
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={()=>navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
                                         <User className="w-4 h-4" />
                                         Profile
                                         </button>
@@ -215,7 +215,7 @@ const Home = () => {
                                                 duration: 2500,
                                             });
                                         }}
-                                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
                                         >
                                         <LogOut className="w-4 h-4 cursor-pointer" />
                                         Logout

@@ -12,3 +12,8 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "date_joined",
             "is_active",
         ]
+
+
+class AdminCreateUserSerializer(serializers.ModelSerializer):
+    
+    pass

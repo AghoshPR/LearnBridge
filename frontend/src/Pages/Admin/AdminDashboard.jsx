@@ -26,28 +26,28 @@ const AdminDashboard = () => {
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const navigate = useNavigate()
-    const dispatch=useDispatch()
+    const dispatch = useDispatch()
 
 
     const handleLogout = async () => {
-    try {
-        await Api.post("/auth/logout/");
+        try {
+            await Api.post("/auth/logout/");
 
-        toast.success("Logged out successfully 👋", {
-        description: "See you again, Admin!",
-        duration: 2500,
-        });
+            toast.success("Logged out successfully 👋", {
+                description: "See you again, Admin!",
+                duration: 2500,
+            });
 
-    } catch (err) {
-        toast.error("Logout failed", {
-        description: "Something went wrong. Please try again.",
-        });
-    } finally {
-        dispatch(logout()); // Redux clear
-        navigate("/admin/login", { replace: true });
+        } catch (err) {
+            toast.error("Logout failed", {
+                description: "Something went wrong. Please try again.",
+            });
+        } finally {
+            dispatch(logout()); // Redux clear
+            navigate("/admin/login", { replace: true });
+        }
+
     }
-
-}
 
     return (
         <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
@@ -107,13 +107,13 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={BookOpen}
                         label="Courses"
-                        // onClick={() => navigate("/admin/courses")}
+                    // onClick={() => navigate("/admin/courses")}
                     />
 
                     <NavItem
                         icon={Folder}
                         label="Categories"
-                        // onClick={() => navigate("/admin/categories")}
+                    // onClick={() => navigate("/admin/categories")}
                     />
 
                     <NavItem
@@ -131,38 +131,34 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={MessageSquare}
                         label="Q&A Moderation"
-                        // onClick={() => navigate("/admin/qna")}
+                    // onClick={() => navigate("/admin/qna")}
                     />
 
                     <NavItem
                         icon={Tag}
                         label="Tags Management"
-                        // onClick={() => navigate("/admin/tags")}
+                    // onClick={() => navigate("/admin/tags")}
                     />
 
                     <NavItem
                         icon={Percent}
                         label="Offers"
-                        // onClick={() => navigate("/admin/offers")}
+                    // onClick={() => navigate("/admin/offers")}
                     />
 
                     <NavItem
                         icon={Ticket}
                         label="Coupons"
-                        // onClick={() => navigate("/admin/coupons")}
+                    // onClick={() => navigate("/admin/coupons")}
                     />
 
                     <NavItem
                         icon={Wallet}
                         label="Wallet"
-                        // onClick={() => navigate("/admin/wallet")}
+                    // onClick={() => navigate("/admin/wallet")}
                     />
 
-                    <NavItem
-                        icon={Settings}
-                        label="Settings"
-                        // onClick={() => navigate("/admin/settings")}
-                    />
+
                 </nav>
 
 
@@ -299,10 +295,10 @@ const AdminDashboard = () => {
 
 // Helper Components
 
-const NavItem = ({ icon: Icon, label, active = false,onClick  }) => (
-    <div 
-    onClick={onClick}
-    className={`
+const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
+    <div
+        onClick={onClick}
+        className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
         ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
     `}>

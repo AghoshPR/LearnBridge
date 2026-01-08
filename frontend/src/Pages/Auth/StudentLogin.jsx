@@ -17,7 +17,7 @@ const StudentLogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isAuthenticated } = useSelector((state) => state.auth)
+  const { isAuthenticated,username } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -55,6 +55,8 @@ const StudentLogin = () => {
 
     
 
+    
+
     dispatch(loginStart())
     
 
@@ -78,14 +80,15 @@ const StudentLogin = () => {
     }
 
     catch (err) {
-    const message =
-      err.response?.data?.error ||
-      err.response?.data?.detail ||
-      "Invalid email or password";
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.non_field_errors?.[0] ||
+        err.response?.data?.detail ||
+        "Invalid email or password";
 
-    dispatch(loginFailure(message));
-    toast.error(message);
-  }
+      dispatch(loginFailure(message));
+      toast.error(message);
+    }
 
 
 

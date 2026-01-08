@@ -19,6 +19,7 @@ import CourseDetail from './Pages/Public/CourseDetail'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
 import StudentDashboard from './Pages/Student/StudentDashboard'
+import StudentProfile from './Pages/Student/StudentProfile'
 import TeacherDashBoard from './Pages/Teacher/TeacherDashBoard'
 import TeacherProfile from './Pages/Teacher/TeacherProfile'
 import TeacherCourses from './Pages/Teacher/TeacherCourses'
@@ -61,9 +62,9 @@ function App() {
 
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        
 
-        
+
+
 
 
 
@@ -80,13 +81,21 @@ function App() {
         }
         />
 
+        <Route path="/student/profile" element={
+          <ProtectedRoute role="student">
+            <StudentProfile />
+          </ProtectedRoute>
+        } />
+
+        
+
 
         {/* Teacher */}
 
 
         <Route
 
-          path="/teacher/dashboard" element={ <ProtectedRoute role="teacher"><TeacherDashBoard /></ProtectedRoute>} />
+          path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashBoard /></ProtectedRoute>} />
 
         <Route
           path="/teacher/profile"
@@ -102,17 +111,19 @@ function App() {
               <TeacherCourses />
             </ProtectedRoute>
           } />
-          
+
 
         {/* Admin */}
 
 
         <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
 
-        <Route path="/admin/teachers" element={ <ProtectedRoute role="admin"> <AdminTeachers /> </ProtectedRoute>} />
+        <Route path="/admin/teachers" element={<ProtectedRoute role="admin"> <AdminTeachers /> </ProtectedRoute>} />
 
 
-        <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>}  />
+        <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
+
+
 
 
       </Routes>

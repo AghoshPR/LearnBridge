@@ -33,7 +33,8 @@ import {
     Upload,
     Briefcase,
     GraduationCap as GradCapIcon,
-
+    Trash,
+    Pencil
 } from 'lucide-react';
 
 const AdminTeachers = () => {
@@ -42,6 +43,7 @@ const AdminTeachers = () => {
     const [approvedTeacher, setApproveTeacher] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [teacherToDelete, setTeacherToDelete] = useState(null);
     const [teacherType, setTeacherType] = useState('fresher'); // 'fresher' | 'experienced'
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -150,20 +152,41 @@ const AdminTeachers = () => {
 
     }
 
-    
+
+    /* ---------------- DELETE TEACHER ---------------- */
+
+    const handleDeleteClick = (teacher) => {
+        setTeacherToDelete(teacher);
+    };
+
+    const confirmDeleteAction = async () => {
+        if (!teacherToDelete) return;
+
+        try {
+            await Api.delete(`/admin/teachers/${teacherToDelete.id}/delete/`);
+            toast.success("Teacher deleted successfully");
+            setApproveTeacher(approvedTeacher.filter(t => t.id !== teacherToDelete.id));
+            setTeacherToDelete(null);
+        } catch (err) {
+            toast.error("Failed to delete teacher");
+            console.error(err);
+        }
+    };
+
+
 
     const handleLogout = async () => {
         try {
             await Api.post("/auth/logout/");
-    
+
             toast.success("Logged out successfully 👋", {
-            description: "See you again, Admin!",
-            duration: 2500,
+                description: "See you again, Admin!",
+                duration: 2500,
             });
-    
+
         } catch (err) {
             toast.error("Logout failed", {
-            description: "Something went wrong. Please try again.",
+                description: "Something went wrong. Please try again.",
             });
         } finally {
             dispatch(logout()); // Redux clear
@@ -202,73 +225,67 @@ const AdminTeachers = () => {
                 </div>
 
                 <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-                                    <NavItem
-                                        icon={LayoutDashboard}
-                                        label="Dashboard"
-                                        onClick={() => navigate("/admin/dashboard")}
-                                    />
-                
-                                    <NavItem
-                                        icon={BookOpen}
-                                        label="Courses"
-                                        // onClick={() => navigate("/admin/courses")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Folder}
-                                        label="Categories"
-                                        // onClick={() => navigate("/admin/categories")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Users}
-                                        label="Users"
-                                        onClick={() => navigate("/admin/users")}
-                                    />
-                
-                                    <NavItem
-                                        icon={GraduationCap}
-                                        label="Teachers"
-                                        active
-                                        onClick={() => navigate("/admin/teachers")}
-                                    />
-                
-                                    <NavItem
-                                        icon={MessageSquare}
-                                        label="Q&A Moderation"
-                                        // onClick={() => navigate("/admin/qna")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Tag}
-                                        label="Tags Management"
-                                        // onClick={() => navigate("/admin/tags")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Percent}
-                                        label="Offers"
-                                        // onClick={() => navigate("/admin/offers")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Ticket}
-                                        label="Coupons"
-                                        // onClick={() => navigate("/admin/coupons")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Wallet}
-                                        label="Wallet"
-                                        // onClick={() => navigate("/admin/wallet")}
-                                    />
-                
-                                    <NavItem
-                                        icon={Settings}
-                                        label="Settings"
-                                        // onClick={() => navigate("/admin/settings")}
-                                    />
-                                </nav>
+                    <NavItem
+                        icon={LayoutDashboard}
+                        label="Dashboard"
+                        onClick={() => navigate("/admin/dashboard")}
+                    />
+
+                    <NavItem
+                        icon={BookOpen}
+                        label="Courses"
+                    // onClick={() => navigate("/admin/courses")}
+                    />
+
+                    <NavItem
+                        icon={Folder}
+                        label="Categories"
+                    // onClick={() => navigate("/admin/categories")}
+                    />
+
+                    <NavItem
+                        icon={Users}
+                        label="Users"
+                        onClick={() => navigate("/admin/users")}
+                    />
+
+                    <NavItem
+                        icon={GraduationCap}
+                        label="Teachers"
+                        active
+                        onClick={() => navigate("/admin/teachers")}
+                    />
+
+                    <NavItem
+                        icon={MessageSquare}
+                        label="Q&A Moderation"
+                    // onClick={() => navigate("/admin/qna")}
+                    />
+
+                    <NavItem
+                        icon={Tag}
+                        label="Tags Management"
+                    // onClick={() => navigate("/admin/tags")}
+                    />
+
+                    <NavItem
+                        icon={Percent}
+                        label="Offers"
+                    // onClick={() => navigate("/admin/offers")}
+                    />
+
+                    <NavItem
+                        icon={Ticket}
+                        label="Coupons"
+                    // onClick={() => navigate("/admin/coupons")}
+                    />
+
+                    <NavItem
+                        icon={Wallet}
+                        label="Wallet"
+                    // onClick={() => navigate("/admin/wallet")}
+                    />
+                </nav>
 
                 <div className="p-4 border-t border-gray-800">
                     <div className="relative p-[1px] rounded-xl bg-gradient-to-r from-blue-600/50 to-purple-600/50 hover:from-blue-500 hover:to-purple-500 transition-all group shadow-lg shadow-blue-900/10 hover:shadow-blue-500/20 select-none">
@@ -336,12 +353,12 @@ const AdminTeachers = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-[#16181D] text-gray-400 text-xs uppercase tracking-wider">
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Name</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Email</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Expertise</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Experience</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Applied</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Actions</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Name</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Email</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Expertise</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Experience</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Applied</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Actions</th>
                                     </tr>
                                 </thead>
 
@@ -350,12 +367,12 @@ const AdminTeachers = () => {
                                     {filteredPendingTeachers.map((teacher) => (
 
                                         <tr key={teacher.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-white">{teacher.name}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.email}</td>
-                                            <td className="px-6 py-4 text-gray-300">{teacher.subjects}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.experience}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.applied_at}</td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-3 font-medium text-white">{teacher.name}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.email}</td>
+                                            <td className="px-3 py-3 text-gray-300">{teacher.subjects}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.experience}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.applied_at}</td>
+                                            <td className="px-3 py-3">
 
                                                 <div className="flex items-center gap-2">
                                                     <button
@@ -371,9 +388,9 @@ const AdminTeachers = () => {
                                                         <XCircle size={14} /> Reject
                                                     </button>
 
-                                                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
+                                                    {/* <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors">
                                                         <Ban size={14} /> Block
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                             </td>
                                         </tr>
@@ -399,14 +416,14 @@ const AdminTeachers = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-[#16181D] text-gray-400 text-xs uppercase tracking-wider">
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Name</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Email</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Expertise</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Courses</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Students</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Rating</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Status</th>
-                                        <th className="px-6 py-4 font-medium border-b border-gray-800">Actions</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Name</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Email</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Expertise</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Courses</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Students</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Rating</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800">Status</th>
+                                        <th className="px-3 py-3 font-medium border-b border-gray-800 text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
@@ -415,20 +432,20 @@ const AdminTeachers = () => {
                                             key={teacher.id}
                                             className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors"
                                         >
-                                            <td className="px-6 py-4 font-medium text-white">{teacher.name}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.email}</td>
-                                            <td className="px-6 py-4 text-gray-300">{teacher.subjects}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.courses_count}</td>
-                                            <td className="px-6 py-4 text-gray-400">{teacher.students_count}</td>
+                                            <td className="px-3 py-3 font-medium text-white">{teacher.name}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.email}</td>
+                                            <td className="px-3 py-3 text-gray-300">{teacher.subjects}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.courses_count}</td>
+                                            <td className="px-3 py-3 text-gray-400">{teacher.students_count}</td>
 
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-3">
                                                 <div className="flex items-center gap-1 text-amber-400">
                                                     <Star size={14} fill="currentColor" />
                                                     <span className="text-gray-300">{teacher.rating}</span>
                                                 </div>
                                             </td>
 
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-3">
                                                 <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border
                                                     ${teacher.is_blocked
                                                         ? 'bg-red-500/10 text-red-500 border-red-500/20'
@@ -438,21 +455,47 @@ const AdminTeachers = () => {
                                                 </span>
                                             </td>
 
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-3">
                                                 {teacher.is_blocked ? (
-                                                    <button
-                                                        onClick={() => unBlockTeacher(teacher.id)}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
-                                                    >
-                                                        <CheckCircle size={14} /> Unblock
-                                                    </button>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button
+                                                            onClick={() => unBlockTeacher(teacher.id)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <CheckCircle size={14} /> Unblock
+                                                        </button>
+                                                        <button
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <Pencil size={14} /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteClick(teacher)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <Trash size={14} /> Delete
+                                                        </button>
+                                                    </div>
                                                 ) : (
-                                                    <button
-                                                        onClick={() => blockTeacher(teacher.id)}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
-                                                    >
-                                                        <Ban size={14} /> Block
-                                                    </button>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button
+                                                            onClick={() => blockTeacher(teacher.id)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <Ban size={14} /> Block
+                                                        </button>
+                                                        <button
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <Pencil size={14} /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteClick(teacher)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            <Trash size={14} /> Delete
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -584,17 +627,51 @@ const AdminTeachers = () => {
                     </div>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            {teacherToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setTeacherToDelete(null)}></div>
+                    <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl border-red-500/20">
+                        <div className="flex items-center gap-3 mb-2 text-red-500">
+                            <Trash size={24} />
+                            <h3 className="text-xl font-bold text-white">Delete Teacher</h3>
+                        </div>
+
+                        <p className="text-gray-400 text-sm mb-6">
+                            Are you sure you want to delete <span className="text-white font-medium">"{teacherToDelete.name}"</span>?
+                            <br />
+                            <span className="text-red-400 text-xs mt-2 block">This action cannot be undone.</span>
+                        </p>
+
+                        <div className="flex items-center justify-end gap-3">
+                            <button
+                                onClick={() => setTeacherToDelete(null)}
+                                className="px-4 py-2 rounded-lg bg-gray-800 text-white text-sm font-medium hover:bg-gray-700 transition-colors border border-gray-700"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteAction}
+                                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
 
 // Reused helper component from AdminDashboard
-const NavItem = ({ icon, label, active = false,onClick }) => {
+const NavItem = ({ icon, label, active = false, onClick }) => {
     const Icon = icon;
     return (
-        <div 
-        onClick={onClick}
-        className={`
+        <div
+            onClick={onClick}
+            className={`
             flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
             ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
         `}>
