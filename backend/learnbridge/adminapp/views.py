@@ -8,7 +8,7 @@ from authapp.permissions import IsAdmin
 from rest_framework import status
 from authapp.models import User
 from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
-from .serializers import AdminUserSerializer
+from .serializers import *
 from rest_framework.response import Response
 
 
@@ -196,6 +196,28 @@ class UnBlockTeacherView(APIView):
 
 
 # AdminUsers
+
+class AdminCreateUser(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request):
+
+        serializer = AdminCreateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user=serializer.save()
+
+        return Response(
+            {
+                "message":"User create successfully",
+                "id":user.id,
+                "username":user.username,
+                "email":user.email,
+                
+            },status=status.HTTP_201_CREATED
+        )
+
+
 
 class AdminUsers(APIView):
     

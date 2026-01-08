@@ -40,7 +40,17 @@ const AdminUsers = () => {
   const dispatch = useDispatch();
 
 
-  // Dummy Data
+  // add user admin
+  const [formData, setFormData] = useState({
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: ""
+});
+
+
+
+
   const [users, setUsers] = useState([]);
   const [userToDelete, setUserToDelete] = useState(null);
 
@@ -81,19 +91,7 @@ const AdminUsers = () => {
     setUserToDelete(user);
   };
 
-  // const confirmDeleteAction = async () => {
-  //   if (!userToDelete) return;
-
-  //   try {
-  //     await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
-  //     toast.success("User deleted successfully");
-  //     setUsers(users.filter(u => u.id !== userToDelete.id));
-  //     setUserToDelete(null);
-  //   } catch (err) {
-  //     toast.error("Failed to delete user");
-  //     console.error(err);
-  //   }  
-  // };
+//  block and unblock user
 
   const blockUser = async (user) => {
 
@@ -129,6 +127,61 @@ const AdminUsers = () => {
       console.error(err);
     }
   }
+
+  //  block and unblock user
+
+
+  // add user
+
+
+  const handleAddUser =async(e)=>{
+
+      e.preventDefault()
+
+      const { username, email, password, confirmPassword } = formData;
+
+      if (!username || !email || !password || !confirmPassword) {
+        toast.error("All fields are required");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+      }
+
+      try{
+        await Api.post("/admin/users/create/",{
+          username,
+          email,
+          password
+        })
+
+        toast.success("User created successfully")
+        setIsAddUserModalOpen(false)
+        fetchUsers()
+
+        setFormData({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: ""
+        });
+
+
+      }catch (err) {
+        const message =
+          err.response?.data?.email?.[0] ||
+          err.response?.data?.password?.[0] ||
+          err.response?.data?.error ||
+          "Failed to create user";
+
+        toast.error(message);
+  }
+
+  }
+
+  // add user
 
 
 
@@ -512,22 +565,48 @@ const AdminUsers = () => {
               </button>
             </div>
 
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsAddUserModalOpen(false); }}>
+            <form className="space-y-4" onSubmit={handleAddUser}>
+
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Name</label>
-                <input type="text" placeholder="Enter user name" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
+                <input type="text"
+                  placeholder="Enter user name"
+                  value={formData.username}
+                  onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                  } 
+                  className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
               </div>
+
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Email</label>
-                <input type="email" placeholder="Enter email address" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
+                <input  type="email"
+                  placeholder="Enter email address"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  } className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
               </div>
+
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Password</label>
-                <input type="password" placeholder="Enter password" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
+                <input type="password"
+                  placeholder="Enter password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  } className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
+
               </div>
+
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Confirm Password</label>
-                <input type="password" placeholder="Confirm password" className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
+                <input  type="password"
+                  placeholder="Confirm password"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    setFormData({ ...formData, confirmPassword: e.target.value })
+                  } className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
               </div>
 
               <div className="flex items-center gap-3 pt-4">
