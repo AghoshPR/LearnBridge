@@ -10,7 +10,11 @@ from authapp.models import User
 from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
 from .serializers import *
 from rest_framework.response import Response
+from adminapp.utils import send_teacher_rejection_email
 
+
+
+# admin teacher approve requests
 
 class PendingTeachersView(APIView):
 
@@ -121,32 +125,7 @@ class ApproveTeacherView(APIView):
 
 
 
-class RejectTeacherView(APIView):
 
-    permission_classes=[IsAdmin]
-
-    def post(self,request,id):
-        
-
-        try:
-
-            profile = TeacherProfile.objects.select_related("user").get(id=id)
-        except TeacherProfile.DoesNotExist:
-            return Response(
-                {"error":"Teacher profile not found"},
-                status=404
-            )
-
-
-        # profile.status='rejected'
-        user=profile.user
-        user.delete()
-        
-
-
-        return Response({
-            "message":"Teacher Rejected"
-        })
     
 class BlockTeacherView(APIView):
 
@@ -193,6 +172,52 @@ class UnBlockTeacherView(APIView):
         return Response({
             "message":"Teacher unblocked successfully"
         })
+    
+# admin teacher reject with reson
+    
+class AdminTeacherRejectView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,teacher_id):
+
+        reason = request.data.get("reason")
+
+        if not reason:
+
+            return Response(
+                {"error":"Rejection reason is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+
+            profile = TeacherProfile.objects.select_related("user").get(id=teacher_id)
+        
+        except TeacherProfile.DoesNotExist:
+
+            return Response(
+                {"error":"Teacher not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+   
+
+        # Send rejection email
+
+        send_teacher_rejection_email(
+            email=profile.user.email,
+            name=profile.user.username,
+            reason=reason
+        )
+        profile.user.delete()
+
+        return Response(
+            {"message":"Teacher rejected and email sent successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
 
 
 # AdminUsers

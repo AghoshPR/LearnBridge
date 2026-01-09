@@ -16,6 +16,12 @@ class TeacherProfile(models.Model):
         ('rejected','Rejected')
     ]
 
+    profile_photo = models.ImageField(
+        upload_to="teacher/profile_photos/",
+        null=True,
+        blank=True
+    )
+
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='teacher_profile')
 
     teacher_type = models.CharField(max_length=20,choices=TEACHER_TYPE_CHOICES)

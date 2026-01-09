@@ -12,7 +12,7 @@ urlpatterns = [
     path("teachers/approve/<int:id>/", ApproveTeacherView.as_view()),
 
     # POST → reject teacher
-    path("teachers/reject/<int:id>/", RejectTeacherView.as_view()),
+    
 
     
     
@@ -31,6 +31,7 @@ urlpatterns = [
     path("teachers/create/", AdminCreateTeacher.as_view()),
     path("teachers/block/<int:id>/", BlockTeacherView.as_view()),
     path("teachers/unblock/<int:id>/", UnBlockTeacherView.as_view()),
+    path("teachers/reject/<int:teacher_id>/",AdminTeacherRejectView.as_view())
 
 
 ]

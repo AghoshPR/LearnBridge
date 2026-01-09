@@ -113,7 +113,7 @@ const TeacherProfile = () => {
     const sidebarItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
         { icon: User, label: 'My Profile', path: '/teacher/profile', active: true },
-        { icon: BookOpen, label: 'My Courses', active: false },
+        { icon: BookOpen, label: 'My Courses',path:'/teacher/courses', active: false },
         { icon: Video, label: 'Live Classes', active: false },
         { icon: MessageSquare, label: 'Q&A', active: false },
         { icon: Users, label: 'Students', active: false },
@@ -361,7 +361,7 @@ const TeacherProfile = () => {
                                 <div className="relative group cursor-pointer">
                                     <div className="w-28 h-28 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-700 group-hover:border-purple-500 transition-colors">
                                         {profileData.avatar ? (
-                                            <img src={profileData.avatar||"/default-avatar.png"} alt="Preview" className="w-full h-full object-cover" />
+                                            <img src={profileData.avatarPreview || "/default-avatar.png"} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
                                             <Camera size={32} className="text-slate-500 group-hover:text-purple-500" />
                                         )}
@@ -370,8 +370,9 @@ const TeacherProfile = () => {
                                         <Upload size={14} />
                                     </div>
                                     <span className="text-4xl font-bold text-white">
-                                    {username?.charAt(0).toUpperCase()}
+                                    {username?username:"Null"}
                                     </span>
+                                    
                                     <input
                                         type="file"
                                         accept="image/*"

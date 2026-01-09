@@ -57,7 +57,7 @@ const TeacherDashBoard = () => {
   const sidebarItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: true },
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
-    { icon: BookOpen, label: 'My Courses', active: false },
+    { icon: BookOpen, label: 'My Courses', path:'/teacher/courses', active: false },
     { icon: Video, label: 'Live Classes', active: false },
     { icon: MessageSquare, label: 'Q&A', active: false },
     { icon: Users, label: 'Students', active: false },

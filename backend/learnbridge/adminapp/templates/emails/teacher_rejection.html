@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Update</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            color: #333333;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            background-color: #f4f6f8;
+            padding: 40px 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .email-header {
+            background-color: #0F1014;
+            /* Dark premium background matching site */
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .brand-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            vertical-align: middle;
+        }
+
+        /* Content */
+        .email-body {
+            padding: 40px;
+            text-align: left;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #555555;
+        }
+
+        /* Reason Box */
+        .reason-box {
+            background-color: #fff1f1;
+            border-left: 4px solid #d32f2f;
+            padding: 20px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+
+        .reason-title {
+            color: #d32f2f;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .reason-text {
+            color: #7f1d1d;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* Footer */
+        .email-footer {
+            background-color: #f9fafb;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #999999;
+            margin: 0;
+        }
+
+        .action-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
+
+            <!-- Header with Logo & Name -->
+            <div class="email-header">
+                <div class="brand-container">
+                    <!-- Note: In production, use a hosted URL (e.g., AWS S3) for the logo sc -->
+                    <!-- For now, we use a placeholder or assume it's attached as CID -->
+                    <!-- <img src="cid:logo" alt="LearnBridge Logo" width="32" height="32" style="vertical-align: middle;"> -->
+
+                    <!-- Simulating the ShieldCheck logo with a text/icon fallback if image not available -->
+                    <span
+                        style="display:inline-block; width:32px; height:32px; background:rgba(37,99,235,0.2); border-radius:8px; line-height:32px; text-align:center; color:#3b82f6; font-weight:bold; font-size:18px;">LB</span>
+
+                    <span class="brand-text">LearnBridge</span>
+                </div>
+            </div>
+
+            <!-- Email Content -->
+            <div class="email-body">
+                <h1>Application Update</h1>
+
+                <p>Hello <strong>{{ name }}</strong>,</p>
+
+                <p>Thank you for your interest in joining <strong>LearnBridge</strong> as a teacher. We appreciate the
+                    time and effort you put into your application.</p>
+
+                <p>After careful review, we regret to inform you that we are unable to approve your teacher application
+                    at this time.</p>
+
+                <!-- Styled Reason Block -->
+                <div class="reason-box">
+                    <span class="reason-title">Reason for Rejection</span>
+                    <p class="reason-text">"{{ reason }}"</p>
+                </div>
+
+                <p>If you believe there has been a misunderstanding or if you have improved your qualifications, you are
+                    welcome to update your profile and re-apply in the future.</p>
+
+                <p style="margin-top: 30px;">
+                    Best regards,<br>
+                    <strong>The LearnBridge Team</strong>
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="email-footer">
+                <p class="footer-text">
+                    &copy; {{ year }} LearnBridge. All rights reserved.<br>
+                    This is an automated message, please do not reply directly to this email.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
