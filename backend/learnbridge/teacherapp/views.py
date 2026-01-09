@@ -54,7 +54,7 @@ class TeacherProfileView(APIView):
 
         try:
 
-            profile =request.user.teacher_profile
+            profile = request.user.teacher_profile
         
         except TeacherProfile.DoesNotExist:
             return Response(
@@ -67,7 +67,7 @@ class TeacherProfileView(APIView):
         return Response(serializer.data)
     
 
-    def put(self,request):
+    def patch(self,request):
 
         profile,created = TeacherProfile.objects.get_or_create(
             user=request.user

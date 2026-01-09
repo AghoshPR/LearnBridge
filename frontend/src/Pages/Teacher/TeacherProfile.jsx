@@ -56,7 +56,7 @@ const TeacherProfile = () => {
                         ? `${res.data.years_of_experience}`
                         : "",
 
-                    avatarPreview: res.data.avatar || null,
+                    avatarPreview: res.data.profile_image || null,
                     avatar: null,
                 }))
 
@@ -85,10 +85,10 @@ const TeacherProfile = () => {
             }
 
             if (profileData.avatar instanceof File) {
-                payload.append("resume", profileData.avatar);
+                payload.append("profile_image", profileData.avatar);
             }
 
-            await Api.put("/teacher/profileview/", payload, {
+            await Api.patch("/teacher/profileview/", payload, {
                 headers: { "Content-Type": "multipart/form-data" }
             })
 
@@ -230,17 +230,27 @@ const TeacherProfile = () => {
 
                         {/* Left Column - Avatar */}
                         <div className="flex flex-col items-center space-y-4">
-                            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-950 overflow-hidden">
-                                {profileData.avatar || profileData.avatarPreview ? (
-                                    <img src={profileData.avatarPreview || profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-4xl font-bold text-white">
-                                        {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'T'}
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-slate-500 text-sm font-mono">Teacher ID: TCH-2024-001</p>
+                        <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-950 overflow-hidden">
+                            {profileData.avatarPreview ? (
+                            <img
+                                src={profileData.avatarPreview}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                            />
+                            ) : (
+                            <span className="text-4xl font-bold text-white">
+                                {profileData.name
+                                ? profileData.name.charAt(0).toUpperCase()
+                                : "T"}
+                            </span>
+                            )}
                         </div>
+
+                        <p className="text-slate-500 text-sm font-mono">
+                            Teacher ID: TCH-2024-001
+                        </p>
+                        </div>
+
 
                         {/* Right Column - Details */}
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">

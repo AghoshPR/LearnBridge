@@ -23,7 +23,8 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
 
     name = serializers.CharField(source="user.username",read_only=True)
     email=serializers.EmailField(source="user.email",read_only=True)
-    profile_photo=serializers.ImageField(required=False)
+    profile_image = serializers.SerializerMethodField()
+    
 
     class Meta:
 
@@ -36,7 +37,12 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             "subjects",
             "bio",
             "years_of_experience",
-            "profile_photo",
+            "profile_image",
         ]
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return None
 
    
