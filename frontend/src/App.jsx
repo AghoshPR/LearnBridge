@@ -26,6 +26,10 @@ import TeacherCourses from './Pages/Teacher/TeacherCourses'
 import TeacherResetPassword from './Pages/Auth/TeacherResetPassword'
 import StudentResetPassword from './Pages/Auth/StudentResetPassword'
 import AdminUsers from './Pages/Admin/AdminUsers'
+import TeacherManageCourses from './Pages/Teacher/TeacherManageCourses'
+import TeacherCourseCategory from './Pages/Teacher/TeacherCourseCategory'
+import StudentWishlist from './Pages/Student/StudentWishlist'
+import StudentCart from './Pages/Student/StudentCart'
 
 
 
@@ -112,6 +116,10 @@ function App() {
             </ProtectedRoute>
           } />
 
+          <Route path='/teacher/manageCourses' element={<TeacherManageCourses/>}/>
+          <Route path='/teacher/coursecategory' element={<TeacherCourseCategory/>}/>
+
+
 
         {/* Admin */}
 
@@ -124,6 +132,9 @@ function App() {
         <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
 
 
+        
+        <Route path='/student/wishlist' element={<StudentWishlist/>}/>
+        <Route path='/student/cart' element={<StudentCart/>}/>
 
 
       </Routes>

@@ -1,9 +1,418 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../Store/authSlice';
+import Api from '../Services/Api';
+import { toast } from "sonner";
+import {
+  LayoutDashboard,
+  User,
+  BookOpen,
+  Video,
+  MessageSquare,
+  Users,
+  BarChart2,
+  Wallet,
+  LogOut,
+  Menu,
+  X,
+  ArrowLeft,
+  Edit,
+  Plus,
+  Trash2,
+  Star,
+  DollarSign,
+  MonitorPlay,
+  Folder
+} from 'lucide-react';
 
 const TeacherManageCourses = () => {
+  const [isEditCourseOpen, setIsEditCourseOpen] = useState(false);
+  const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
+  const [isEditLessonOpen, setIsEditLessonOpen] = useState(false);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { username } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      await Api.post("/auth/logout/");
+      toast.success("Logged out successfully 👋", {
+        description: "See you again!",
+        duration: 2500,
+      });
+    } catch (err) {
+      toast.error("Logout failed", {
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      dispatch(logout());
+      navigate("/admin/login", { replace: true });
+    }
+  };
+
+  const sidebarItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
+    { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
+    { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
+    { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+    { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+    { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
+    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+    { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
+  ];
+
+  const courseData = {
+    title: "Complete Web Development Bootcamp",
+    category: "Web Development",
+    status: "published",
+    description: "Learn web development from scratch",
+    price: "84.99",
+    level: "Beginner",
+    stats: {
+      students: "89245",
+      rating: "4.8",
+      lessons: "3",
+      price: "$84.99"
+    }
+  };
+
+  const lessonsData = [
+    { id: 1, title: "Introduction to HTML", duration: "15:30", type: "Video" },
+    { id: 2, title: "CSS Basics", duration: "22:45", type: "Video" },
+    { id: 3, title: "JavaScript Fundamentals", duration: "30:00", type: "Video" }
+  ];
+
   return (
-    <div>TeacherManageCourses</div>
+    <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-10">
+        <div className="p-6 flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+            <BookOpen size={24} className="text-white" />
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            Teacher Portal
+          </span>
+        </div>
+
+        <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          {sidebarItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={() => item.path && navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
+                ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+            >
+              <item.icon size={20} className={item.active ? 'text-white' : 'text-slate-500 group-hover:text-white'} />
+              <span className="font-medium text-sm">{item.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="p-4 border-t border-slate-800">
+          <div className="relative p-[1px] rounded-xl bg-gradient-to-r from-purple-600/50 to-blue-600/50 hover:from-purple-500 hover:to-blue-500 transition-all group shadow-lg shadow-purple-900/20 hover:shadow-purple-500/30 select-none">
+            <div className="bg-slate-900 p-3 rounded-[10px] flex items-center justify-between group-hover:bg-slate-800 transition-colors relative">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/20 text-lg">
+                  {username ? username.charAt(0).toUpperCase() : 'T'}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-white leading-none">{username || 'Teacher'}</span>
+                  <span className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-wide">Instructor</span>
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-slate-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Area */}
+      <main className="flex-1 ml-64 p-8">
+
+        {/* Top Bar */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/teacher/courses')}
+            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4 text-sm font-medium"
+          >
+            <ArrowLeft size={16} />
+            Back to Courses
+          </button>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">{courseData.title}</h1>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-medium border border-slate-700">
+                  {courseData.category}
+                </span>
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-medium border border-blue-500/20">
+                  {courseData.status}
+                </span>
+              </div>
+              <p className="text-slate-400 mt-2">{courseData.description}</p>
+            </div>
+            <button
+              onClick={() => setIsEditCourseOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-slate-900 rounded-lg font-bold hover:bg-slate-200 transition-colors"
+            >
+              <Edit size={16} />
+              Edit Course
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard icon={Users} label="Students" value={courseData.stats.students} color="blue" />
+          <StatCard icon={Star} label="Rating" value={courseData.stats.rating} color="yellow" />
+          <StatCard icon={MonitorPlay} label="Lessons" value={courseData.stats.lessons} color="purple" />
+          <StatCard icon={DollarSign} label="Price" value={courseData.stats.price} color="green" />
+        </div>
+
+        {/* Course Lessons */}
+        <div className="">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-slate-200">Course Lessons</h2>
+            <button
+              onClick={() => setIsAddLessonOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-purple-900/20 transition-all"
+            >
+              <Plus size={18} />
+              Add Lesson
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {lessonsData.map((lesson, index) => (
+              <div key={lesson.id} className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-colors group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400 font-bold border border-purple-500/30">
+                    {index + 1}
+                  </div>
+                  <div>
+                    <h3 className="text-white font-medium flex items-center gap-2">
+                      <Video size={14} className="text-slate-500" />
+                      {lesson.title}
+                    </h3>
+                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-3">
+                      <span>{lesson.duration}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => {
+                      setSelectedLesson(lesson);
+                      setIsEditLessonOpen(true);
+                    }}
+                    className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-700 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <Edit size={14} />
+                    Edit
+                  </button>
+                  <button className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </main>
+
+      {/* --- Modals --- */}
+
+      {/* Edit Course Modal */}
+      {isEditCourseOpen && (
+        <Modal
+          title="Edit Course"
+          onClose={() => setIsEditCourseOpen(false)}
+          onSave={() => setIsEditCourseOpen(false)}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Course Title *</label>
+              <input type="text" defaultValue={courseData.title} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+              <textarea rows="3" defaultValue={courseData.description} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Category *</label>
+                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  <option>Web Development</option>
+                  <option>Data Science</option>
+                  <option>Design</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Level *</label>
+                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  <option>Beginner</option>
+                  <option>Intermediate</option>
+                  <option>Advanced</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Price ($) *</label>
+                <input type="text" defaultValue="84.99" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">Status</label>
+                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  <option>Published</option>
+                  <option>Draft</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Add Lesson Modal */}
+      {isAddLessonOpen && (
+        <Modal
+          title="Add New Lesson"
+          onClose={() => setIsAddLessonOpen(false)}
+          onSave={() => setIsAddLessonOpen(false)}
+          saveText="Add Lesson"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Lesson Title *</label>
+              <input type="text" placeholder="Enter lesson title" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Type</label>
+              <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                <option>Video</option>
+                <option>Article</option>
+                <option>Quiz</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Duration (e.g., 15:30)</label>
+              <input type="text" placeholder="00:00" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Video URL</label>
+              <input type="text" placeholder="https://..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+              <textarea rows="3" placeholder="Enter lesson description" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Lesson Modal */}
+      {isEditLessonOpen && selectedLesson && (
+        <Modal
+          title="Edit Lesson"
+          onClose={() => setIsEditLessonOpen(false)}
+          onSave={() => setIsEditLessonOpen(false)}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Lesson Title *</label>
+              <input type="text" defaultValue={selectedLesson.title} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Type</label>
+              <select defaultValue={selectedLesson.type} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                <option>Video</option>
+                <option>Article</option>
+                <option>Quiz</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Duration (e.g., 15:30)</label>
+              <input type="text" defaultValue={selectedLesson.duration} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Video URL</label>
+              <input type="text" placeholder="https://..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
+              <textarea rows="3" placeholder="Enter lesson description" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+    </div>
   )
 }
 
-export default TeacherManageCourses
+// Stats Card Helper
+const StatCard = ({ icon: Icon, label, value, color }) => {
+  const colors = {
+    blue: { bg: 'bg-blue-900/20', text: 'text-blue-400', border: 'border-blue-500/20' },
+    yellow: { bg: 'bg-yellow-900/20', text: 'text-yellow-400', border: 'border-yellow-500/20' },
+    purple: { bg: 'bg-purple-900/20', text: 'text-purple-400', border: 'border-purple-500/20' },
+    green: { bg: 'bg-green-900/20', text: 'text-green-400', border: 'border-green-500/20' },
+  };
+  const c = colors[color];
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl flex items-center gap-4">
+      <div className={`p-3 rounded-lg ${c.bg} ${c.text} ${c.border} border`}>
+        <Icon size={20} />
+      </div>
+      <div>
+        <p className="text-slate-400 text-xs font-medium uppercase">{label}</p>
+        <p className="text-xl font-bold text-white mt-0.5">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+// Modal Component Helper
+const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes" }) => {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-slate-800">
+          <h3 className="text-lg font-bold text-white">{title}</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
+        <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-800 bg-slate-950/50">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-slate-300 font-medium hover:bg-slate-800 transition-colors text-sm">
+            Cancel
+          </button>
+          <button onClick={onSave} className="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/20 text-sm">
+            {saveText}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TeacherManageCourses;

@@ -18,7 +18,7 @@ import {
     Phone,
     GraduationCap,
     Clock,
-    Star
+    Folder
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -41,38 +41,35 @@ const TeacherProfile = () => {
         subjects: "",
         experience: "",
         bio: "",
-        avatar: null,          
-        avatarPreview: null,   
+        avatar: null,
+        avatarPreview: null,
     });
 
-
-
-    useEffect(()=>{
-        const fetchProfile = async ()=>{
-            try{
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
                 const res = await Api.get("/teacher/profileview/")
-                setProfileData(prev=>({
+                setProfileData(prev => ({
                     ...prev,
                     ...res.data,
                     experience: res.data.years_of_experience
-            ? `${res.data.years_of_experience}`
-            : "",
+                        ? `${res.data.years_of_experience}`
+                        : "",
 
-            avatarPreview: res.data.avatar || null,
-            avatar: null,
+                    avatarPreview: res.data.avatar || null,
+                    avatar: null,
                 }))
 
-            }catch(err){
+            } catch (err) {
                 toast.error("Failed to load profile")
             }
         }
         fetchProfile()
-    },[])
+    }, [])
 
 
-    const handleSaveProfile = async()=>{
-
-        try{
+    const handleSaveProfile = async () => {
+        try {
             const payload = new FormData()
 
             payload.append("phone", profileData.phone);
@@ -81,45 +78,31 @@ const TeacherProfile = () => {
             payload.append("bio", profileData.bio);
 
             if (profileData.experience) {
-            payload.append(
-                "years_of_experience",
-                parseInt(profileData.experience)
-            );
+                payload.append(
+                    "years_of_experience",
+                    parseInt(profileData.experience)
+                );
             }
 
             if (profileData.avatar instanceof File) {
-            payload.append("resume", profileData.avatar);
+                payload.append("resume", profileData.avatar);
             }
 
-            await Api.put("/teacher/profileview/",payload,{
+            await Api.put("/teacher/profileview/", payload, {
                 headers: { "Content-Type": "multipart/form-data" }
             })
 
             toast.success("Profile updated successfully")
             setIsEditModalOpen(false)
 
-        }catch(err){
+        } catch (err) {
             toast.error(
-            err.response?.data?.error ||
-            "Failed to update profile"
+                err.response?.data?.error ||
+                "Failed to update profile"
             );
         }
-
-       
-
     }
 
-
-    const sidebarItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
-        { icon: User, label: 'My Profile', path: '/teacher/profile', active: true },
-        { icon: BookOpen, label: 'My Courses',path:'/teacher/courses', active: false },
-        { icon: Video, label: 'Live Classes', active: false },
-        { icon: MessageSquare, label: 'Q&A', active: false },
-        { icon: Users, label: 'Students', active: false },
-        { icon: BarChart2, label: 'Analytics', active: false },
-        { icon: Wallet, label: 'Wallet', active: false },
-    ];
 
     const stats = [
         { label: 'Total Courses', value: '12', color: 'text-purple-400' },
@@ -156,13 +139,25 @@ const TeacherProfile = () => {
             });
         } finally {
             dispatch(logout());
-            navigate("/teacher/login", { replace: true });
+            navigate("/admin/login", { replace: true });
         }
     };
 
+    const sidebarItems = [
+        { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
+        { icon: User, label: 'My Profile', path: '/teacher/profile', active: true },
+        { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
+        { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+        { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+        { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
+        { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+        { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+        { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
+    ];
+
     return (
         <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
-            {/* Sidebar (Copied from TeacherDashBoard.jsx) */}
+            {/* Sidebar */}
             <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-10">
                 <div className="p-6 flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
@@ -177,7 +172,7 @@ const TeacherProfile = () => {
                     {sidebarItems.map((item, index) => (
                         <button
                             key={index}
-                            onClick={() => navigate(item.path)}
+                            onClick={() => item.path && navigate(item.path)}
                             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                                 ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
                                 : 'text-slate-400 hover:bg-slate-800 hover:text-white'
@@ -235,9 +230,9 @@ const TeacherProfile = () => {
 
                         {/* Left Column - Avatar */}
                         <div className="flex flex-col items-center space-y-4">
-                            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-800 overflow-hidden">
-                                {profileData.avatar ? (
-                                    <img src={profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-950 overflow-hidden">
+                                {profileData.avatar || profileData.avatarPreview ? (
+                                    <img src={profileData.avatarPreview || profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-4xl font-bold text-white">
                                         {profileData.name ? profileData.name.charAt(0).toUpperCase() : 'T'}
@@ -338,8 +333,8 @@ const TeacherProfile = () => {
 
             {/* Edit Profile Modal (Dark Theme) */}
             {isEditModalOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl ring-1 ring-slate-800 animation-fade-in">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-slate-900 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-slate-800 animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900">
                             <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -359,9 +354,9 @@ const TeacherProfile = () => {
                             {/* Photo Upload */}
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="relative group cursor-pointer">
-                                    <div className="w-28 h-28 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-700 group-hover:border-purple-500 transition-colors">
-                                        {profileData.avatar ? (
-                                            <img src={profileData.avatarPreview || "/default-avatar.png"} alt="Profile" className="w-full h-full object-cover" />
+                                    <div className="w-28 h-28 rounded-full bg-slate-950 flex items-center justify-center overflow-hidden border-2 border-dashed border-slate-700 group-hover:border-purple-500 transition-colors">
+                                        {profileData.avatar || profileData.avatarPreview ? (
+                                            <img src={profileData.avatarPreview || profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
                                             <Camera size={32} className="text-slate-500 group-hover:text-purple-500" />
                                         )}
@@ -369,10 +364,7 @@ const TeacherProfile = () => {
                                     <div className="absolute bottom-0 right-0 p-2 bg-purple-600 rounded-full text-white shadow-lg">
                                         <Upload size={14} />
                                     </div>
-                                    <span className="text-4xl font-bold text-white">
-                                    {username?username:"Null"}
-                                    </span>
-                                    
+
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -392,7 +384,7 @@ const TeacherProfile = () => {
                                         name="name"
                                         value={profileData.name}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -403,7 +395,7 @@ const TeacherProfile = () => {
                                         name="email"
                                         value={profileData.email}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -414,7 +406,7 @@ const TeacherProfile = () => {
                                         name="phone"
                                         value={profileData.phone}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -425,7 +417,7 @@ const TeacherProfile = () => {
                                         name="qualification"
                                         value={profileData.qualification}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -436,7 +428,7 @@ const TeacherProfile = () => {
                                         name="subjects"
                                         value={profileData.subjects}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -447,7 +439,7 @@ const TeacherProfile = () => {
                                         name="experience"
                                         value={profileData.experience}
                                         onChange={handleInputChange}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                                     />
                                 </div>
 
@@ -458,7 +450,7 @@ const TeacherProfile = () => {
                                         value={profileData.bio}
                                         onChange={handleInputChange}
                                         rows="4"
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none placeholder:text-slate-600"
+                                        className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none placeholder:text-slate-600"
                                     />
                                 </div>
                             </div>
@@ -474,7 +466,7 @@ const TeacherProfile = () => {
                             </button>
                             <button
                                 onClick={handleSaveProfile}
-                                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-white font-bold shadow-lg hover:shadow-purple-900/40 transition-all"
+                                className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 rounded-lg text-white font-bold shadow-lg shadow-purple-900/20 transition-all"
                             >
                                 Save Changes
                             </button>
