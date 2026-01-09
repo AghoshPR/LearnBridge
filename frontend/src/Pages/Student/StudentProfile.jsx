@@ -394,10 +394,12 @@ const StudentProfile = () => {
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative group cursor-pointer">
                   <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-blue-500 transition-colors">
-                    {profileData.avatar ? (
+                    {previewImage ? (
+                      <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
+                    ) : profileData.avatar ? (
                       <img src={profileData.avatar} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <Camera size={32} className="text-gray-400 group-hover:text-blue-500" />
+                      <Camera size={32} className="text-gray-400" />
                     )}
                   </div>
                   <div className="absolute bottom-0 right-0 p-2 bg-blue-600 rounded-full text-white shadow-lg">

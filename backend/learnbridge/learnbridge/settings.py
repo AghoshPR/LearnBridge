@@ -4,6 +4,8 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 
+import cloudinary
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -216,11 +218,11 @@ GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
 
 # cloudinary
 
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
-    "API_KEY": config("CLOUDINARY_API_KEY"),
-    "API_SECRET": config("CLOUDINARY_API_SECRET"),
-}
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET"),
+)
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
