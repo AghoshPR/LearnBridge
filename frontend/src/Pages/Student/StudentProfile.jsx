@@ -32,6 +32,10 @@ const StudentProfile = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+
   
 
   // Data
@@ -78,13 +82,26 @@ const StudentProfile = () => {
   const handleSave = async ()=>{
 
     try{
-        await Api.patch("/student/profile/",{
-            phone:profileData.phone,
-            address:profileData.address
-        })
+
+        const formData = new FormData()
+
+        formData.append("phone", profileData.phone);
+        formData.append("address", profileData.address);
+
+        if (selectedImage) {
+          formData.append("profile_image", selectedImage);
+        }
+
+       await Api.patch("/student/profile/", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         toast.success("Profile updated successfully");
         setIsEditModalOpen(false);
+        setSelectedImage(null);
+        setPreviewImage(null);
 
         fetchProfile();
 
@@ -96,8 +113,8 @@ const StudentProfile = () => {
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileData(prev => ({ ...prev, avatar: imageUrl }));
+      setSelectedImage(file);
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
@@ -281,12 +298,18 @@ const StudentProfile = () => {
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
               <div className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg relative overflow-hidden">
-                {profileData.avatar ? (
-                  <img src={profileData.avatar} alt="Profile" className="w-full h-full object-cover" />
+                {previewImage || profileData.avatar ? (
+                  <img
+                    src={previewImage || profileData.avatar}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <span className="text-5xl font-bold text-white tracking-widest">{profileData.username?.charAt(0)?.toUpperCase() || "U"}
-</span>
+                  <span className="text-5xl font-bold text-white">
+                    {profileData.username?.charAt(0)?.toUpperCase()}
+                  </span>
                 )}
+
               </div>
             </div>
 

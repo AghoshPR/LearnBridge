@@ -1,5 +1,6 @@
 from django.db import models
 from authapp.models import User
+from cloudinary.models import CloudinaryField
 # Create your models here.
 
 
@@ -16,10 +17,10 @@ class TeacherProfile(models.Model):
         ('rejected','Rejected')
     ]
 
-    profile_photo = models.ImageField(
-        upload_to="teacher/profile_photos/",
-        null=True,
-        blank=True
+    profile_image = CloudinaryField(
+        "profile_image",
+        blank=True,
+        null=True
     )
 
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='teacher_profile')

@@ -53,11 +53,20 @@ INSTALLED_APPS = [
     'liveclass',
     'notifications',
     'ai_assistant',
-    'chat'
+    'chat',
+
+    # cloudinary
+
+    'cloudinary',
+    'cloudinary_storage',
+
+
 
 
 
 ]
+
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -197,8 +206,24 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-GOOGLE_CLIENT_ID = "36732645618-5qr0979u7a6lm42i0apu8u8vsgp9fb0q.apps.googleusercontent.com"
+# google authtentication
+
+
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
+
+# cloudinary
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": config("CLOUDINARY_API_KEY"),
+    "API_SECRET": config("CLOUDINARY_API_SECRET"),
+}
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+
+
+

@@ -1,5 +1,5 @@
 from django.db import models
-
+from cloudinary.models import CloudinaryField
 
 
 from django.contrib.auth.models import AbstractUser
@@ -25,7 +25,12 @@ class User(AbstractUser):
 
     phone = models.CharField(max_length=20, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
-    profile_image = models.CharField(max_length=255, blank=True, null=True)
+
+    profile_image = CloudinaryField(
+        "profile_image",
+        blank=True,
+        null=True
+    )
 
     status = models.CharField(
         max_length=20,

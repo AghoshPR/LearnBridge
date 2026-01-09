@@ -24,7 +24,7 @@ class StudentProfile(APIView):
             "email":user.email,
             "phone":user.phone,
             "address":user.address,
-            "profile_image":user.profile_image
+            "profile_image": user.profile_image.url if user.profile_image else None,
         })
     
 
@@ -33,8 +33,13 @@ class StudentProfile(APIView):
         user = request.user
         user.phone = request.data.get("phone",user.phone)
         user.address = request.data.get("address",user.address)
-        user.profile_image = user.profile_image
+        
+        if "profile_image" in request.FILES:
+            user.profile_image = request.FILES["profile_image"]
 
         user.save()
 
-        return Response({"message":"Profile updated successfully"})
+        return Response({
+            "message": "Profile updated successfully",
+            "profile_image": user.profile_image.url if user.profile_image else None
+        }, status=status.HTTP_200_OK)
