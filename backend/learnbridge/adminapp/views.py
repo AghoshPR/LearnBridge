@@ -14,6 +14,9 @@ from adminapp.utils import send_teacher_rejection_email
 
 
 
+
+
+
 # admin teacher approve requests
 
 class PendingTeachersView(APIView):
@@ -364,3 +367,7 @@ class AdminCreateTeacher(APIView):
             {"message":"Teacher created and approved successfully"},
             status=status.HTTP_201_CREATED
         )
+    
+
+
+    
