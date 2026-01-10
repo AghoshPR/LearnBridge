@@ -1,10 +1,10 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
-import { useSelector,useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
-import { useNavigate,Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
 
 
@@ -14,12 +14,12 @@ import { toast } from "sonner";
 const Home = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const { isAuthenticated, username } = useSelector((state)=>state.auth)
+    const { isAuthenticated, username } = useSelector((state) => state.auth)
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
 
-  
+
 
     const categories = [
         { name: 'Web Development', count: '2,543 courses', icon: <Code className="w-6 h-6 text-white" />, color: 'bg-blue-500' },
@@ -118,10 +118,10 @@ const Home = () => {
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            
+
                             <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-                            
-                            <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+
+                            <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
                             <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
                         </div>
                     </div>
@@ -137,7 +137,7 @@ const Home = () => {
 
                         <div className="relative group">
                             <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                                <span className="text-sm font-medium">{ isAuthenticated ? `Hi, ${username}` : "User" }</span>
+                                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
 
                                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                     {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
@@ -158,18 +158,18 @@ const Home = () => {
 
                                     <>
                                         <button
-                                            onClick={()=>navigate("/student/login")}
+                                            onClick={() => navigate("/student/login")}
                                             className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                            >
-                                            <User className='w-4 h-4'/>
+                                        >
+                                            <User className='w-4 h-4' />
                                             Login
 
                                         </button>
 
-                                         <button
+                                        <button
                                             onClick={() => navigate("/student/register")}
                                             className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                            >
+                                        >
                                             <BookOpen className="w-4 h-4" />
                                             Sign Up
                                         </button>
@@ -181,49 +181,49 @@ const Home = () => {
 
                                 {/*  LOGGED IN */}
 
-                                
-                                {isAuthenticated  && (
+
+                                {isAuthenticated && (
                                     <>
-                                        <button onClick={()=>navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
-                                        <User className="w-4 h-4" />
-                                        Profile
+                                        <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                                            <User className="w-4 h-4" />
+                                            Profile
                                         </button>
 
                                         <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                        <BookOpen className="w-4 h-4" />
-                                        My Courses
+                                            <BookOpen className="w-4 h-4" />
+                                            My Courses
                                         </button>
 
                                         <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                        <Heart className="w-4 h-4" />
-                                        Wishlist
+                                            <Heart className="w-4 h-4" />
+                                            Wishlist
                                         </button>
 
                                         <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                        <Package className="w-4 h-4" />
-                                        Orders
+                                            <Package className="w-4 h-4" />
+                                            Orders
                                         </button>
 
                                         <hr className="my-1 border-gray-100" />
 
                                         <button
-                                        onClick={() => {
-                                            dispatch(logout());
-                                            navigate("/student/login",{ replace: true });
-                                            toast.success("Logged out successfully 👋", {
-                                                description: "See you again!",
-                                                duration: 2500,
-                                            });
-                                        }}
-                                        className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
+                                            onClick={() => {
+                                                dispatch(logout());
+                                                navigate("/student/login", { replace: true });
+                                                toast.success("Logged out successfully 👋", {
+                                                    description: "See you again!",
+                                                    duration: 2500,
+                                                });
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
                                         >
-                                        <LogOut className="w-4 h-4 cursor-pointer" />
-                                        Logout
+                                            <LogOut className="w-4 h-4 cursor-pointer" />
+                                            Logout
                                         </button>
                                     </>
-                                    )}
+                                )}
 
-                                
+
 
 
 
@@ -239,8 +239,8 @@ const Home = () => {
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-                        <button onClick={()=>navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-                        <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
+                        <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
+                        <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
                         <a href="#" className="text-gray-700 font-medium">Live Classes</a>
                         <hr className="border-gray-100" />
 

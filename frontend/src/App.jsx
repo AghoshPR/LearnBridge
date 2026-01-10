@@ -30,6 +30,7 @@ import TeacherManageCourses from './Pages/Teacher/TeacherManageCourses'
 import TeacherCourseCategory from './Pages/Teacher/TeacherCourseCategory'
 import StudentWishlist from './Pages/Student/StudentWishlist'
 import StudentCart from './Pages/Student/StudentCart'
+import QuestionCommunity from './Pages/Public/QuestionCommunity'
 
 
 
@@ -91,7 +92,7 @@ function App() {
           </ProtectedRoute>
         } />
 
-        
+
 
 
         {/* Teacher */}
@@ -116,8 +117,8 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path='/teacher/manageCourses' element={<TeacherManageCourses/>}/>
-          <Route path='/teacher/coursecategory' element={<TeacherCourseCategory/>}/>
+        <Route path='/teacher/manageCourses' element={<TeacherManageCourses />} />
+        <Route path='/teacher/coursecategory' element={<TeacherCourseCategory />} />
 
 
 
@@ -132,9 +133,11 @@ function App() {
         <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
 
 
-        
-        <Route path='/student/wishlist' element={<StudentWishlist/>}/>
-        <Route path='/student/cart' element={<StudentCart/>}/>
+
+        <Route path='/student/wishlist' element={<StudentWishlist />} />
+        <Route path='/student/cart' element={<StudentCart />} />
+
+        <Route path='/student/question-community' element={<QuestionCommunity />} />
 
 
       </Routes>

@@ -16,7 +16,8 @@ import {
   Calendar,
   MessageCircle,
   TrendingUp,
-  Book
+  Book,
+  Folder
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ const TeacherDashBoard = () => {
         description: "Something went wrong. Please try again.",
       });
     } finally {
-      dispatch(logout());          
+      dispatch(logout());
       navigate("/admin/login", { replace: true });
     }
   };
@@ -57,12 +58,13 @@ const TeacherDashBoard = () => {
   const sidebarItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: true },
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
-    { icon: BookOpen, label: 'My Courses', path:'/teacher/courses', active: false },
-    { icon: Video, label: 'Live Classes', active: false },
-    { icon: MessageSquare, label: 'Q&A', active: false },
-    { icon: Users, label: 'Students', active: false },
-    { icon: BarChart2, label: 'Analytics', active: false },
-    { icon: Wallet, label: 'Wallet', active: false },
+    { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
+    { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+    { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+    { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
+    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+    { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
   const stats = [
