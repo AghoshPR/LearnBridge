@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -25,12 +25,21 @@ import {
 } from 'lucide-react';
 
 const TeacherCourseCategory = () => {
+
   const [searchTerm, setSearchTerm] = useState('');
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const [categories, setCategories] = useState([])
+  
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [loading, setLoading] = useState(false)
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -49,7 +58,7 @@ const TeacherCourseCategory = () => {
       });
     } finally {
       dispatch(logout());
-      navigate("/admin/login", { replace: true });
+      navigate("/teacher/login", { replace: true });
     }
   };
 
@@ -65,28 +74,127 @@ const TeacherCourseCategory = () => {
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
-  const [categories] = useState([
-    { id: 1, name: "Web Development", description: "Frontend and backend web development courses", courses: 25, createdBy: "admin", status: "blocked" },
-    { id: 2, name: "Mobile Development", description: "iOS, Android, and cross-platform mobile app development", courses: 18, createdBy: "admin", status: "active" },
-    { id: 3, name: "Data Science", description: "Machine learning, AI, and data analytics", courses: 22, createdBy: "admin", status: "active" },
-    { id: 4, name: "Backend", description: "Server-side programming and databases", courses: 15, createdBy: "admin", status: "active" },
-    { id: 5, name: "DevOps", description: "CI/CD, cloud infrastructure, and deployment", courses: 12, createdBy: "admin", status: "active" },
-  ]);
+
+  const fetchCategories =async()=>{
+
+      try{
+        setLoading(true)
+        const res = await Api.get('/courses/categories/')
+        setCategories(res.data)
+      }catch{
+        toast.error('Failed to load categories')
+      }finally{
+        setLoading(false)
+      }   
+
+  }
+
+  useEffect(()=>{
+    fetchCategories()
+  },[])
+
+  const filteredCategories = categories.filter((category) =>
+  category.name.toLowerCase().includes(searchTerm.toLowerCase())
+)
+
+
+  
+  
+  const handleCreateCategory  = async()=>{
+
+    if (!name.trim()) {
+      toast.error('Category name is required')
+      return
+    }
+
+      try{
+        await Api.post('/courses/categories/',{
+          name,
+          description,
+        })
+        toast.success('Category Created')
+        setIsAddModalOpen(false)
+        setName('')
+        setDescription('')
+        fetchCategories()
+
+      }catch(err){
+        toast.error(err.response?.data?.detail || 'Failed to create category')
+      }
+
+
+  }
 
   const handleEdit = (category) => {
-    setSelectedCategory(category);
-    setIsEditModalOpen(true);
+  setSelectedCategory(category)
+  setName(category.name)
+  setDescription(category.description)
+  setIsEditModalOpen(true)
+}
+
+  const handleUpdateCategory  = async() => {
+    
+      try{
+        await Api.patch(`/courses/categories/${selectedCategory.id}/`,{
+          name,
+          description
+        })
+        toast.success('Category Updated')
+        setIsEditModalOpen(false)
+        fetchCategories()
+      }catch{
+        toast.error('Update Failed')
+      }
+
   };
 
-  const handleDelete = (category) => {
-    setSelectedCategory(category);
-    setIsDeleteModalOpen(true);
+  const handleDelete=(category)=>{
+    setSelectedCategory(category)
+    setIsDeleteModalOpen(true)
+  }
+
+
+
+  const handleDeleteCategory  = async() => {
+
+      try{
+        await Api.delete(`/courses/categories/${selectedCategory.id}/`)
+        toast.success('Category Deleted')
+        setIsDeleteModalOpen(false)
+        fetchCategories()
+
+      }catch{
+        toast.error('Cannot delete category with courses')
+      }
+
+
   };
 
   const handleBlock = (category) => {
     setSelectedCategory(category);
     setIsBlockModalOpen(true);
   };
+
+  const handleToggleStatus = async()=>{
+
+      try{
+        await Api.patch(`/courses/categories/${selectedCategory.id}/`,{
+
+          status:selectedCategory.status === 'active' ? 'blocked' : 'active',
+
+        })
+        
+        toast.success('Status updated')
+        setIsBlockModalOpen(false)
+        fetchCategories()
+      }
+      catch{
+        toast.error('Failed to update status')
+      }
+  }
+
+
+
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -184,7 +292,7 @@ const TeacherCourseCategory = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {categories.map((category) => (
+                {filteredCategories.map((category) => (
                   <tr key={category.id} className="hover:bg-slate-800/50 transition-colors group">
                     <td className="p-4 text-sm font-bold text-white">{category.name}</td>
                     <td className="p-4 text-sm text-slate-400 max-w-xs truncate">{category.description}</td>
@@ -240,30 +348,38 @@ const TeacherCourseCategory = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+
+
             <div className="flex items-center justify-between p-5 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white">Add Category</h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setIsAddModalOpen(false)}  className="text-slate-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Category Name *</label>
                 <input
                   type="text"
                   placeholder="Enter category name"
+                  onChange={(e) => setName(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
                 <textarea
                   rows="3"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter category description"
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 transition-colors resize-none"
                 ></textarea>
               </div>
             </div>
+
             <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-800 bg-slate-950/50 rounded-b-2xl">
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -272,6 +388,7 @@ const TeacherCourseCategory = () => {
                 Cancel
               </button>
               <button
+                onClick={handleCreateCategory}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/20 text-sm"
               >
                 Create Category
@@ -285,29 +402,39 @@ const TeacherCourseCategory = () => {
       {isEditModalOpen && selectedCategory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+
+
             <div className="flex items-center justify-between p-5 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white">Edit Category</h3>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
+
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Category Name *</label>
                 <input
                   type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   defaultValue={selectedCategory.name}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
                 <textarea
                   rows="3"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   defaultValue={selectedCategory.description}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 transition-colors resize-none"
                 ></textarea>
               </div>
+
             </div>
             <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-800 bg-slate-950/50 rounded-b-2xl">
               <button
@@ -317,6 +444,7 @@ const TeacherCourseCategory = () => {
                 Cancel
               </button>
               <button
+                onClick={handleUpdateCategory}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/20 text-sm"
               >
                 Save Changes
@@ -339,21 +467,19 @@ const TeacherCourseCategory = () => {
                 Are you sure you want to delete <span className="text-white font-medium">{selectedCategory.name}</span>? This action cannot be undone.
               </p>
               <div className="flex items-center justify-center gap-3">
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setIsDeleteModalOpen(false);
-                    toast.success("Category deleted");
-                  }}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors text-sm shadow-lg shadow-red-900/20"
-                >
-                  Delete
-                </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors text-sm"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleDeleteCategory}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors text-sm shadow-lg shadow-red-900/20"
+                  >
+                    Delete
+                  </button>
               </div>
             </div>
           </div>
@@ -386,18 +512,16 @@ const TeacherCourseCategory = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    setIsBlockModalOpen(false);
-                    // Add your actual API call here
-                    toast.success(selectedCategory.status === 'blocked' ? "Category unblocked" : "Category blocked");
-                  }}
-                  className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${selectedCategory.status === 'blocked'
-                    ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
-                    : 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
-                    }`}
+                  onClick={handleToggleStatus}
+                  className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${
+                    selectedCategory.status === 'blocked'
+                      ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
+                      : 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
+                  }`}
                 >
                   {selectedCategory.status === 'blocked' ? 'Unblock' : 'Block'}
                 </button>
+
               </div>
             </div>
           </div>

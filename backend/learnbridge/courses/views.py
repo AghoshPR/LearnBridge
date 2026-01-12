@@ -5,6 +5,7 @@ from authapp.permissions import *
 from rest_framework import status
 from .models import Category,Course
 from .serializers import CategorySerializer,CourseSerializer
+from django.shortcuts import get_object_or_404
 
 
 
@@ -36,10 +37,24 @@ class AdminCourseListView(APIView):
 # Teacher create category
 
 
-class TeacherCreateCategory(APIView):
+class TeacherCategoryView(APIView):
 
     permission_classes = [IsTeacher]
 
+
+    def get(self,request):
+
+        if request.user.role == 'admin':
+            categories = Category.objects.all()
+        else:
+            categories = Category.objects.filter(created_by=request.user)
+
+
+        serializer = CategorySerializer(categories,many=True)
+        return Response(serializer.data)
+    
+
+    # Create category
     def post(self,request):
 
         if request.user.role != 'teacher':
@@ -56,35 +71,63 @@ class TeacherCreateCategory(APIView):
         
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
+    # Edit category
 
+    def patch(self,request,pk=None):
 
-class TeacherCategoryListView(APIView):
+        category = get_object_or_404(
+            Category,
+            pk=pk,
+            created_by=request.user
+        )
 
-    permission_classes=[IsTeacher]
+        serializer = CategorySerializer(
+            category,
+            data=request.data,
+            partial=True
+        )
 
-    def get(self,request):
-
-        if request.user.role != 'teacher':
-            return Response(
-                {"detail":"Only teacher allowed"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
         
-        categories = Category.objects.filter(
-            created_by=request.user,
-            status='active'
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,pk=None):
+
+        category = get_object_or_404(
+            Category,
+            pk=pk,
+            created_by=request.user
+        )
+
+        category.delete()
+        return Response(
+
+            {"detail":"Category deleted"},
+             status=status.HTTP_204_NO_CONTENT
         )
 
 
-        serializer = CategorySerializer(categories,many=True)
-        return Response(serializer.data)
+
     
+
 # Teacher Create Course
 
 
-class TeacherCreateCourseView(APIView):
+class TeacherCourseView(APIView):
 
     permission_classes=[IsTeacher]
+
+    # view all courses
+    def get(self,request):
+
+        courses = Course.objects.filter(teacher=request.user)
+        serialzer = CourseSerializer(courses,many=True)
+        return Response(serialzer.data)
+    
+
+
 
     def post(self,request):
 

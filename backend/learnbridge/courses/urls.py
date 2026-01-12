@@ -11,13 +11,16 @@ urlpatterns = [
 
     # Teacher Categpry
 
-    path('categories/create/',TeacherCreateCategory.as_view()),
-    path('categories/',TeacherCategoryListView.as_view()),
+    path('categories/', TeacherCategoryView.as_view()),
+    path('categories/<int:pk>/', TeacherCategoryView.as_view()),
+
     
     
     # Teacher Create Course
 
-    path('course/create',TeacherCreateCourseView.as_view())
+    path('courses/',TeacherCourseView.as_view()),
+    path('courses/<int:pk>/',TeacherCourseView.as_view())
+
 
 
 ]

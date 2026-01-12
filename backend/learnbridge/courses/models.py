@@ -17,7 +17,7 @@ class Category(models.Model):
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        limit_choices_to={'role':'teacher'}
+        related_name='created_categories'
     )
     status = models.CharField(
         max_length=10,
@@ -26,7 +26,7 @@ class Category(models.Model):
     )
 
     created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

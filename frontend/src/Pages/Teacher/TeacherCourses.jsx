@@ -53,7 +53,7 @@ const TeacherCourses = () => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
         { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
         { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
-        { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+        { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
         { icon: Users, label: 'Students', path: '/teacher/students', active: false },
@@ -333,7 +333,7 @@ const TeacherCourses = () => {
 
                                     <div>
                                         <label className="block text-sm font-medium text-slate-300 mb-2">
-                                            Price (USD) <span className="text-purple-500">*</span>
+                                            Price  <span className="text-purple-500">*</span>
                                         </label>
                                         <input
                                             type="number"

@@ -59,7 +59,7 @@ const TeacherDashBoard = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: true },
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
-    { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+    { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },

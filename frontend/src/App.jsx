@@ -118,6 +118,7 @@ function App() {
           } />
 
         <Route path='/teacher/manageCourses' element={<TeacherManageCourses />} />
+        
         <Route path='/teacher/coursecategory' element={<TeacherCourseCategory />} />
 
 
@@ -137,7 +138,7 @@ function App() {
         <Route path='/student/wishlist' element={<StudentWishlist />} />
         <Route path='/student/cart' element={<StudentCart />} />
 
-        <Route path='/student/question-community' element={<QuestionCommunity />} />
+        <Route path='/question-community' element={<QuestionCommunity />} />
 
 
       </Routes>

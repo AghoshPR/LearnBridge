@@ -4,15 +4,18 @@ from .models import Category,Course
 
 class CategorySerializer(serializers.ModelSerializer):
 
-    class Meta:
+    createdBy = serializers.CharField(source='created_by.role', read_only=True)
 
+    class Meta:
         model = Category
-        fields = '__all__'
-        read_only_fields = (
-            'created_by',
-            'created_at',
-            'updated_at'
-        )
+        fields = [
+            'id',
+            'name',
+            'description',
+            'status',
+            'createdBy',
+            'created_at'
+        ]
 
 
 class CourseSerializer(serializers.ModelSerializer):
