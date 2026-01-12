@@ -139,7 +139,7 @@ const TeacherProfile = () => {
             });
         } finally {
             dispatch(logout());
-            navigate("/admin/login", { replace: true });
+            navigate("/teacher/login", { replace: true });
         }
     };
 

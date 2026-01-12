@@ -34,7 +34,11 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
     def validate_category(self,category):
+
         request = self.context.get('request')
+
+        if not request:
+            raise serializers.ValidationError("Invalid request context.")
 
 
         if category.created_by != request.user:

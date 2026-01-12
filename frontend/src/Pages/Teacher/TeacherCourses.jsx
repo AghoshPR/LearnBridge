@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     LayoutDashboard,
     User,
@@ -32,6 +32,20 @@ const TeacherCourses = () => {
     const dispatch = useDispatch();
     const { username } = useSelector((state) => state.auth);
 
+
+    const [courses,setCourses]=useState([])
+    const [categories,setCategories]=useState([])
+
+    const [title,setTitle]=useState('')
+    const [description,setDescription]=useState('')
+    const [category, setCategory] = useState('');
+    const [level,setLevel]=useState('')
+    const [price,setPrice]=useState('')
+    const [thumbnail,setThumbnail]=useState(null)
+
+
+
+
     const handleLogout = async () => {
         try {
             await Api.post("/auth/logout/");
@@ -45,7 +59,7 @@ const TeacherCourses = () => {
             });
         } finally {
             dispatch(logout());
-            navigate("/admin/login", { replace: true });
+            navigate("/teacher/login", { replace: true });
         }
     };
 
@@ -61,44 +75,86 @@ const TeacherCourses = () => {
         { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
     ];
 
-    const courses = [
-        {
-            id: 1,
-            title: 'Advanced React Patterns',
-            category: 'Web Development',
-            status: 'Published',
-            students: 234,
-            rating: 4.9,
-            revenue: '$12,340'
-        },
-        {
-            id: 2,
-            title: 'Node.js Masterclass',
-            category: 'Backend',
-            status: 'Published',
-            students: 189,
-            rating: 4.7,
-            revenue: '$9,450'
-        },
-        {
-            id: 3,
-            title: 'Full Stack Development',
-            category: 'Web Development',
-            status: 'Published',
-            students: 312,
-            rating: 4.8,
-            revenue: '$15,600'
-        },
-        {
-            id: 4,
-            title: 'TypeScript Essentials',
-            category: 'Programming',
-            status: 'Draft',
-            students: 156,
-            rating: 4.6,
-            revenue: '$7,800'
+    // fetch all courses
+
+    const fetchCourses = async()=>{
+
+        try{
+            const res = await Api.get('/courses/');
+            setCourses(res.data)
+            
+        }catch{
+            toast.error('Failed to load courses')
         }
-    ];
+    }
+
+    // fetch categores
+
+    const fetchCategories = async()=>{
+
+        try{
+
+            const res = await Api.get('/courses/categories/')
+            setCategories(res.data)
+        }catch{
+            toast.error('Failed to load categories')
+        }
+    }
+
+    useEffect(()=>{
+        fetchCourses()
+        fetchCategories()
+    },[])
+
+
+    // creating Courses
+
+
+    const handleCreateCourse = async()=>{
+
+         if (!title || !description || !category || !level || !price) {
+            toast.error("All fields are required");
+            return;
+        }
+
+        const formData = new FormData()
+        formData.append('title',title)
+        formData.append('description',description)
+        formData.append('category',category)
+        formData.append('level',level)
+        formData.append('price',price)
+        
+        if(thumbnail){
+            formData.append('thumbnail',thumbnail)
+        }
+
+        try{
+            await Api.post('/courses/',formData,{
+                headers:{'Content-Type':'multipart/form-data'}
+            })
+
+            toast.success("Course created successfully")
+            setShowCreateModal(false)
+
+            setTitle('');
+            setDescription('');
+            setCategory('');
+            setLevel('');
+            setPrice('');
+            setThumbnail(null);
+
+            fetchCourses()
+        }catch(err){
+            toast.error('Failed to create course')
+        }
+    }
+
+
+
+
+
+
+    
 
     return (
         <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -181,7 +237,9 @@ const TeacherCourses = () => {
 
                 {/* Course Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
                     {courses.map((course) => (
+
                         <div key={course.id} className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-300 group">
                             {/* Course Image Placeholder */}
                             <div className="h-48 bg-gradient-to-br from-purple-600 to-blue-600 relative p-4">
@@ -272,16 +330,21 @@ const TeacherCourses = () => {
                             {/* Basic Info Section */}
                             <section className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
                                 <h3 className="text-lg font-bold text-white mb-6">Basic Information</h3>
+
                                 <div className="space-y-6">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-300 mb-2">
                                             Course Title <span className="text-purple-500">*</span>
                                         </label>
+
                                         <input
                                             type="text"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
                                             placeholder="e.g., Advanced React Patterns"
                                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"
                                         />
+
                                     </div>
 
                                     <div>
@@ -290,6 +353,8 @@ const TeacherCourses = () => {
                                         </label>
                                         <textarea
                                             rows="4"
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
                                             placeholder="Describe what students will learn in this course..."
                                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all resize-none"
                                         />
@@ -302,11 +367,18 @@ const TeacherCourses = () => {
                                             </label>
                                             <div className="relative">
                                                 <select className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
+                                                    value={category}
+                                                    onChange={(e) => setCategory(e.target.value)}
+
                                                     <option value="">Select category</option>
-                                                    <option value="web">Web Development</option>
-                                                    <option value="design">Design</option>
-                                                    <option value="business">Business</option>
+                                                    {categories.map((cat)=>{
+                                                        <option key={cat.id} value={cat.id}>
+                                                            {cat.name}
+                                                        </option>
+                                                    })}
+                                                
                                                 </select>
+
                                                 {/* Custom Arrow */}
                                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
@@ -317,6 +389,7 @@ const TeacherCourses = () => {
                                             <label className="block text-sm font-medium text-slate-300 mb-2">
                                                 Level
                                             </label>
+
                                             <div className="relative">
                                                 <select className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
                                                     <option value="">Select level</option>
@@ -324,6 +397,7 @@ const TeacherCourses = () => {
                                                     <option value="intermediate">Intermediate</option>
                                                     <option value="advanced">Advanced</option>
                                                 </select>
+
                                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                                 </div>
@@ -331,39 +405,65 @@ const TeacherCourses = () => {
                                         </div>
                                     </div>
 
+
                                     <div>
                                         <label className="block text-sm font-medium text-slate-300 mb-2">
                                             Price  <span className="text-purple-500">*</span>
                                         </label>
                                         <input
                                             type="number"
-                                            placeholder="49.99"
+                                            value={price}
+                                            onChange={(e) => setPrice(e.target.value)}
+                                            placeholder="1249.99"
                                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"
                                         />
                                     </div>
                                 </div>
+
                             </section>
 
                             {/* Thumbnail Section */}
                             <section className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-                                <h3 className="text-lg font-bold text-white mb-6">Course Thumbnail</h3>
-                                <div className="border-2 border-dashed border-slate-700 hover:border-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group bg-slate-900">
-                                    <div className="w-16 h-16 bg-slate-800 group-hover:bg-purple-600/20 rounded-full flex items-center justify-center transition-colors mb-4">
-                                        <Upload className="text-slate-400 group-hover:text-purple-400" size={32} />
-                                    </div>
-                                    <p className="text-slate-300 font-medium mb-2">Click to upload or drag and drop</p>
-                                    <p className="text-slate-500 text-sm">PNG, JPG up to 10MB</p>
-                                    <button className="mt-6 px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-colors text-sm">
-                                        Select File
-                                    </button>
+                            <h3 className="text-lg font-bold text-white mb-6">Course Thumbnail</h3>
+
+                            {/* Hidden file input */}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                id="course-thumbnail"
+                                hidden
+                                onChange={(e) => setThumbnail(e.target.files[0])}
+                            />
+
+                            {/* Upload UI */}
+                            <label
+                                htmlFor="course-thumbnail"
+                                className="border-2 border-dashed border-slate-700 hover:border-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group bg-slate-900"
+                            >
+                                <div className="w-16 h-16 bg-slate-800 group-hover:bg-purple-600/20 rounded-full flex items-center justify-center transition-colors mb-4">
+                                <Upload className="text-slate-400 group-hover:text-purple-400" size={32} />
                                 </div>
+
+                                <p className="text-slate-300 font-medium mb-2">
+                                {thumbnail ? thumbnail.name : 'Click to upload or drag and drop'}
+                                </p>
+
+                                <p className="text-slate-500 text-sm">PNG, JPG up to 10MB</p>
+
+                                <div className="mt-6 px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-colors text-sm">
+                                Select File
+                                </div>
+                            </label>
                             </section>
+
 
                         </div>
 
                         {/* Modal Footer */}
                         <div className="sticky bottom-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 p-6 flex justify-start gap-4 z-10">
-                            <button className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all">
+                            <button
+                            onClick={handleCreateCourse}
+                             className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all">
                                 Create Course
                             </button>
                             <button
