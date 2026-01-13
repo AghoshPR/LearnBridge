@@ -93,6 +93,11 @@ function App() {
         } />
 
 
+      <Route path='/student/wishlist' element={<StudentWishlist />} />
+      <Route path='/student/cart' element={<StudentCart />} />
+
+      <Route path='/question-community' element={<QuestionCommunity />} />
+
 
 
         {/* Teacher */}
@@ -117,9 +122,10 @@ function App() {
             </ProtectedRoute>
           } />
 
-        <Route path='/teacher/manageCourses' element={<TeacherManageCourses />} />
-        
-        <Route path='/teacher/coursecategory' element={<TeacherCourseCategory />} />
+        <Route path='/teacher/managecourses/:id' element={<ProtectedRoute role="teacher"><TeacherManageCourses /></ProtectedRoute>} />
+
+        <Route path='/teacher/coursecategory' element={<ProtectedRoute role="teacher"><TeacherCourseCategory /></ProtectedRoute>} />
+
 
 
 
@@ -135,10 +141,7 @@ function App() {
 
 
 
-        <Route path='/student/wishlist' element={<StudentWishlist />} />
-        <Route path='/student/cart' element={<StudentCart />} />
-
-        <Route path='/question-community' element={<QuestionCommunity />} />
+        
 
 
       </Routes>

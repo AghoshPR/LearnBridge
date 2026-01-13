@@ -12,13 +12,18 @@ class CategorySerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
-            'status',
             'createdBy',
             'created_at'
         ]
 
 
 class CourseSerializer(serializers.ModelSerializer):
+
+    category_name = serializers.CharField(
+        source='category.name',
+        read_only=True
+    )
+
 
     class Meta:
 

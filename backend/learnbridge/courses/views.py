@@ -120,8 +120,17 @@ class TeacherCourseView(APIView):
     permission_classes=[IsTeacher]
 
     # view all courses
-    def get(self,request):
+    def get(self,request,pk=None):
 
+        # SINGLE COURSES
+
+        if pk:
+            courses = get_object_or_404(Course,pk=pk,teacher=request.user)
+            serialzer = CourseSerializer(courses)
+            return Response(serialzer.data)
+        
+        #  ALL COURSES
+        
         courses = Course.objects.filter(teacher=request.user)
         serialzer = CourseSerializer(courses,many=True)
         return Response(serialzer.data)

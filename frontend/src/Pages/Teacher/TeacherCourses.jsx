@@ -80,7 +80,7 @@ const TeacherCourses = () => {
     const fetchCourses = async()=>{
 
         try{
-            const res = await Api.get('/courses/');
+            const res = await Api.get('/courses/mycourses/');
             setCourses(res.data)
             
         }catch{
@@ -112,10 +112,10 @@ const TeacherCourses = () => {
 
     const handleCreateCourse = async()=>{
 
-         if (!title || !description || !category || !level || !price) {
-            toast.error("All fields are required");
-            return;
-        }
+        //  if (!title || !description || !category || !level || !price) {
+        //     toast.error("All fields are required");
+        //     return;
+        // }
 
         const formData = new FormData()
         formData.append('title',title)
@@ -129,7 +129,7 @@ const TeacherCourses = () => {
         }
 
         try{
-            await Api.post('/courses/',formData,{
+            await Api.post('/courses/mycourses/',formData,{
                 headers:{'Content-Type':'multipart/form-data'}
             })
 
@@ -253,7 +253,7 @@ const TeacherCourses = () => {
                                 <div className="mb-6">
                                     <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">{course.title}</h3>
                                     <span className="px-3 py-1 bg-slate-800 rounded-lg text-xs text-slate-400 border border-slate-700">
-                                        {course.category}
+                                        {course.category_name}
                                     </span>
                                 </div>
 
@@ -262,29 +262,29 @@ const TeacherCourses = () => {
                                         <div className="flex justify-center mb-1 text-blue-400">
                                             <Users size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.students}</p>
+                                        <p className="text-white font-bold">{course.students || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Students</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                                         <div className="flex justify-center mb-1 text-yellow-400">
                                             <Star size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.rating}</p>
+                                        <p className="text-white font-bold">{course.rating || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Rating</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                                         <div className="flex justify-center mb-1 text-green-400">
                                             <TrendingUp size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.revenue}</p>
+                                        <p className="text-white font-bold">{course.revenue || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Revenue</p>
                                     </div>
                                 </div>
 
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={() => navigate('/teacher/course-manage')}
-                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm"
+                                        onClick={() =>  navigate(`/teacher/managecourses/${course.id}`)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm cursor-pointer"
                                     >
                                         <Edit size={16} />
                                         Manage
@@ -366,18 +366,21 @@ const TeacherCourses = () => {
                                                 Category
                                             </label>
                                             <div className="relative">
-                                                <select className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
+
+                                                <select
                                                     value={category}
                                                     onChange={(e) => setCategory(e.target.value)}
-
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer"
+                                                >
                                                     <option value="">Select category</option>
-                                                    {categories.map((cat)=>{
+
+                                                    {categories.map((cat) => (
                                                         <option key={cat.id} value={cat.id}>
                                                             {cat.name}
                                                         </option>
-                                                    })}
-                                                
+                                                    ))}
                                                 </select>
+
 
                                                 {/* Custom Arrow */}
                                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
@@ -390,8 +393,13 @@ const TeacherCourses = () => {
                                                 Level
                                             </label>
 
+
+
                                             <div className="relative">
-                                                <select className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
+                                                <select 
+                                                value={level}
+                                                onChange={(e)=>setLevel(e.target.value)}
+                                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
                                                     <option value="">Select level</option>
                                                     <option value="beginner">Beginner</option>
                                                     <option value="intermediate">Intermediate</option>

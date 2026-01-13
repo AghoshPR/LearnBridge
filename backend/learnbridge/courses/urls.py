@@ -18,8 +18,8 @@ urlpatterns = [
     
     # Teacher Create Course
 
-    path('courses/',TeacherCourseView.as_view()),
-    path('courses/<int:pk>/',TeacherCourseView.as_view())
+    path('mycourses/',TeacherCourseView.as_view()),
+    path('mycourses/<int:pk>/',TeacherCourseView.as_view())
 
 
 
