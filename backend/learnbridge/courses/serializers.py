@@ -31,7 +31,6 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = (
             'teacher',
-            'status',
             'total_lessons',
             'created_at',
             'updated_at'

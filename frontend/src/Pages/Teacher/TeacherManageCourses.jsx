@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState,useEffect } from 'react';
+import { useNavigate,useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import Api from '../Services/Api';
@@ -36,6 +36,8 @@ const TeacherManageCourses = () => {
   const dispatch = useDispatch();
   const { username } = useSelector((state) => state.auth);
 
+  const { id } = useParams();
+
   const handleLogout = async () => {
     try {
       await Api.post("/auth/logout/");
@@ -49,7 +51,7 @@ const TeacherManageCourses = () => {
       });
     } finally {
       dispatch(logout());
-      navigate("/admin/login", { replace: true });
+      navigate("/teacher/login", { replace: true });
     }
   };
 
@@ -65,20 +67,87 @@ const TeacherManageCourses = () => {
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
-  const courseData = {
-    title: "Complete Web Development Bootcamp",
-    category: "Web Development",
-    status: "published",
-    description: "Learn web development from scratch",
-    price: "84.99",
-    level: "Beginner",
-    stats: {
-      students: "89245",
-      rating: "4.8",
-      lessons: "3",
-      price: "$84.99"
+  const [course,setCourse]=useState(null)
+  const [title,setTitle] =useState("")
+  const [description,setDescription]=useState("")
+  const [level, setLevel] = useState("");
+  const [price, setPrice] = useState("");
+  const [status, setStatus] = useState("");
+
+
+  const [category,setCategory] = useState("")  // selected category ID
+  const [categories, setCategories] = useState([]); // for the category List
+
+
+
+    // Fetching the courses
+
+    const fetchCourses =async()=>{
+        try{
+            const res = await Api.get(`/courses/mycourses/${id}`)
+            setCourse(res.data)
+            setTitle(res.data.title)
+            setDescription(res.data.description)
+            setCategory(res.data.category)
+            setLevel(res.data.level)
+            setPrice(res.data.price)
+            setStatus(res.data.status)
+
+        }catch(err){
+          toast.error("Failed to load course")
+        }
     }
-  };
+
+    // fetching categories
+
+
+    const fetchCategories = async()=>{
+
+        try{
+
+            const res = await Api.get('/courses/categories/')
+            setCategories(res.data)
+        }catch{
+          toast.error("Failed to load categories")
+        }
+    }
+
+
+
+    useEffect(()=>{
+      fetchCourses()
+      fetchCategories()
+    },[id])
+
+
+
+  
+
+
+
+  const handleUpdateCourse = async ()=>{
+      try{
+        await Api.patch(`/courses/mycourses/${id}/`,{
+          title,
+          description,
+          category,
+          level,
+          price,
+          status
+        })
+        toast.success("Course updated successfully")
+
+
+        await fetchCourses()
+
+        setIsEditCourseOpen(false)
+      }catch(err){
+          toast.error("Failed to update course")
+      }
+  }
+
+
+
 
   const lessonsData = [
     { id: 1, title: "Introduction to HTML", duration: "15:30", type: "Video" },
@@ -154,16 +223,16 @@ const TeacherManageCourses = () => {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{courseData.title}</h1>
+              <h1 className="text-3xl font-bold text-white mb-2">{course?.title}</h1>
               <div className="flex items-center gap-3">
                 <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded-full text-xs font-medium border border-slate-700">
-                  {courseData.category}
+                  {course?.category_name}
                 </span>
                 <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-xs font-medium border border-blue-500/20">
-                  {courseData.status}
+                  {course?.status}
                 </span>
               </div>
-              <p className="text-slate-400 mt-2">{courseData.description}</p>
+              <p className="text-slate-400 mt-2">{course?.description}</p>
             </div>
             <button
               onClick={() => setIsEditCourseOpen(true)}
@@ -177,10 +246,10 @@ const TeacherManageCourses = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard icon={Users} label="Students" value={courseData.stats.students} color="blue" />
-          <StatCard icon={Star} label="Rating" value={courseData.stats.rating} color="yellow" />
-          <StatCard icon={MonitorPlay} label="Lessons" value={courseData.stats.lessons} color="purple" />
-          <StatCard icon={DollarSign} label="Price" value={courseData.stats.price} color="green" />
+          <StatCard icon={Users} label="Students" value={course?.students_count ?? 0} color="blue" />
+          <StatCard icon={Star} label="Rating" value={course?.average_rating  ?? 0} color="yellow" />
+          <StatCard icon={MonitorPlay} label="Lessons" value={course?.total_lessons ?? 0} color="purple" />
+          <StatCard icon={DollarSign} label="Price" value={course?.price ?? 0} color="green" />
         </div>
 
         {/* Course Lessons */}
@@ -242,48 +311,70 @@ const TeacherManageCourses = () => {
         <Modal
           title="Edit Course"
           onClose={() => setIsEditCourseOpen(false)}
-          onSave={() => setIsEditCourseOpen(false)}
+          onSave={handleUpdateCourse}
         >
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Course Title *</label>
-              <input type="text" defaultValue={courseData.title} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+              <input type="text" value={title} onChange={(e)=>setTitle(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
-              <textarea rows="3" defaultValue={courseData.description} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+              <textarea rows="3" value={description} onChange={(e)=>setDescription(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+
             </div>
+
             <div className="grid grid-cols-2 gap-4">
+
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Category *</label>
-                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
-                  <option>Web Development</option>
-                  <option>Data Science</option>
-                  <option>Design</option>
+                <select 
+                value={category}
+                onChange={(e)=>setCategory(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+
+                  
+                  <option value="">Select Category</option>
+                  {categories.map((cat)=>(
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                  
                 </select>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Level *</label>
-                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
-                  <option>Beginner</option>
-                  <option>Intermediate</option>
-                  <option>Advanced</option>
+                <select 
+                
+                value={level}
+                onChange={(e)=>setLevel(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
                 </select>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Price ($) *</label>
-                <input type="text" defaultValue="84.99" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+                <input type="text" value={price} onChange={(e)=>setPrice(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Status</label>
-                <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
-                  <option>Published</option>
-                  <option>Draft</option>
+                <select
+                value={status}
+                onChange={(e)=>setStatus(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
                 </select>
               </div>
             </div>
+
           </div>
         </Modal>
       )}
