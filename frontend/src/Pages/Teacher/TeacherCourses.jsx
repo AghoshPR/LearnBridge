@@ -33,15 +33,18 @@ const TeacherCourses = () => {
     const { username } = useSelector((state) => state.auth);
 
 
-    const [courses,setCourses]=useState([])
-    const [categories,setCategories]=useState([])
+    const [courses, setCourses] = useState([])
+    const [categories, setCategories] = useState([])
 
-    const [title,setTitle]=useState('')
-    const [description,setDescription]=useState('')
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
     const [category, setCategory] = useState('');
-    const [level,setLevel]=useState('')
-    const [price,setPrice]=useState('')
-    const [thumbnail,setThumbnail]=useState(null)
+    const [level, setLevel] = useState('')
+    const [price, setPrice] = useState('')
+    const [thumbnail, setThumbnail] = useState(null)
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(null);
 
 
 
@@ -67,7 +70,7 @@ const TeacherCourses = () => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
         { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
         { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
-        { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
+        { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
         { icon: Users, label: 'Students', path: '/teacher/students', active: false },
@@ -77,40 +80,40 @@ const TeacherCourses = () => {
 
     // fetch all courses
 
-    const fetchCourses = async()=>{
+    const fetchCourses = async () => {
 
-        try{
+        try {
             const res = await Api.get('/courses/mycourses/');
             setCourses(res.data)
-            
-        }catch{
+
+        } catch {
             toast.error('Failed to load courses')
         }
     }
 
     // fetch categores
 
-    const fetchCategories = async()=>{
+    const fetchCategories = async () => {
 
-        try{
+        try {
 
             const res = await Api.get('/courses/categories/')
             setCategories(res.data)
-        }catch{
+        } catch {
             toast.error('Failed to load categories')
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchCourses()
         fetchCategories()
-    },[])
+    }, [])
 
 
     // creating Courses
 
 
-    const handleCreateCourse = async()=>{
+    const handleCreateCourse = async () => {
 
         //  if (!title || !description || !category || !level || !price) {
         //     toast.error("All fields are required");
@@ -118,19 +121,19 @@ const TeacherCourses = () => {
         // }
 
         const formData = new FormData()
-        formData.append('title',title)
-        formData.append('description',description)
-        formData.append('category',category)
-        formData.append('level',level)
-        formData.append('price',price)
-        
-        if(thumbnail){
-            formData.append('thumbnail',thumbnail)
+        formData.append('title', title)
+        formData.append('description', description)
+        formData.append('category', category)
+        formData.append('level', level)
+        formData.append('price', price)
+
+        if (thumbnail) {
+            formData.append('thumbnail', thumbnail)
         }
 
-        try{
-            await Api.post('/courses/mycourses/',formData,{
-                headers:{'Content-Type':'multipart/form-data'}
+        try {
+            await Api.post('/courses/mycourses/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             })
 
             toast.success("Course created successfully")
@@ -144,17 +147,33 @@ const TeacherCourses = () => {
             setThumbnail(null);
 
             fetchCourses()
-        }catch(err){
+        } catch (err) {
             toast.error('Failed to create course')
         }
     }
 
+    const handleDelete = (course) => {
+        setSelectedCourse(course);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteCourse = async () => {
+        try {
+            await Api.delete(`/courses/mycourses/${selectedCourse.id}/`);
+            toast.success('Course Deleted');
+            setIsDeleteModalOpen(false);
+            fetchCourses();
+        } catch (err) {
+            toast.error('Failed to delete course');
+        }
+    };
 
 
 
 
 
-    
+
+
 
     return (
         <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -283,13 +302,16 @@ const TeacherCourses = () => {
 
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={() =>  navigate(`/teacher/managecourses/${course.id}`)}
+                                        onClick={() => navigate(`/teacher/managecourses/${course.id}`)}
                                         className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-all text-sm cursor-pointer"
                                     >
                                         <Edit size={16} />
                                         Manage
                                     </button>
-                                    <button className="p-3 bg-slate-800 text-red-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700">
+                                    <button
+                                        onClick={() => handleDelete(course)}
+                                        className="p-3 bg-slate-800 text-red-400 rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
+                                    >
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
@@ -396,10 +418,10 @@ const TeacherCourses = () => {
 
 
                                             <div className="relative">
-                                                <select 
-                                                value={level}
-                                                onChange={(e)=>setLevel(e.target.value)}
-                                                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
+                                                <select
+                                                    value={level}
+                                                    onChange={(e) => setLevel(e.target.value)}
+                                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all appearance-none cursor-pointer">
                                                     <option value="">Select level</option>
                                                     <option value="beginner">Beginner</option>
                                                     <option value="intermediate">Intermediate</option>
@@ -432,36 +454,36 @@ const TeacherCourses = () => {
 
                             {/* Thumbnail Section */}
                             <section className="bg-slate-950 border border-slate-800 rounded-2xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-6">Course Thumbnail</h3>
+                                <h3 className="text-lg font-bold text-white mb-6">Course Thumbnail</h3>
 
-                            {/* Hidden file input */}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                id="course-thumbnail"
-                                hidden
-                                onChange={(e) => setThumbnail(e.target.files[0])}
-                            />
+                                {/* Hidden file input */}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    id="course-thumbnail"
+                                    hidden
+                                    onChange={(e) => setThumbnail(e.target.files[0])}
+                                />
 
-                            {/* Upload UI */}
-                            <label
-                                htmlFor="course-thumbnail"
-                                className="border-2 border-dashed border-slate-700 hover:border-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group bg-slate-900"
-                            >
-                                <div className="w-16 h-16 bg-slate-800 group-hover:bg-purple-600/20 rounded-full flex items-center justify-center transition-colors mb-4">
-                                <Upload className="text-slate-400 group-hover:text-purple-400" size={32} />
-                                </div>
+                                {/* Upload UI */}
+                                <label
+                                    htmlFor="course-thumbnail"
+                                    className="border-2 border-dashed border-slate-700 hover:border-purple-600 rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group bg-slate-900"
+                                >
+                                    <div className="w-16 h-16 bg-slate-800 group-hover:bg-purple-600/20 rounded-full flex items-center justify-center transition-colors mb-4">
+                                        <Upload className="text-slate-400 group-hover:text-purple-400" size={32} />
+                                    </div>
 
-                                <p className="text-slate-300 font-medium mb-2">
-                                {thumbnail ? thumbnail.name : 'Click to upload or drag and drop'}
-                                </p>
+                                    <p className="text-slate-300 font-medium mb-2">
+                                        {thumbnail ? thumbnail.name : 'Click to upload or drag and drop'}
+                                    </p>
 
-                                <p className="text-slate-500 text-sm">PNG, JPG up to 10MB</p>
+                                    <p className="text-slate-500 text-sm">PNG, JPG up to 10MB</p>
 
-                                <div className="mt-6 px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-colors text-sm">
-                                Select File
-                                </div>
-                            </label>
+                                    <div className="mt-6 px-6 py-2.5 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-200 transition-colors text-sm">
+                                        Select File
+                                    </div>
+                                </label>
                             </section>
 
 
@@ -470,8 +492,8 @@ const TeacherCourses = () => {
                         {/* Modal Footer */}
                         <div className="sticky bottom-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 p-6 flex justify-start gap-4 z-10">
                             <button
-                            onClick={handleCreateCourse}
-                             className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all">
+                                onClick={handleCreateCourse}
+                                className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all">
                                 Create Course
                             </button>
                             <button
@@ -480,6 +502,38 @@ const TeacherCourses = () => {
                             >
                                 Cancel
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && selectedCourse && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4 text-red-500">
+                                <Trash2 size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2">Delete Course?</h3>
+                            <p className="text-slate-400 text-sm mb-6">
+                                Are you sure you want to delete <span className="text-white font-medium">{selectedCourse.title}</span>? This action cannot be undone.
+                            </p>
+                            <div className="flex items-center justify-center gap-3">
+                                <button
+                                    onClick={() => setIsDeleteModalOpen(false)}
+                                    className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors text-sm"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    onClick={handleDeleteCourse}
+                                    className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors text-sm shadow-lg shadow-red-900/20"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -19,7 +19,10 @@ urlpatterns = [
     # Teacher Create Course
 
     path('mycourses/',TeacherCourseView.as_view()),
-    path('mycourses/<int:pk>/',TeacherCourseView.as_view())
+    path('mycourses/<int:pk>/',TeacherCourseView.as_view()),
+
+    path('categories/block/<int:id>/',CatgeoryBlock.as_view()),
+    path('categories/unblock/<int:id>/',CategoryUnBlock.as_view())
 
 
 

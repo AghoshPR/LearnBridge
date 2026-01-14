@@ -12,6 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
+            'status',
             'createdBy',
             'created_at'
         ]

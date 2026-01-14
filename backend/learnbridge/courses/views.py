@@ -6,6 +6,7 @@ from rest_framework import status
 from .models import Category,Course
 from .serializers import CategorySerializer,CourseSerializer
 from django.shortcuts import get_object_or_404
+from authapp.permissions import *
 
 
 
@@ -108,9 +109,70 @@ class TeacherCategoryView(APIView):
              status=status.HTTP_204_NO_CONTENT
         )
 
+# Category Block
 
-
+class CatgeoryBlock(APIView):
     
+    permission_classes = [IsTeacher]
+
+    def post(self,request,id):
+        
+        category = get_object_or_404(
+            Category,
+            id=id,
+            created_by=request.user
+        )
+
+        # if category.status =='blocked':
+
+        #     return Response(
+        #         {"error":"Category is already blocked"},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+        
+        # if category.courses.exists():
+        #     return Response(
+        #         {"error": "Cannot block category with existing courses"},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        category.status = 'blocked'
+        category.save()
+
+        return Response(
+            {"message":"Category blocked successfully"},
+            status=status.HTTP_200_OK
+        )
+class CategoryUnBlock(APIView):
+
+    permission_classes=[IsTeacher]
+
+
+    def post(self,request,id):
+
+        category = get_object_or_404(
+            Category,
+            id=id,
+            created_by=request.user
+
+        )
+
+        if category.status == 'active':
+
+            return Response(
+                {"error":"Category is already active"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        category.status='active'
+        category.save()
+
+        return Response(
+            {"message":"Category unblocked successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
 
 # Teacher Create Course
 

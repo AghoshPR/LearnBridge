@@ -148,6 +148,43 @@ const TeacherCourseCategory = () => {
 
   };
 
+
+  // Category block/unblock
+
+  const blockCategory = async (id) => {
+      try {
+        await Api.post(`/courses/categories/block/${id}/`);
+
+        setCategories(prev =>
+          prev.map(cat =>
+            cat.id === id ? { ...cat, status: 'blocked' } : cat
+          )
+        );
+
+        toast.success("Category blocked successfully");
+      } catch (err) {
+        toast.error(err.response?.data?.error || "Block failed");
+      }
+    };
+
+  const unblockCategory = async (id) => {
+      try {
+        await Api.post(`/courses/categories/unblock/${id}/`);
+
+        setCategories(prev =>
+          prev.map(cat =>
+            cat.id === id ? { ...cat, status: 'active' } : cat
+          )
+        );
+
+        toast.success("Category unblocked successfully");
+      } catch (err) {
+        toast.error(err.response?.data?.error || "Unblock failed");
+      }
+    };
+
+    
+
   const handleDelete=(category)=>{
     setSelectedCategory(category)
     setIsDeleteModalOpen(true)
@@ -170,31 +207,37 @@ const TeacherCourseCategory = () => {
 
   };
 
+
+  const handleConfirmBlockToggle = async () => {
+    if (!selectedCategory) return;
+
+    if (selectedCategory.status === 'blocked') {
+      await unblockCategory(selectedCategory.id);
+    } else {
+      await blockCategory(selectedCategory.id);
+    }
+
+    setIsBlockModalOpen(false);
+    setSelectedCategory(null);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
   const handleBlock = (category) => {
     setSelectedCategory(category);
     setIsBlockModalOpen(true);
   };
 
-  const handleToggleStatus = async()=>{
-
-      try{
-        await Api.patch(`/courses/categories/${selectedCategory.id}/`,{
-
-          status:selectedCategory.status === 'active' ? 'blocked' : 'active',
-
-        })
-        
-        toast.success('Status updated')
-        setIsBlockModalOpen(false)
-        fetchCategories()
-      }
-      catch{
-        toast.error('Failed to update status')
-      }
-  }
-
-
-
+  
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -319,14 +362,20 @@ const TeacherCourseCategory = () => {
                         >
                           <Edit size={16} />
                         </button>
+
                         <button
-                          onClick={() => handleBlock(category)}
+                          onClick={()=>{
+                            setSelectedCategory(category);
+                            setIsBlockModalOpen(true);
+                          }}    
                           className={`p-1.5 rounded-lg transition-colors ${category.status === 'blocked' ? 'text-red-400 hover:bg-red-500/10' : 'text-green-400 hover:bg-green-500/10'
                             }`}
                           title={category.status === 'blocked' ? 'Unlock' : 'Lock'}
                         >
                           {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
+
+
                         <button
                           onClick={() => handleDelete(category)}
                           className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
@@ -511,8 +560,10 @@ const TeacherCourseCategory = () => {
                 >
                   Cancel
                 </button>
+
+
                 <button
-                  onClick={handleToggleStatus}
+                  onClick={handleConfirmBlockToggle}
                   className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${
                     selectedCategory.status === 'blocked'
                       ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
