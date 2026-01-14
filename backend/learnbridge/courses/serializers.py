@@ -16,6 +16,16 @@ class CategorySerializer(serializers.ModelSerializer):
             'createdBy',
             'created_at'
         ]
+    
+    def validate_name(self,value):
+
+        request = self.context['request']
+
+        if Category.objects.filter(name__iexact=value,created_by=request.user).exists():
+            raise serializers.ValidationError(
+                "Category already exists"
+            )
+        return value
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -24,6 +34,8 @@ class CourseSerializer(serializers.ModelSerializer):
         source='category.name',
         read_only=True
     )
+
+    thumbnail_url = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -36,6 +48,13 @@ class CourseSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+
+    def get_thumbnail_url(self,obj):
+
+        if obj.thumbnail:
+            return obj.thumbnail.url
+
+        return None
 
 
     def validate_category(self,category):

@@ -1,5 +1,5 @@
-import React, { useState,useEffect } from 'react';
-import { useNavigate,useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import Api from '../Services/Api';
@@ -23,7 +23,8 @@ import {
   Star,
   DollarSign,
   MonitorPlay,
-  Folder
+  Folder,
+  Upload
 } from 'lucide-react';
 
 const TeacherManageCourses = () => {
@@ -31,6 +32,7 @@ const TeacherManageCourses = () => {
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
   const [isEditLessonOpen, setIsEditLessonOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -67,83 +69,95 @@ const TeacherManageCourses = () => {
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
-  const [course,setCourse]=useState(null)
-  const [title,setTitle] =useState("")
-  const [description,setDescription]=useState("")
+  const [course, setCourse] = useState(null)
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
   const [level, setLevel] = useState("");
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState("");
+  const [thumbnail, setThumbnail] = useState(null);
+
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
 
-  const [category,setCategory] = useState("")  // selected category ID
+  const [category, setCategory] = useState("")  // selected category ID
   const [categories, setCategories] = useState([]); // for the category List
 
 
 
-    // Fetching the courses
+  // Fetching the courses
 
-    const fetchCourses =async()=>{
-        try{
-            const res = await Api.get(`/courses/mycourses/${id}`)
-            setCourse(res.data)
-            setTitle(res.data.title)
-            setDescription(res.data.description)
-            setCategory(res.data.category)
-            setLevel(res.data.level)
-            setPrice(res.data.price)
-            setStatus(res.data.status)
+  const fetchCourses = async () => {
+    try {
+      const res = await Api.get(`/courses/mycourses/${id}`)
+      setCourse(res.data)
+      setTitle(res.data.title)
+      setDescription(res.data.description)
+      setCategory(res.data.category)
+      setLevel(res.data.level)
+      setPrice(res.data.price)
+      setStatus(res.data.status)
+      setThumbnailPreview(res.data.thumbnail_url||null)
 
-        }catch(err){
-          toast.error("Failed to load course")
-        }
+    } catch (err) {
+      toast.error("Failed to load course")
+    }
+  }
+
+  // fetching categories
+
+
+  const fetchCategories = async () => {
+
+    try {
+
+      const res = await Api.get('/courses/categories/')
+      setCategories(res.data)
+    } catch {
+      toast.error("Failed to load categories")
+    }
+  }
+
+
+
+  useEffect(() => {
+    fetchCourses()
+    fetchCategories()
+  }, [id])
+
+
+
+
+
+
+
+  const handleUpdateCourse = async () => {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('category', category);
+    formData.append('level', level);
+    formData.append('price', price);
+    formData.append('status', status);
+
+    if (thumbnail) {
+      formData.append('thumbnail', thumbnail);
     }
 
-    // fetching categories
+    try {
+      await Api.patch(`/courses/mycourses/${id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      toast.success("Course updated successfully");
 
 
-    const fetchCategories = async()=>{
+      await fetchCourses();
 
-        try{
-
-            const res = await Api.get('/courses/categories/')
-            setCategories(res.data)
-        }catch{
-          toast.error("Failed to load categories")
-        }
+      setIsEditCourseOpen(false);
+      setThumbnail(null);
+    } catch (err) {
+      toast.error("Failed to update course");
     }
-
-
-
-    useEffect(()=>{
-      fetchCourses()
-      fetchCategories()
-    },[id])
-
-
-
-  
-
-
-
-  const handleUpdateCourse = async ()=>{
-      try{
-        await Api.patch(`/courses/mycourses/${id}/`,{
-          title,
-          description,
-          category,
-          level,
-          price,
-          status
-        })
-        toast.success("Course updated successfully")
-
-
-        await fetchCourses()
-
-        setIsEditCourseOpen(false)
-      }catch(err){
-          toast.error("Failed to update course")
-      }
   }
 
 
@@ -247,7 +261,7 @@ const TeacherManageCourses = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard icon={Users} label="Students" value={course?.students_count ?? 0} color="blue" />
-          <StatCard icon={Star} label="Rating" value={course?.average_rating  ?? 0} color="yellow" />
+          <StatCard icon={Star} label="Rating" value={course?.average_rating ?? 0} color="yellow" />
           <StatCard icon={MonitorPlay} label="Lessons" value={course?.total_lessons ?? 0} color="purple" />
           <StatCard icon={DollarSign} label="Price" value={course?.price ?? 0} color="green" />
         </div>
@@ -316,41 +330,80 @@ const TeacherManageCourses = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Course Title *</label>
-              <input type="text" value={title} onChange={(e)=>setTitle(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
-              <textarea rows="3" value={description} onChange={(e)=>setDescription(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+              <textarea rows="3" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+            </div>
 
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">Thumbnail</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="edit-course-thumbnail"
+                  hidden
+                  onChange={(e)=>{
+                    const file = e.target.files[0]
+
+                    if(file){
+                      setThumbnail(file)
+                      setThumbnailPreview(URL.createObjectURL(file))
+
+                    }
+                  }}
+                />
+                <div className="flex items-center gap-4">
+                  {thumbnailPreview && (
+                    <img
+                      src={thumbnailPreview}
+                      alt="Thumbnail Preview"
+                      className="w-28 h-20 object-cover rounded-lg border border-slate-700"
+                    />
+                  )}
+
+                  <label
+                    htmlFor="edit-course-thumbnail"
+                    className="flex-1 flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-slate-800/50 transition-all group"
+                  >
+                    <Upload size={18} className="text-slate-400 group-hover:text-purple-400" />
+                    <span className="text-sm text-slate-400 group-hover:text-slate-200">
+                      {thumbnail ? thumbnail.name : 'Click to update thumbnail'}
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Category *</label>
-                <select 
-                value={category}
-                onChange={(e)=>setCategory(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
 
-                  
+
                   <option value="">Select Category</option>
-                  {categories.map((cat)=>(
+                  {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}
-                  
+
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Level *</label>
-                <select 
-                
-                value={level}
-                onChange={(e)=>setLevel(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                <select
+
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
@@ -361,14 +414,14 @@ const TeacherManageCourses = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Price ($) *</label>
-                <input type="text" value={price} onChange={(e)=>setPrice(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+                <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-1">Status</label>
                 <select
-                value={status}
-                onChange={(e)=>setStatus(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
                   <option value="published">Published</option>
                   <option value="draft">Draft</option>
                 </select>
@@ -420,7 +473,11 @@ const TeacherManageCourses = () => {
       {isEditLessonOpen && selectedLesson && (
         <Modal
           title="Edit Lesson"
-          onClose={() => setIsEditLessonOpen(false)}
+          onClose={() => {
+            setIsEditCourseOpen(false);
+            setThumbnail(null);
+            setThumbnailPreview(course?.thumbnail_url || null);
+          }}
           onSave={() => setIsEditLessonOpen(false)}
         >
           <div className="space-y-4">

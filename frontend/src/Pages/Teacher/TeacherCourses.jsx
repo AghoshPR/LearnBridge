@@ -261,9 +261,19 @@ const TeacherCourses = () => {
 
                         <div key={course.id} className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-300 group">
                             {/* Course Image Placeholder */}
-                            <div className="h-48 bg-gradient-to-br from-purple-600 to-blue-600 relative p-4">
-                                <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold ${course.status === 'Published' ? 'bg-cyan-500/20 text-cyan-500 border border-cyan-500/30' : 'bg-slate-500/20 text-slate-200 border border-slate-500/30'
-                                    }`}>
+                            <div className="h-48 relative overflow-hidden">
+                                
+                                {course.thumbnail_url ? (
+                                <img
+                                src={course.thumbnail_url}
+                                alt={course.title}
+                                className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="h-full bg-gradient-to-br from-purple-600 to-blue-600" />
+                                )}
+
+                                <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-bold`}>
                                     {course.status}
                                 </span>
                             </div>

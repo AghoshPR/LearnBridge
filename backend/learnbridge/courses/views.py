@@ -64,7 +64,7 @@ class TeacherCategoryView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        serializer = CategorySerializer(data=request.data)
+        serializer = CategorySerializer(data=request.data,context={"request": request})
 
         if serializer.is_valid():
             serializer.save(created_by=request.user)
@@ -214,6 +214,9 @@ class TeacherCourseView(APIView):
                 "request":request
             }
         )
+
+        
+
 
         if serializer.is_valid():
             serializer.save(teacher=request.user)

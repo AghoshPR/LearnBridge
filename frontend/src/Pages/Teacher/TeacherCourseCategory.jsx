@@ -119,7 +119,12 @@ const TeacherCourseCategory = () => {
         fetchCategories()
 
       }catch(err){
-        toast.error(err.response?.data?.detail || 'Failed to create category')
+        const errorMsg =
+        err.response?.data?.name?.[0] ||
+        err.response?.data?.detail ||
+        "Failed to create category";
+
+        toast.error(errorMsg);
       }
 
 

@@ -31,6 +31,8 @@ import TeacherCourseCategory from './Pages/Teacher/TeacherCourseCategory'
 import StudentWishlist from './Pages/Student/StudentWishlist'
 import StudentCart from './Pages/Student/StudentCart'
 import QuestionCommunity from './Pages/Public/QuestionCommunity'
+import AdminCourses from './Pages/Admin/AdminCourses'
+import AdminCategories from './Pages/Admin/AdminCategories'
 
 
 
@@ -138,6 +140,9 @@ function App() {
 
 
         <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
+
+        <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
+        <Route path="/admin/category" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
 
 
 
