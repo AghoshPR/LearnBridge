@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '@/Store/authSlice';
@@ -23,7 +23,9 @@ import {
   Eye,
   Pencil,
   Trash2,
-  Star
+  Star,
+  Unlock,
+  Lock
 } from 'lucide-react';
 import Api from '../Services/Api';
 
@@ -34,38 +36,48 @@ const AdminCourses = () => {
   const dispatch = useDispatch();
 
   // Mock data to match the image
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "Complete Web Development Bootcamp",
-      lessons: 312,
-      instructor: "Dr. Angela Yu",
-      students: "89,245",
-      rating: 4.8,
-      price: "$84.99",
-      status: "published"
-    },
-    {
-      id: 2,
-      title: "Advanced React Development",
-      lessons: 156,
-      instructor: "John Smith",
-      students: "45,200",
-      rating: 4.7,
-      price: "$74.99",
-      status: "published"
-    },
-    {
-      id: 3,
-      title: "Node.js Backend Mastery",
-      lessons: 89,
-      instructor: "Sarah Johnson",
-      students: "32,100",
-      rating: 4.9,
-      price: "$79.99",
-      status: "draft"
-    }
-  ]);
+  const [courses, setCourses] = useState([])
+  
+  
+  const fetchCourses = async()=>{
+
+      try{
+        const res = await Api.get('/courses/admin/courses/')
+        setCourses(res.data)
+
+      }catch{
+        toast.error("Failed to load courses")
+      }
+
+  }
+
+  const toggleCourseStatus =async(id)=>{
+
+      try{
+          await Api.post(`/courses/admin/courses/toggle/${id}/`)
+          toast.success("Course status updated")
+          fetchCourses()
+      }catch{
+          toast.error("Action Failed")
+      }
+  }
+
+  const deleteCourse=async(id)=>{
+
+      try{
+        await Api.delete(`/courses/admin/courses/${id}/`)
+        toast.success("Course deleted")
+        fetchCourses()
+      }catch{
+        toast.error("Delete failed")
+      }
+  }
+
+
+  useEffect(()=>{
+    fetchCourses()
+  },[])
+
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -293,29 +305,40 @@ const AdminCourses = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-white">
                         <Star size={14} className="text-amber-400 fill-amber-400" />
-                        <span>{course.rating.toFixed(1)}</span>
+                        <span>{course.rating||0}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">{course.price}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${course.status === 'published'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10'
-                          : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${course.status === 'active'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10'
+                        : 'bg-red-500/10 text-gray-400 border-gray-500/20'
                         }`}>
                         {course.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
+                        {/* <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                           <Eye size={16} />
-                        </button>
+                        </button> */}
                         <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                           <Pencil size={16} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                          <Trash2 size={16} />
+
+                        <button
+                        onClick={()=>toggleCourseStatus(course.id)}
+                        className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+                          {course.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
+
+                       <button
+                        onClick={() => deleteCourse(course.id)}
+                        className="p-2 text-gray-400 hover:bg-red-500/10 rounded-lg"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+
                       </div>
                     </td>
                   </tr>

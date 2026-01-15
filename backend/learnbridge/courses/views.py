@@ -82,21 +82,84 @@ class AdminCategoryToggleStatus(APIView):
 
 # Admin CourseListView
 
-class AdminCourseListView(APIView):
+class AdminCourseView(APIView):
 
     permission_classes=[IsAdmin]
 
-    def get(self, request):
-        if request.user.role != 'admin':
-            return Response(
-                {"detail": "Admin only"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+    def get(self, request,pk=None):
 
-        courses = Course.objects.all().order_by('-created_at')
+        if pk:
+
+            course = get_object_or_404(Course,pk=pk)
+            serializer = CourseSerializer(course)
+            return Response(serializer.data)
+        
+        courses = Course.objects.select_related('teacher','category').order_by('-created_at')
+
         serializer = CourseSerializer(courses,many=True)
         return Response(serializer.data)
 
+    def post(self,request):
+
+        serializer = CourseSerializer(
+            data=request.data,
+            context = {'request':request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self,request,pk):
+
+        course = get_object_or_404(Course, pk=pk)
+
+        serializer = CourseSerializer(
+            course,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self,request,pk):
+        course = get_object_or_404(Course,pk=pk)
+        course.delete()
+
+        return Response(
+            {"detail":"Course deleted"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class AdminCourseToggleStatus(APIView):
+    
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,pk):
+
+        course = get_object_or_404(Course,pk=pk)
+
+        course.status = 'blocked' if course.status == 'active' else 'active'
+
+        course.save()
+
+        return Response(
+            {
+                "message":"Course status updated",
+                "status":course.status
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 

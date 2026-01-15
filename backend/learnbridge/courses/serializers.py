@@ -43,6 +43,11 @@ class CourseSerializer(serializers.ModelSerializer):
 
     thumbnail_url = serializers.SerializerMethodField()
 
+    instructor = serializers.CharField(
+        source = 'teacher.username',
+        read_only=True
+    )
+
 
     class Meta:
 
