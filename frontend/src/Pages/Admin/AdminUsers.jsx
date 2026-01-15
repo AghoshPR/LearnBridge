@@ -288,13 +288,13 @@ const AdminUsers = () => {
           <NavItem
             icon={BookOpen}
             label="Courses"
-          // onClick={() => navigate("/admin/courses")}
+          onClick={() => navigate("/admin/courses")}
           />
 
           <NavItem
             icon={Folder}
             label="Categories"
-          // onClick={() => navigate("/admin/categories")}
+          onClick={() => navigate("/admin/categories")}
           />
 
           <NavItem

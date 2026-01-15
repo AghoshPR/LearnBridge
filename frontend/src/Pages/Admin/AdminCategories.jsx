@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '@/Store/authSlice';
@@ -33,49 +33,48 @@ const AdminCategories = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Mock data to match the image
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: "Web Development",
-      description: "Frontend and backend web development courses",
-      courses: 25,
-      createdBy: "admin",
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Mobile Development",
-      description: "iOS, Android, and cross-platform mobile app development",
-      courses: 18,
-      createdBy: "admin",
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Data Science",
-      description: "Machine learning, AI, and data analytics",
-      courses: 22,
-      createdBy: "admin",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Backend",
-      description: "Server-side programming and databases",
-      courses: 15,
-      createdBy: "admin",
-      status: "active"
-    },
-    {
-      id: 5,
-      name: "DevOps",
-      description: "CI/CD, cloud infrastructure, and deployment",
-      courses: 12,
-      createdBy: "admin",
-      status: "active"
-    },
-  ]);
+  
+  const [categories, setCategories] = useState([])
+
+  const fetchCategories = async()=>{
+
+    try{
+        const res = await Api.get('/courses/admin/categories/')
+
+        setCategories(res.data)
+    }catch(err){
+      toast.error("Failed to load categories")
+    }
+  }
+
+  useEffect(()=>{
+    fetchCategories()
+  },[])
+
+  // block and unblock
+
+  const toggleCategoriesStatus = async(id)=>{
+
+      try{
+          await Api.post(`/courses/admin/categories/toggle/${id}/`)
+          toast.success('Category status updated')
+          fetchCategories()
+      }catch{
+          toast.error("Action Failed")
+      }
+  }
+
+  const deleteCategory =async()=>{
+
+      try{
+          await Api.delete(`/courses/admin/categories/${id}/`)
+          toast.success("Category deleted")
+          fetchCategories()
+      }catch{
+        toast.error("Delete failed")
+      }
+  }
+   
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -308,10 +307,14 @@ const AdminCategories = () => {
                         <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                           <Pencil size={16} />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
-                          <Lock size={16} />
+                        <button
+                        onClick={()=>toggleCategoriesStatus(category.id)}
+                        className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+                          {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                        <button 
+                        onClick={deleteCategory}
+                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                           <Trash2 size={16} />
                         </button>
                       </div>

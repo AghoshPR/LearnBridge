@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from authapp.permissions import *
@@ -11,6 +10,72 @@ from authapp.permissions import *
 
 
 # Create your views here.
+
+
+# Admin CategoryView
+
+class AdminCategoryView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def get(self,request):
+
+        categories = Category.objects.all().order_by('-created_at')
+        serializer = CategorySerializer(categories,many=True)
+        return Response(serializer.data)
+    
+    def patch(self,request,pk):
+
+        category = get_object_or_404(Category,pk=pk)
+
+        serializer = CategorySerializer(
+            category,
+            data=request.data,
+            partial = True,
+            context = {'request':request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self,request,pk):
+        
+        category = get_object_or_404(Category,pk=pk)
+        category.delete()
+
+        return Response(
+            {"detail":"Category deleted"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class AdminCategoryToggleStatus(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,pk):
+
+        category = get_object_or_404(Category,pk=pk)
+
+        category.status = 'blocked' if category.status == 'active' else 'active'
+        category.save()
+
+        return Response(
+            {
+                "message":"Category status updated",
+                "status":category.status
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+
+
 
 
 

@@ -142,7 +142,7 @@ function App() {
         <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
 
         <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
-        <Route path="/admin/category" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
+        <Route path="/admin/categories" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
 
 
 

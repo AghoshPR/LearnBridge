@@ -6,6 +6,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
     createdBy = serializers.CharField(source='created_by.role', read_only=True)
 
+    courses = serializers.IntegerField(
+        source = 'courses.count',
+        read_only=True
+    )
+
     class Meta:
         model = Category
         fields = [
@@ -14,6 +19,7 @@ class CategorySerializer(serializers.ModelSerializer):
             'description',
             'status',
             'createdBy',
+            'courses',
             'created_at'
         ]
     

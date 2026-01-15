@@ -7,9 +7,19 @@ urlpatterns = [
     # admin courses
 
     path('admin/courses/', AdminCourseListView.as_view()),
+
+
+    # admin category
+
+
+    path('admin/categories/', AdminCategoryView.as_view()),
+    path('admin/categories/<int:pk>/',AdminCategoryView.as_view()),
+    path('admin/categories/toggle/<int:pk>/', AdminCategoryToggleStatus.as_view()),
+    
+    
     
 
-    # Teacher Categpry
+    # Teacher Category
 
     path('categories/', TeacherCategoryView.as_view()),
     path('categories/<int:pk>/', TeacherCategoryView.as_view()),
