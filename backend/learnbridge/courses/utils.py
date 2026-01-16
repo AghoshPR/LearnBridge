@@ -34,3 +34,11 @@ def generate_signed_url(key, expiry=900):
     )
 
 
+def delete_video_from_s3(key):
+    try:
+        s3.delete_object(
+            Bucket=settings.AWS_STORAGE_BUCKET_NAME,
+            Key=key
+        )
+    except Exception as e:
+        print("S3 delete error:", e)

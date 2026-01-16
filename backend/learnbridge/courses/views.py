@@ -5,7 +5,7 @@ from rest_framework import status
 from courses.models import Category,Course,Lesson
 from .serializers import CategorySerializer,CourseSerializer,LessonSerializer
 from django.shortcuts import get_object_or_404
-from courses.utils import upload_video,generate_signed_url
+from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max
 
@@ -446,6 +446,58 @@ class TeacherLessonCreateView(APIView):
             {"message":"Lesson uploaded successfully"},
             status=status.HTTP_201_CREATED
         )
+
+class TeacherLessonDetailedView(APIView):
+
+    permission_classes=[IsTeacher]
+
+    def patch(self,request,lesson_id):
+
+        lesson = get_object_or_404(Lesson,id=lesson_id)
+
+        title = request.data.get("title")
+        duration = request.data.get("duration")
+        description = request.data.get("description","")
+        video = request.FILES.get("video")
+
+        if not title or not duration:
+
+            return Response(
+                {"error":"Title and duration are required"},
+                status=status.HTTP_400_BAD_REQUEST
+
+            )
+        
+        lesson.title = title
+        lesson.duration = duration
+        lesson.description = description
+
+        if video:
+            old_key=lesson.video_key
+            new_key = upload_video(video,lesson.course_id)
+            lesson.video_key = new_key
+
+            delete_video_from_s3(old_key)
+        
+        lesson.save()
+
+        return Response(
+            {"message":"Lesson updated successfully"},
+            status=status.HTTP_200_OK
+        )
+    
+    def delete(self,request,lesson_id):
+
+        lesson = get_object_or_404(Lesson,id=lesson_id)
+
+        delete_video_from_s3(lesson.video_key)
+        lesson.delete()
+
+        return Response(
+            {"message":"Lesson deleted successfully"},
+            status==status.HTTP_204_NO_CONTENT
+        )
+
 
 class StudentLessonVideoView(APIView):
 
