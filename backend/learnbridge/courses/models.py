@@ -81,3 +81,20 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+
+# Lesson model
+
+
+class Lesson(models.Model):
+
+    course = models.ForeignKey(Course,on_delete=models.CASCADE)
+    title = models.CharField(max_length=250)
+    type = models.CharField(max_length=10,default='video')
+    duration = models.CharField(max_length=20)
+    video_key = models.CharField(max_length=500)
+    description = models.TextField(blank=True)
+    position = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering=["position"]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category,Course
+from .models import Category,Course,Lesson
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -88,3 +88,18 @@ class CourseSerializer(serializers.ModelSerializer):
             )
         
         return category
+    
+
+class LessonSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Lesson
+        fields = [
+            "id",
+            "title",
+            "duration",
+            "description",
+            "type",
+            "position",
+        ]

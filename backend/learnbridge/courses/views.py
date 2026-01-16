@@ -2,10 +2,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from authapp.permissions import *
 from rest_framework import status
-from .models import Category,Course
-from .serializers import CategorySerializer,CourseSerializer
+from courses.models import Category,Course,Lesson
+from .serializers import CategorySerializer,CourseSerializer,LessonSerializer
 from django.shortcuts import get_object_or_404
-from authapp.permissions import *
+from courses.utils import upload_video,generate_signed_url
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Max
 
 
 
@@ -271,6 +273,8 @@ class CatgeoryBlock(APIView):
             {"message":"Category blocked successfully"},
             status=status.HTTP_200_OK
         )
+    
+
 class CategoryUnBlock(APIView):
 
     permission_classes=[IsTeacher]
@@ -390,4 +394,71 @@ class TeacherCourseView(APIView):
         )
     
 
+class TeacherLessonCreateView(APIView):
 
+    permission_classes=[IsTeacher]
+
+
+    def get(self,request,course_id):
+
+        lessons = Lesson.objects.filter(course_id=course_id).order_by("position")
+        serializer = LessonSerializer(lessons,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
+
+
+    def post(self,request,course_id):
+
+        title=request.data.get('title')
+        duration = request.data.get("duration")
+        description = request.data.get("description","")
+        video = request.FILES.get("video")
+
+
+        if not video:
+
+            return Response(
+                {"error":"video file is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        last_position = (
+            Lesson.objects.filter(course_id=course_id)
+            .aggregate(max_pos=Max("position"))
+            .get("max_pos") or 0
+        )
+
+        
+        video_key = upload_video(video,course_id)
+
+        Lesson.objects.create(
+
+            course_id=course_id,
+            title=title,
+            duration=duration,
+            video_key=video_key,
+            description=description,
+            type="video",
+            position=last_position + 1,
+        )
+
+        return Response(
+            {"message":"Lesson uploaded successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+class StudentLessonVideoView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,lesson_id):
+
+        lesson = Lesson.objects.get(id=lesson_id)
+
+        signed_url = generate_signed_url(lesson.video_key)
+
+        return Response(
+            {"signed_url":signed_url}
+        )
+
+    

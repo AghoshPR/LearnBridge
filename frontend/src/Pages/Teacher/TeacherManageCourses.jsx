@@ -69,6 +69,9 @@ const TeacherManageCourses = () => {
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
+
+  // handle the course updations
+
   const [course, setCourse] = useState(null)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -82,6 +85,19 @@ const TeacherManageCourses = () => {
 
   const [category, setCategory] = useState("")  // selected category ID
   const [categories, setCategories] = useState([]); // for the category List
+
+
+  const [lessons, setLessons] = useState([]);
+
+
+// form lessons adding
+
+  const [lessonTitle, setLessonTitle] = useState("");
+  const [lessonDuration, setLessonDuration] = useState("");
+  const [lessonDescription, setLessonDescription] = useState("");
+  const [videoFile, setVideoFile] = useState(null);
+  
+
 
 
 
@@ -119,10 +135,23 @@ const TeacherManageCourses = () => {
   }
 
 
+  const fetchLessons = async()=>{
+
+      try{
+        const res = await Api.get(`/courses/teacher/courses/${id}/lessons/`)
+        setLessons(res.data)
+      
+      }catch{
+        toast.error("Failed to load the data")
+      }
+  }
+
+
 
   useEffect(() => {
     fetchCourses()
     fetchCategories()
+    fetchLessons()
   }, [id])
 
 
@@ -132,6 +161,7 @@ const TeacherManageCourses = () => {
 
 
   const handleUpdateCourse = async () => {
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -160,14 +190,85 @@ const TeacherManageCourses = () => {
     }
   }
 
+  const handleAddLesson = async()=>{
+
+    if (!lessonTitle || !lessonDuration || !videoFile) {
+      toast.error("All fields required");
+      return;
+    }
+
+      const formData = new FormData()
+
+  
+
+      formData.append("title", lessonTitle);
+      formData.append("duration", lessonDuration);
+      formData.append("description", lessonDescription);
+      formData.append("video", videoFile);
+
+     try{
+
+         await Api.post(`/courses/teacher/courses/${id}/lessons/`,
+            formData,
+            {headers:{"Content-Type":"multipart/form-data"}}
+          )
+
+      toast.success("Lesson uploaded")
+      setIsAddLessonOpen(false)
+      setLessonTitle("");
+      setLessonDuration("");
+      setLessonDescription("");
+      setVideoFile(null);
+
+      fetchLessons()
+
+     }catch{
+      toast.error("Lesson upload failed")
+     }
+
+
+  }
+
+
+  // course video length
+
+  const getVideoDuration = (file) => {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src);
+
+      const totalSeconds = Math.floor(video.duration);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      resolve(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+    };
+
+    video.src = URL.createObjectURL(file);
+  });
+};
+
+
+//   const res = await Api.get(
+//   `/courses/student/lessons/${lessonId}/video/`
+// );
+
+// setSignedUrl(res.data.signed_url);
+
+// <video controls width="100%">
+//   <source src={signedUrl} type="video/mp4" />
+// </video>
 
 
 
-  const lessonsData = [
-    { id: 1, title: "Introduction to HTML", duration: "15:30", type: "Video" },
-    { id: 2, title: "CSS Basics", duration: "22:45", type: "Video" },
-    { id: 3, title: "JavaScript Fundamentals", duration: "30:00", type: "Video" }
-  ];
+  // const lessonsData = [
+  //   { id: 1, title: "Introduction to HTML", duration: "15:30", type: "Video" },
+  //   { id: 2, title: "CSS Basics", duration: "22:45", type: "Video" },
+  //   { id: 3, title: "JavaScript Fundamentals", duration: "30:00", type: "Video" }
+  // ];
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -271,7 +372,7 @@ const TeacherManageCourses = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-200">Course Lessons</h2>
             <button
-              onClick={() => setIsAddLessonOpen(true)}
+              onClick={()=>setIsAddLessonOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-purple-900/20 transition-all"
             >
               <Plus size={18} />
@@ -280,7 +381,7 @@ const TeacherManageCourses = () => {
           </div>
 
           <div className="space-y-3">
-            {lessonsData.map((lesson, index) => (
+            {lessons.map((lesson, index) => (
               <div key={lesson.id} className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-700 transition-colors group">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center text-purple-400 font-bold border border-purple-500/30">
@@ -437,33 +538,49 @@ const TeacherManageCourses = () => {
         <Modal
           title="Add New Lesson"
           onClose={() => setIsAddLessonOpen(false)}
-          onSave={() => setIsAddLessonOpen(false)}
+          onSave={handleAddLesson}
           saveText="Add Lesson"
         >
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Lesson Title *</label>
-              <input type="text" placeholder="Enter lesson title" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+              <input type="text" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Enter lesson title" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Type</label>
-              <select className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
-                <option>Video</option>
-                <option>Article</option>
-                <option>Quiz</option>
+              <select disabled className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer">
+                <option value="video">Video</option>
+          
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Duration (e.g., 15:30)</label>
-              <input type="text" placeholder="00:00" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
+              <input type="text" value={lessonDuration} onChange={(e)=>setLessonDuration(e.target.value)} placeholder="00:00" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Video URL</label>
-              <input type="text" placeholder="https://..." className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors" />
-            </div>
+
+           <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1">
+              Lesson Video 
+            </label>
+
+            <input
+                type="file"
+                accept="video/*"
+                onChange={async (e) => {
+                  const file = e.target.files[0];
+                  setVideoFile(file);
+
+                  const duration = await getVideoDuration(file);
+                  setLessonDuration(duration);  
+                }}
+              />
+        </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Description</label>
-              <textarea rows="3" placeholder="Enter lesson description" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+              <textarea rows="3"value={lessonDescription} onChange={(e) => setLessonDescription(e.target.value)} placeholder="Enter lesson description" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
             </div>
           </div>
         </Modal>

@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import *
 
+
 urlpatterns = [
 
 
@@ -9,6 +10,8 @@ urlpatterns = [
     path('admin/courses/', AdminCourseView.as_view()),
     path('admin/courses/<int:pk>/',AdminCourseView.as_view()),
     path('admin/courses/toggle/<int:pk>/',AdminCourseToggleStatus.as_view()),
+
+
 
 
     # admin category
@@ -34,7 +37,20 @@ urlpatterns = [
     path('mycourses/<int:pk>/',TeacherCourseView.as_view()),
 
     path('categories/block/<int:id>/',CatgeoryBlock.as_view()),
-    path('categories/unblock/<int:id>/',CategoryUnBlock.as_view())
+    path('categories/unblock/<int:id>/',CategoryUnBlock.as_view()),
+
+    # Teacher Add lesson
+
+    # teacher uploads video
+    path('teacher/courses/<int:course_id>/lessons/',TeacherLessonCreateView.as_view(),name="teacher-add-lesson"),
+
+    # student plays video
+
+    path(
+        "student/lessons/<int:lesson_id>/video/",
+        StudentLessonVideoView.as_view(),
+        name="student-play-lesson"
+    ),
 
 
 
