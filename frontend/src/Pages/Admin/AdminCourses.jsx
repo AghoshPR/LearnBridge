@@ -246,9 +246,9 @@ const AdminCourses = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Courses</h1>
-          <button className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm">
+          {/* <button className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm">
             <Plus size={18} /> Create Course
-          </button>
+          </button> */}
         </div>
 
         {/* Search Bar */}

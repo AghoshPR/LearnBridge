@@ -32,6 +32,7 @@ urlpatterns = [
     path("teachers/block/<int:id>/", BlockTeacherView.as_view()),
     path("teachers/unblock/<int:id>/", UnBlockTeacherView.as_view()),
     path("teachers/reject/<int:teacher_id>/",AdminTeacherRejectView.as_view()),
+    path("teachers/delete/<int:id>/", AdminTeacherDeleteView.as_view()),
 
 
     

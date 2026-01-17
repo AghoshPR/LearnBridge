@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 # Create your views here.
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +9,7 @@ from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAut
 from .serializers import *
 from rest_framework.response import Response
 from adminapp.utils import send_teacher_rejection_email
+from django.shortcuts import get_object_or_404
 
 
 
@@ -368,6 +367,30 @@ class AdminCreateTeacher(APIView):
             status=status.HTTP_201_CREATED
         )
     
+
+class AdminTeacherDeleteView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def delete(self,request,id):
+
+        try:
+            profile = TeacherProfile.objects.get(id=id)
+            user = profile.user
+            
+            profile.delete()
+            user.delete()
+
+            return Response(
+                {"message":"Teacher Deleted Successfully"},
+                status=status.HTTP_200_OK
+            )
+        except TeacherProfile.DoesNotExist:
+             return Response(
+                {"error":"Teacher not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 
 
     
