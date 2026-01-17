@@ -447,11 +447,11 @@ class TeacherLessonCreateView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-class TeacherLessonDetailedView(APIView):
+class TeacherLessonDetailView(APIView):
 
     permission_classes=[IsTeacher]
 
-    def patch(self,request,lesson_id):
+    def put(self,request,lesson_id):
 
         lesson = get_object_or_404(Lesson,id=lesson_id)
 
@@ -495,7 +495,7 @@ class TeacherLessonDetailedView(APIView):
 
         return Response(
             {"message":"Lesson deleted successfully"},
-            status==status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT
         )
 
 

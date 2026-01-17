@@ -41,6 +41,8 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    total_lessons = serializers.SerializerMethodField()
+
     thumbnail_url = serializers.SerializerMethodField()
 
     instructor = serializers.CharField(
@@ -59,6 +61,10 @@ class CourseSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         )
+
+    def get_total_lessons(self, obj):
+        return obj.lessons.count()
+    
 
     def get_thumbnail_url(self,obj):
 

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 
 const TeacherManageCourses = () => {
+
   const [isEditCourseOpen, setIsEditCourseOpen] = useState(false);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
   const [isEditLessonOpen, setIsEditLessonOpen] = useState(false);
@@ -35,6 +36,8 @@ const TeacherManageCourses = () => {
   const [isDeleteLessonOpen, setIsDeleteLessonOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState(null);
 
+  // updating the lesson
+  const [isUpdatingLesson, setIsUpdatingLesson] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -63,7 +66,7 @@ const TeacherManageCourses = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
-    { icon: Folder, label: 'Categories', path: '/teacher/categories', active: false },
+    { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },
@@ -114,7 +117,7 @@ const TeacherManageCourses = () => {
       setCategory(res.data.category)
       setLevel(res.data.level)
       setPrice(res.data.price)
-      setStatus(res.data.status)
+      setStatus(res.data.status === "active" ? "published" : res.data.status);
       setThumbnailPreview(res.data.thumbnail_url || null)
 
     } catch (err) {
@@ -187,9 +190,16 @@ const TeacherManageCourses = () => {
 
       setIsEditCourseOpen(false);
       setThumbnail(null);
-    } catch (err) {
-      toast.error("Failed to update course");
+    } 
+    catch (err) {
+      
+      toast.error(
+        err.response?.data?.detail ||
+        JSON.stringify(err.response?.data) ||
+        "Failed to update course"
+      );
     }
+
   }
 
   const handleAddLesson = async () => {
@@ -231,7 +241,10 @@ const TeacherManageCourses = () => {
 
   }
 
+  // for the lessson course edit
+
   const handleUpdateLesson = async () => {
+
     if (!lessonTitle || !lessonDuration) {
       toast.error("Title and Duration are required");
       return;
@@ -247,8 +260,13 @@ const TeacherManageCourses = () => {
     }
 
     try {
-      await Api.patch(`/courses/teacher/lessons/${selectedLesson.id}/`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+
+      setIsUpdatingLesson(true)
+
+      await Api.put(`/courses/teacher/lessons/${selectedLesson.id}/`,
+        formData, 
+        { headers: { "Content-Type": "multipart/form-data" }
+
       });
 
       toast.success("Lesson updated successfully");
@@ -259,10 +277,17 @@ const TeacherManageCourses = () => {
       setVideoFile(null);
       setSelectedLesson(null);
       fetchLessons();
-    } catch (err) {
+    } catch  {
       toast.error("Failed to update lesson");
     }
+
+    finally{
+      setIsUpdatingLesson(false)
+    }
+
   }
+
+  // lesson delete
 
   const handleDeleteLesson = async () => {
     if (!lessonToDelete) return;
@@ -300,23 +325,7 @@ const TeacherManageCourses = () => {
   };
 
 
-  //   const res = await Api.get(
-  //   `/courses/student/lessons/${lessonId}/video/`
-  // );
 
-  // setSignedUrl(res.data.signed_url);
-
-  // <video controls width="100%">
-  //   <source src={signedUrl} type="video/mp4" />
-  // </video>
-
-
-
-  // const lessonsData = [
-  //   { id: 1, title: "Introduction to HTML", duration: "15:30", type: "Video" },
-  //   { id: 2, title: "CSS Basics", duration: "22:45", type: "Video" },
-  //   { id: 3, title: "JavaScript Fundamentals", duration: "30:00", type: "Video" }
-  // ];
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -411,7 +420,7 @@ const TeacherManageCourses = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard icon={Users} label="Students" value={course?.students_count ?? 0} color="blue" />
           <StatCard icon={Star} label="Rating" value={course?.average_rating ?? 0} color="yellow" />
-          <StatCard icon={MonitorPlay} label="Lessons" value={course?.total_lessons ?? 0} color="purple" />
+          <StatCard icon={MonitorPlay} label="Lessons" value={lessons.length} color="purple" />
           <StatCard icon={DollarSign} label="Price" value={course?.price ?? 0} color="green" />
         </div>
 
@@ -662,6 +671,7 @@ const TeacherManageCourses = () => {
               setSelectedLesson(null);
             }}
             onSave={handleUpdateLesson}
+            isLoading={isUpdatingLesson}
           >
             <div className="space-y-4">
               <div>
@@ -699,6 +709,13 @@ const TeacherManageCourses = () => {
                     }
                   }}
                 />
+
+                  {videoFile && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      Selected: {videoFile.name}
+                    </p>
+                  )}
+
               </div>
 
               <div>
@@ -757,7 +774,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => {
 }
 
 // Modal Component Helper
-const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes" }) => {
+const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes", isLoading = false }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
@@ -774,9 +791,20 @@ const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes" }) 
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-slate-300 font-medium hover:bg-slate-800 transition-colors text-sm">
             Cancel
           </button>
-          <button onClick={onSave} className="px-5 py-2.5 rounded-xl bg-purple-600 text-white font-bold hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/20 text-sm">
-            {saveText}
+
+          <button
+            onClick={onSave}
+            disabled={isLoading}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors
+              ${isLoading
+                ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+                : "bg-purple-600 text-white hover:bg-purple-500"}
+            `}
+          >
+            {isLoading ? "Updating..." : saveText}
           </button>
+
+
         </div>
       </div>
     </div>

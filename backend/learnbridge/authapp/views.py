@@ -16,7 +16,7 @@ from google.auth.transport import requests
 from django.conf import settings
 import requests as py_requests
 from django.contrib.auth.password_validation import validate_password
-
+from rest_framework_simplejwt.exceptions import TokenError
 
 
 class TeacherRegisterView(APIView):
@@ -538,6 +538,16 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except TokenError:
+                pass
+
         response = Response({"message": "Logged out successfully"})
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")

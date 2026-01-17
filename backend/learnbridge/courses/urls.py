@@ -43,6 +43,7 @@ urlpatterns = [
 
     # teacher uploads video
     path('teacher/courses/<int:course_id>/lessons/',TeacherLessonCreateView.as_view(),name="teacher-add-lesson"),
+    path("teacher/lessons/<int:lesson_id>/",TeacherLessonDetailView.as_view(),name="teacher-edit-delete-lesson"),
 
     # student plays video
 
