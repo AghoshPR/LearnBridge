@@ -2,18 +2,6 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    # GET → list pending teachers
-    path("teachers/pending/", PendingTeachersView.as_view()),
-
-    # GET → list approved teachers
-    path("teachers/approved/", ApproveTeacherView.as_view()),
-
-    # POST → approve teacher
-    path("teachers/approve/<int:id>/", ApproveTeacherView.as_view()),
-
-    # POST → reject teacher
-    
-
     
     
 
@@ -35,7 +23,12 @@ urlpatterns = [
     path("teachers/delete/<int:id>/", AdminTeacherDeleteView.as_view()),
 
 
+    path("teachers/pending/", PendingTeachersView.as_view()),
+    path("teachers/approved/", ApproveTeacherView.as_view()),
+    path("teachers/approve/<int:id>/", ApproveTeacherView.as_view()),
+    path("teachers/pending/<int:id>/", AdminPendingTeacherDetailView.as_view()),
     
+
 
 
 ]

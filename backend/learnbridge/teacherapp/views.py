@@ -8,6 +8,7 @@ from .serializers import TeacherProfileSerializer
 from .models import TeacherProfile
 from rest_framework import status
 from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class SubmitTeacherProfileView(APIView):
@@ -17,6 +18,7 @@ class SubmitTeacherProfileView(APIView):
         CsrfExemptSessionAuthentication,
     ]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self,request):
 

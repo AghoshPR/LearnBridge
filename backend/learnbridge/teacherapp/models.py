@@ -36,7 +36,12 @@ class TeacherProfile(models.Model):
 
     years_of_experience = models.PositiveIntegerField(null=True,blank=True,help_text="Required only if teacher is experienced")
 
-    resume = models.FileField(upload_to='teacher_resumes/',null=True,blank=True)
+    resume = CloudinaryField(
+    resource_type="raw",
+    folder="teacher_resumes",
+    null=True,
+    blank=True
+)
 
     status = models.CharField(max_length=20,choices=STATUS_CHOICES,default='pending')
 

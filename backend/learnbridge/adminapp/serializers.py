@@ -100,7 +100,35 @@ class AdminCreateTeacherSerializer(serializers.Serializer):
         )
 
         return user
-
-
     
 
+
+class AdminTeacherProfileDetailSerializer(serializers.ModelSerializer):
+    
+    name = serializers.CharField(source="user.username")
+    email = serializers.EmailField(source="user.email")
+    resume = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TeacherProfile
+        fields = [
+            "id",
+            "name",
+            "email",
+            "teacher_type",
+            "phone",
+            "qualification",
+            "subjects",
+            "bio",
+            "years_of_experience",
+            "resume",
+            "profile_image",
+            "applied_at",
+        ]
+
+    def get_resume(self, obj):
+        return obj.resume.url if obj.resume else None
+
+    def get_profile_image(self, obj):
+        return obj.profile_image.url if obj.profile_image else None

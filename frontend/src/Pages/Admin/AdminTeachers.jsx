@@ -260,8 +260,15 @@ const AdminTeachers = () => {
         setTeacherToDelete(teacher);
     };
 
-    const handleViewClick = (teacher) => {
-        setTeacherToView(teacher);
+    const handleViewClick = async (teacher) => {
+
+        try{
+            const res = await Api.get(`/admin/teachers/pending/${teacher.id}/`)
+            setTeacherToView(res.data);
+        }catch(err){
+            toast.error("Failed to load teaher detail")
+        }
+        
     };
 
     const confirmDeleteAction = async () => {
@@ -1080,13 +1087,15 @@ const AdminTeachers = () => {
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Experience Level</label>
                                     <div className="flex items-center gap-2">
-                                        {teacherToView.experience === "Fresher" || teacherToView.experience === "0" ? (
-                                            <span className="flex items-center gap-1.5 bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-md text-xs font-medium border border-purple-500/20">
-                                                <GradCapIcon size={12} /> Fresher
+                                        {teacherToView.years_of_experience ? (
+                                            <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md text-xs font-medium border border-amber-500/20">
+                                            <Briefcase size={12} />
+                                            {teacherToView.years_of_experience} Years
                                             </span>
                                         ) : (
-                                            <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md text-xs font-medium border border-amber-500/20">
-                                                <Briefcase size={12} /> {teacherToView.experience} Years
+                                            <span className="flex items-center gap-1.5 bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-md text-xs font-medium border border-purple-500/20">
+                                            <GradCapIcon size={12} />
+                                            Fresher
                                             </span>
                                         )}
                                     </div>
@@ -1113,6 +1122,25 @@ const AdminTeachers = () => {
                                     </div>
                                 </div>
                             </div>
+
+                             <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Phone</label>
+                                    <div className="bg-[#0F1014] p-3 rounded-lg border border-gray-800 text-gray-300 text-xs leading-relaxed">
+                                        <p>{teacherToView.phone || "Bachelor of Science in Computer Science, Master of Computer Applications (MCA)"}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Bio</label>
+                                    <div className="bg-[#0F1014] p-3 rounded-lg border border-gray-800 text-gray-300 text-xs leading-relaxed">
+                                        <p>{teacherToView.bio || "Bachelor of Science in Computer Science, Master of Computer Applications (MCA)"}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
                         {/* Full Width Section: Documents */}
@@ -1126,13 +1154,27 @@ const AdminTeachers = () => {
                                                 <BookOpen size={20} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">Resume/CV.pdf</p>
-                                                <p className="text-[10px] text-gray-500">2.4 MB • PDF File</p>
+                                                <p className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
+                                                    Resume / CV
+                                                </p>
+                                                <p className="text-[10px] text-gray-500">
+                                                    PDF File
+                                                </p>
                                             </div>
                                         </div>
-                                        <button className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-blue-600/20">
-                                            View
-                                        </button>
+
+                                        {teacherToView.resume ? (
+                                            <a
+                                                href={teacherToView.resume}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-blue-600/20"
+                                            >
+                                                Download
+                                            </a>
+                                        ) : (
+                                            <span className="text-xs text-gray-500">No Resume</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

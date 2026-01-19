@@ -366,7 +366,14 @@ class AdminCreateTeacher(APIView):
             {"message":"Teacher created and approved successfully"},
             status=status.HTTP_201_CREATED
         )
-    
+
+
+class AdminViewTeacherRegistartion:
+    pass
+
+
+
+
 
 class AdminTeacherDeleteView(APIView):
 
@@ -393,4 +400,17 @@ class AdminTeacherDeleteView(APIView):
 
 
 
-    
+class AdminPendingTeacherDetailView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def get(self,request,id):
+
+        profile = get_object_or_404(
+            TeacherProfile,id=id,
+            status="pending"
+
+        )
+
+        serializer = AdminTeacherProfileDetailSerializer(profile)
+        return Response(serializer.data)
