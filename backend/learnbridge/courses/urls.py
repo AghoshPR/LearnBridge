@@ -56,7 +56,8 @@ urlpatterns = [
 
     # Course 
 
-    path("public/",PublicCourseListView.as_view())
+    path("public/",PublicCourseListView.as_view()),
+    path("categories/public/", PublicCategoryListView.as_view()),
 
 
 

@@ -1,56 +1,71 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { logout } from '../../Store/authSlice';
 import {
-  ShoppingCart,
-  Bell,
-  Menu,
-  X,
-  ChevronDown,
-  Clock,
-  Star,
-  Heart,
-  User
+    ShoppingCart,
+    Bell,
+    Menu,
+    X,
+    ChevronDown,
+    Clock,
+    Star,
+    Heart,
+    User
 } from "lucide-react";
 import Api from '../Services/Api';
 
 const Courses = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-        
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const [courses,setCourses] = useState([])
-    const [loading,setLoading] = useState(true)
+    const [courses, setCourses] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    const [search, setSearch] = useState("")
+    const [categories, setCategories] = useState([])
+    const [selectedCategory, setSelectedCategory] = useState("")
 
     const { isAuthenticated, username } = useSelector((state) => state.auth);
 
     const goToCourseDetail = (id) => {
         navigate(`/courseview/${id}`);
-        };
+    };
 
-    useEffect(()=>{
-        Api.get("/courses/public/")
-        .then((res)=>setCourses(res.data))
-        .finally(()=>setLoading(false))
-    },[])
+    useEffect(() => {
+        Api.get("/courses/public/", {
+            params: {
+                search: search || undefined,
+                category: selectedCategory || undefined,
+            }
+        })
+            .then((res) => setCourses(res.data))
+            .finally(() => setLoading(false))
+    }, [search, selectedCategory])
 
 
-    if (loading){
+    useEffect(() => {
+        Api.get("/courses/categories/public/")
+            .then((res) => setCategories(res.data));
+    }, []);
+
+
+    if (loading) {
         return (
-        <div className="min-h-screen flex items-center justify-center">
-            <p className="text-lg font-semibold text-gray-600">
-            Loading courses...
-            </p>
-        </div>
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-lg font-semibold text-gray-600">
+                    Loading courses...
+                </p>
+            </div>
         );
     }
 
 
-    
+
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -64,7 +79,7 @@ const Courses = () => {
 
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <button onClick={()=>navigate("/courses")} className="hover:text-blue-600 transition-colors">Explore</button>
+                            <button onClick={() => navigate("/courses")} className="hover:text-blue-600 transition-colors">Explore</button>
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
                         </div>
@@ -165,6 +180,8 @@ const Courses = () => {
                             <input
                                 type="text"
                                 placeholder="Search resources"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
                                 className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm"
                             />
                         </div>
@@ -175,10 +192,17 @@ const Courses = () => {
 
                     <div className="flex gap-4 w-full md:w-auto">
                         <div className="relative flex-1 md:flex-none">
-                            <select className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
-                                <option>All Categories</option>
-                                <option>Web Development</option>
-                                <option>Data Science</option>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
+
+                                <option value="">All Categories</option>
+                                {categories.map((cat) => (
+                                    <option value={cat.id} key={cat.id} >{cat.name}</option>
+                                ))}
+
+
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                         </div>
@@ -196,9 +220,9 @@ const Courses = () => {
                 {/* Course Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {courses.map((course) => (
-                        <div key={course.id} 
-                        onClick={() => goToCourseDetail(course.id)}
-                        className="bg-white rounded-2xl border border-gray-100 cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
+                        <div key={course.id}
+                            onClick={() => goToCourseDetail(course.id)}
+                            className="bg-white rounded-2xl border border-gray-100 cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
                             <div className="relative h-40 overflow-hidden bg-gray-100">
                                 <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 <span className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
@@ -210,7 +234,8 @@ const Courses = () => {
                             </div>
 
                             <div className="p-5 flex flex-col flex-1">
-                                <h3 className="font-bold text-gray-900 mb-2 leading-tight line-clamp-2 min-h-[3rem] text-lg">{course.title}</h3>
+                                <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg">{course.title}</h3>
+                                <p className="text-xs font-medium text-blue-600 mb-2">{course.category}</p>
                                 <p className="text-sm text-gray-500 mb-3">{course.instructor}</p>
 
                                 <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
@@ -230,6 +255,7 @@ const Courses = () => {
                                     <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                                         <ShoppingCart className="w-5 h-5" />
                                     </button>
+
                                 </div>
                             </div>
                         </div>

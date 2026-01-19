@@ -519,10 +519,10 @@ class PublicCourseListView(APIView):
         ).select_related("teacher","category")
 
         if search:
-            courses = Course.filter(
-                Q(title__icontains=search) | Q(description__icontains=search)
+            courses = courses.filter(
+                Q(title__icontains=search) |
+                Q(description__icontains=search)
             )
-
         if category:
 
             courses = courses.filter(category_id=category)
@@ -538,8 +538,8 @@ class PublicCategoryListView(APIView):
 
     def get(self,request):
 
-        Categories=Category.objects.all().order_by("name")
-        serializer = PublicCategorySerializer(Categories,many=True)
+        categories = Category.objects.all().order_by("name")
+        serializer = PublicCategorySerializer(categories,many=True)
         return Response(serializer.data)
 
 
