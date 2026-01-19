@@ -137,3 +137,9 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
+    
+
+class PublicCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name"]

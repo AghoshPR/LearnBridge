@@ -8,7 +8,7 @@ from .serializers import *
 from django.shortcuts import get_object_or_404
 from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Max
+from django.db.models import Max,Q
 
 
 
@@ -510,15 +510,37 @@ class PublicCourseListView(APIView):
 
     def get(self,request):
 
+        search = request.GET.get("search")
+        category = request.GET.get("category")
+
+
         courses = Course.objects.filter(
             status="published"
         ).select_related("teacher","category")
+
+        if search:
+            courses = Course.filter(
+                Q(title__icontains=search) | Q(description__icontains=search)
+            )
+
+        if category:
+
+            courses = courses.filter(category_id=category)
+
 
         serializer = PublicCourseSerializer(courses,many=True)
         return Response(serializer.data)
 
 
+class PublicCategoryListView(APIView):
 
+    permission_classes=[AllowAny]
+
+    def get(self,request):
+
+        Categories=Category.objects.all().order_by("name")
+        serializer = PublicCategorySerializer(Categories,many=True)
+        return Response(serializer.data)
 
 
 

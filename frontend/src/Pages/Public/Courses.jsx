@@ -28,6 +28,10 @@ const Courses = () => {
 
     const { isAuthenticated, username } = useSelector((state) => state.auth);
 
+    const goToCourseDetail = (id) => {
+        navigate(`/courseview/${id}`);
+        };
+
     useEffect(()=>{
         Api.get("/courses/public/")
         .then((res)=>setCourses(res.data))
@@ -192,7 +196,9 @@ const Courses = () => {
                 {/* Course Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {courses.map((course) => (
-                        <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
+                        <div key={course.id} 
+                        onClick={() => goToCourseDetail(course.id)}
+                        className="bg-white rounded-2xl border border-gray-100 cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
                             <div className="relative h-40 overflow-hidden bg-gray-100">
                                 <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 <span className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>

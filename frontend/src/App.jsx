@@ -47,6 +47,8 @@ function App() {
 
         <Route path="/" element={<Home />} />
         <Route path="/courses" element={<Courses />} />
+        <Route path="/courseview/:id" element={<CourseDetail />} />
+
 
 
         {/* Auth */}

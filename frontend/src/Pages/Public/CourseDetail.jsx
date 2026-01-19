@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
+
 const CourseDetail = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     const relatedCourses = [
         {
