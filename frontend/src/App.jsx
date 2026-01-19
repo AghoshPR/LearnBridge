@@ -80,15 +80,16 @@ function App() {
 
         {/* Student */}
 
-        <Route path="/student/dashboard" element={
-
-          <ProtectedRoute role="student">
-            <StudentDashboard />
-          </ProtectedRoute>
-        }
-        />
+       
+      
 
         <Route path="/student/profile" element={
+          <ProtectedRoute role="student">
+            <StudentProfile />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/courses" element={
           <ProtectedRoute role="student">
             <StudentProfile />
           </ProtectedRoute>

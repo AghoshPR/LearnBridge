@@ -100,3 +100,8 @@ class Lesson(models.Model):
 
     class Meta:
         ordering=["position"]
+
+
+
+# Public Course view
+

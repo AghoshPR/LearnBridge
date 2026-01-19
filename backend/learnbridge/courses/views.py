@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from authapp.permissions import *
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from courses.models import Category,Course,Lesson
-from .serializers import CategorySerializer,CourseSerializer,LessonSerializer
+from .serializers import *
 from django.shortcuts import get_object_or_404
 from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
@@ -497,6 +498,31 @@ class TeacherLessonDetailView(APIView):
             {"message":"Lesson deleted successfully"},
             status=status.HTTP_204_NO_CONTENT
         )
+    
+
+
+# Public course list
+
+
+class PublicCourseListView(APIView):
+
+    permission_classes=[AllowAny]
+
+    def get(self,request):
+
+        courses = Course.objects.filter(
+            status="published"
+        ).select_related("teacher","category")
+
+        serializer = PublicCourseSerializer(courses,many=True)
+        return Response(serializer.data)
+
+
+
+
+
+
+
 
 
 class StudentLessonVideoView(APIView):

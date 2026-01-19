@@ -1,93 +1,52 @@
-import React, { useState } from 'react';
-import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star } from 'lucide-react';
+import React, { useState,useEffect } from 'react';
+
 import Logo from '../../assets/learnbridge-logo.png';
-import { useSelector,useDispatch } from 'react-redux';
-import { useNavigate,Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
 import { logout } from '../../Store/authSlice';
+import {
+  ShoppingCart,
+  Bell,
+  Menu,
+  X,
+  ChevronDown,
+  Clock,
+  Star,
+  Heart,
+  User
+} from "lucide-react";
+import Api from '../Services/Api';
 
 const Courses = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { isAuthenticated, username } = useSelector((state) => state.auth);
+        
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const [courses,setCourses] = useState([])
+    const [loading,setLoading] = useState(true)
+
+    const { isAuthenticated, username } = useSelector((state) => state.auth);
+
+    useEffect(()=>{
+        Api.get("/courses/public/")
+        .then((res)=>setCourses(res.data))
+        .finally(()=>setLoading(false))
+    },[])
 
 
+    if (loading){
+        return (
+        <div className="min-h-screen flex items-center justify-center">
+            <p className="text-lg font-semibold text-gray-600">
+            Loading courses...
+            </p>
+        </div>
+        );
+    }
 
-    const courses = [
-        {
-            id: 1,
-            title: 'Complete Web Development Bootcamp 2024',
-            instructor: 'Dr. Angela Yu',
-            rating: 4.8,
-            reviews: '45,230',
-            duration: '52h',
-            price: '$89.99',
-            level: 'Beginner',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 2,
-            title: 'Data Science and Machine Learning with Python',
-            instructor: 'Jose Portilla',
-            rating: 4.9,
-            reviews: '38,450',
-            duration: '43h',
-            price: '$94.99',
-            level: 'Intermediate',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 3,
-            title: 'UI/UX Design Masterclass: Design Thinking to Prototyping',
-            instructor: 'Sarah Chen',
-            rating: 4.7,
-            reviews: '29,340',
-            duration: '38h',
-            price: '$79.99',
-            level: 'All Levels',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 4,
-            title: 'Advanced React and TypeScript Development',
-            instructor: 'Maximilian Schwarzmüller',
-            rating: 4.9,
-            reviews: '52,100',
-            duration: '48h',
-            price: '$99.99',
-            level: 'Advanced',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 5,
-            title: 'Digital Marketing Masterclass 2024',
-            instructor: 'Phil Ebiner',
-            rating: 4.6,
-            reviews: '31,200',
-            duration: '35h',
-            price: '$74.99',
-            level: 'Beginner',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 6,
-            title: 'Professional Photography Fundamentals',
-            instructor: 'Chris Parker',
-            rating: 4.8,
-            reviews: '18,900',
-            duration: '28h',
-            price: '$69.99',
-            level: 'Beginner',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600'
-        }
-    ];
+
+    
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -98,10 +57,10 @@ const Courses = () => {
                         <a href="/" className="flex items-center gap-2">
                             <img src={Logo} alt="LearnBridge Logo" className="h-8" />
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
-                            
+
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <a href="/courses" className="hover:text-blue-600 transition-colors">Explore</a>
+                            <button onClick={()=>navigate("/courses")} className="hover:text-blue-600 transition-colors">Explore</button>
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
                         </div>
@@ -117,11 +76,11 @@ const Courses = () => {
                         <div className="relative group hidden md:block pl-2 border-l border-gray-200">
                             <button className="flex items-center gap-3">
                                 <span className="text-sm font-medium">
-                                {isAuthenticated ? `Hi, ${username}` : "User"}
+                                    {isAuthenticated ? `Hi, ${username}` : "User"}
                                 </span>
 
                                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+                                    {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                                 </div>
                             </button>
 
@@ -130,39 +89,39 @@ const Courses = () => {
                                             opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
 
                                 {!isAuthenticated ? (
-                                <>
-                                    <button
-                                    onClick={() => navigate("/student/login")}
-                                    className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
-                                    >
-                                    Login
-                                    </button>
-                                    <button
-                                    onClick={() => navigate("/student/register")}
-                                    className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
-                                    >
-                                    Sign Up
-                                    </button>
-                                </>
+                                    <>
+                                        <button
+                                            onClick={() => navigate("/student/login")}
+                                            className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                                        >
+                                            Login
+                                        </button>
+                                        <button
+                                            onClick={() => navigate("/student/register")}
+                                            className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                                        >
+                                            Sign Up
+                                        </button>
+                                    </>
                                 ) : (
-                                <>
-                                    <button className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50">
-                                    Profile
-                                    </button>
+                                    <>
+                                        <button className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50">
+                                            Profile
+                                        </button>
 
-                                    <button
-                                    onClick={() => {
-                                        dispatch(logout());
-                                        navigate("/student/login", { replace: true });
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                    >
-                                    Logout
-                                    </button>
-                                </>
+                                        <button
+                                            onClick={() => {
+                                                dispatch(logout());
+                                                navigate("/student/login", { replace: true });
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                            Logout
+                                        </button>
+                                    </>
                                 )}
                             </div>
-                            </div>
+                        </div>
 
                         <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -234,11 +193,14 @@ const Courses = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {courses.map((course) => (
                         <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
-                            <div className="relative h-48 overflow-hidden">
-                                <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
+                            <div className="relative h-40 overflow-hidden bg-gray-100">
+                                <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <span className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
                                     {course.level}
                                 </span>
+                                <button className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white text-gray-400 hover:text-red-500 transition-colors">
+                                    <Heart className="w-4 h-4 fill-transparent hover:fill-current transition-colors" />
+                                </button>
                             </div>
 
                             <div className="p-5 flex flex-col flex-1">
@@ -257,8 +219,11 @@ const Courses = () => {
                                     </span>
                                 </div>
 
-                                <div className="mt-auto pt-4 border-t border-gray-50">
+                                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
                                     <span className="text-xl font-bold text-blue-600">{course.price}</span>
+                                    <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                                        <ShoppingCart className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>

@@ -54,5 +54,10 @@ urlpatterns = [
     ),
 
 
+    # Course 
+
+    path("public/",PublicCourseListView.as_view())
+
+
 
 ]
