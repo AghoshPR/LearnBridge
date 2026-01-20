@@ -543,6 +543,23 @@ class PublicCategoryListView(APIView):
         return Response(serializer.data)
 
 
+# course Detail page
+
+class PublicCourseDetailView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self,request,pk):
+
+        course = get_object_or_404(
+            Course.objects.select_related("teacher","category"),
+            id=pk,
+            status="published"
+        )
+
+        serializer = PublicCourseDetailSerializer(course)
+        return Response(serializer.data)
+
 
 
 

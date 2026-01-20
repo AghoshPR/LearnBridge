@@ -58,6 +58,7 @@ urlpatterns = [
 
     path("public/",PublicCourseListView.as_view()),
     path("categories/public/", PublicCategoryListView.as_view()),
+    path("public/<int:pk>/",PublicCourseDetailView.as_view()),
 
 
 

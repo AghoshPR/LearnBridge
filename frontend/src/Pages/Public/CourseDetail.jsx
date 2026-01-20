@@ -1,51 +1,61 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
+import { useParams } from "react-router-dom";
+import Api from "../Services/Api";
+
 
 
 const CourseDetail = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const { id } = useParams();
 
-    const relatedCourses = [
-        {
-            id: 4,
-            title: 'Advanced React and TypeScript Development',
-            instructor: 'Maximilian Schwarzmüller',
-            rating: 4.9,
-            reviews: '52,100',
-            duration: '48h',
-            price: '$99.99',
-            level: 'Advanced',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 2,
-            title: 'Data Science and Machine Learning with Python',
-            instructor: 'Jose Portilla',
-            rating: 4.9,
-            reviews: '38,450',
-            duration: '43h',
-            price: '$94.99',
-            level: 'Intermediate',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600'
-        },
-        {
-            id: 6,
-            title: 'Professional Photography Fundamentals',
-            instructor: 'Chris Parker',
-            rating: 4.8,
-            reviews: '18,900',
-            duration: '28h',
-            price: '$69.99',
-            level: 'Beginner',
-            levelColor: 'bg-orange-500',
-            image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600'
-        }
-    ];
+    const [course, setCourse] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const [relatedCourses, setRelatedCourses] = useState([]);
+
+
+    useEffect(()=>{
+
+        setLoading(true)
+
+        Api.get(`/courses/public/${id}/`)
+        .then((res)=>setCourse(res.data))
+
+        .finally(()=>setLoading(false))
+
+    },[id])
+
+
+
+    useEffect(() => {
+
+    if (!course?.category_id) return;
+
+    Api.get("/courses/public/", {
+        params: { category: course.category_id }
+    }).then(res => setRelatedCourses(res.data));
+    }, [course]);
+
+
+    if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center">
+            <p className="text-lg font-semibold text-gray-600">Loading course...</p>
+        </div>
+    );
+    }
+
+    if (!course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-600 font-semibold">Course not found</p>
+      </div>
+    );
+  }
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -53,10 +63,10 @@ const CourseDetail = () => {
             <nav className="bg-white sticky top-0 z-50 border-b border-gray-100">
                 <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-8">
-                        <a href="/" className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
                             <img src={Logo} alt="LearnBridge Logo" className="h-8" />
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
-                        </a>
+                        </div>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                             <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
@@ -132,13 +142,13 @@ const CourseDetail = () => {
                             <span className="text-orange-400">Web Development</span>
                         </div>
                         <span className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md mb-4">
-                            Beginner
+                            {course.level}
                         </span>
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-                            Complete Web Development Bootcamp 2024
+                            {course.title}
                         </h1>
                         <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-                            Master web development from scratch with HTML, CSS, JavaScript, React, Node.js, and more. Build real-world projects and launch your career as a full-stack developer.
+                            {course.description}
                         </p>
 
                         <div className="flex items-center gap-6 text-sm mb-6">
@@ -151,7 +161,7 @@ const CourseDetail = () => {
 
                         <div className="flex items-center gap-3 text-sm">
                             <span className="text-gray-300">Created by</span>
-                            <a href="#" className="text-blue-400 hover:text-blue-300 underline font-medium">Dr. Angela Yu</a>
+                            <a href="#" className="text-blue-400 hover:text-blue-300 underline font-medium">{course.instructor}</a>
                             <div className="flex items-center gap-1 text-gray-300 ml-4">
                                 <AlertCircle className="w-4 h-4" /> Last updated 11/2024
                             </div>
@@ -207,7 +217,7 @@ const CourseDetail = () => {
                                 {relatedCourses.map((course) => (
                                     <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
                                         <div className="relative h-40 overflow-hidden">
-                                            <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
                                                 {course.level}
                                             </span>
@@ -234,7 +244,13 @@ const CourseDetail = () => {
 
                                             <div className="mt-auto pt-3 border-t border-gray-50">
                                                 <span className="text-lg font-bold text-blue-600">{course.price}</span>
+                                                
                                             </div>
+
+                                            {/* <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                                                <ShoppingCart className="w-5 h-5" />
+                                            </button> */}
+                                            
                                         </div>
                                     </div>
                                 ))}
@@ -247,18 +263,19 @@ const CourseDetail = () => {
                     <div className="md:w-1/3 lg:w-1/4 md:-mt-32 lg:-mt-64 z-10">
                         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                             <div className="relative">
+                                {/* course.thumbnail */}
                                 <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600" alt="Course Preview" className="w-full h-48 object-cover" />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                     <PlayCircle className="w-16 h-16 text-white opacity-80" />
                                 </div>
                             </div>
                             <div className="p-6">
-                                <div className="text-3xl font-bold text-gray-900 mb-6">$84.99</div>
+                                <div className="text-3xl font-bold text-gray-900 mb-6">₹{course.price}/-</div>
 
-                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
+                                <button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
                                     Add to Cart
                                 </button>
-                                <button className="w-full bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors">
+                                <button className="w-full cursor-pointer bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors">
                                     Buy Now
                                 </button>
 
@@ -269,7 +286,7 @@ const CourseDetail = () => {
                                     </div>
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><FileText className="w-4 h-4" /> Lessons</div>
-                                        <span>312</span>
+                                        <span>{course.total_lessons}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><Globe className="w-4 h-4" /> Language</div>

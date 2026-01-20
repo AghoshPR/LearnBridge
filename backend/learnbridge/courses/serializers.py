@@ -115,12 +115,47 @@ class PublicCourseSerializer(serializers.ModelSerializer):
 
     instructor = serializers.CharField(source="teacher.username",read_only=True)
     category = serializers.CharField(source="category.name",read_only=True)
+    category_id = serializers.IntegerField(source="category.id", read_only=True)
     thumbnail = serializers.SerializerMethodField()
 
     class Meta:
 
         model = Course
         fields=[
+
+            "id",
+            "title",
+            "description",
+            "level",
+            "price",
+            "instructor",
+            "category",
+            "category_id",
+            "thumbnail",
+            "total_lessons",
+            "created_at",
+        ]
+
+    def get_thumbnail(self,obj):
+
+        return obj.thumbnail.url if obj.thumbnail else None
+    
+
+class PublicCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["id", "name"]
+
+class PublicCourseDetailSerializer(serializers.ModelSerializer):
+
+    instructor = serializers.CharField(source="teacher.username",read_only=True)
+    category = serializers.CharField(source = "category.name",read_only=True)
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = Course
+        fields = [
 
             "id",
             "title",
@@ -137,9 +172,3 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
-    
-
-class PublicCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ["id", "name"]

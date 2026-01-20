@@ -251,7 +251,7 @@ const Courses = () => {
                                 </div>
 
                                 <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
-                                    <span className="text-xl font-bold text-blue-600">{course.price}</span>
+                                    <span className="text-xl font-bold text-blue-600">₹{course.price}</span>
                                     <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                                         <ShoppingCart className="w-5 h-5" />
                                     </button>
