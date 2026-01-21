@@ -33,6 +33,10 @@ const AdminCategories = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const PAGE_SIZE = 10
+
   
   const [categories, setCategories] = useState([])
 

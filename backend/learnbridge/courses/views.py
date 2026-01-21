@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max,Q
 from .pagination import CoursePagination
 from authapp.authentication import PublicAuthentication
-
+from adminapp.pagination import AdminCategoryPagination
 # Create your views here.
 
 
@@ -24,7 +24,9 @@ class AdminCategoryView(APIView):
     def get(self,request):
 
         categories = Category.objects.all().order_by('-created_at')
-        serializer = CategorySerializer(categories,many=True)
+        paginator = AdminCategoryPagination()
+        page = paginator.paginate_queryset(categories, request)
+        serializer = CategorySerializer(page,many=True)
         return Response(serializer.data)
     
     def patch(self,request,pk):

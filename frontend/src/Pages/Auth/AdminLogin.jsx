@@ -15,6 +15,8 @@ const AdminLogin = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
+    const [loading, setLoading] = useState(false);
+
     const { isAuthenticated, role } = useSelector(state => state.auth);
 
     useEffect(() => {
@@ -40,7 +42,7 @@ const AdminLogin = () => {
             return;
         }
 
-
+        setLoading(true); 
         dispatch(loginStart())
 
         
@@ -73,6 +75,8 @@ const AdminLogin = () => {
 
             dispatch(loginFailure(message));
             toast.error(message);
+        }finally{
+            setLoading(false)
         }
         
 
