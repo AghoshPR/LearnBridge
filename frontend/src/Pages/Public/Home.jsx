@@ -127,8 +127,8 @@ const Home = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-                            <ShoppingCart className="w-5 h-5" />
+                        <button onClick={()=>navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <ShoppingCart className="w-5 h-5  cursor-pointer" />
                         </button>
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />

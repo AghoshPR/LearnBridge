@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
   Trash2, ArrowLeft, CreditCard
@@ -8,6 +8,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
+import Api from '../Services/Api';
+
 
 const StudentCart = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,34 +20,85 @@ const StudentCart = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
+  const [cartItems, setCartItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+
+//  Fetching Cart
+
+  const fetchCart = async()=>{
+
+      try{
+        const res = await Api.get("/cart/")
+        setCartItems(res.data.items)
+        setTotal(res.data.total_amount)
+
+      }catch{
+        toast.error("Failed to load cart")
+      }finally{
+        setLoading(false)
+      }
+  }
+
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/student/login");
+      return;
+    }
+    fetchCart();
+  }, [isAuthenticated]);
+
+
+  // Remove cart item
+
   const handleDeleteClick = (item) => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    // API Call to remove item would go here
-    toast.success(`${itemToDelete?.title} removed from cart`);
-    setIsDeleteModalOpen(false);
-    setItemToDelete(null);
-  };
+  const confirmDelete = async() => {
+    
+    try{
+      
+      await Api.delete(`/cart/remove/${itemToDelete.course_id}/`)
 
-  // Mock Cart Data
-  const cartItems = [
-    {
-      id: 1,
-      title: 'Complete Web Development Bootcamp 2024',
-      instructor: 'Dr. Angela Yu',
-      originalPrice: 4499,
-      price: 0,
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600',
-      tag: 'Flash Sale: ₹4500 off!'
+      toast.success("Course removed from cart 🗑️");
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);  
+      fetchCart()
+
+    }catch{
+      toast.error("Failed to remove course")
     }
-  ];
+
+    
+    
+  }
+
+  // Clear Cart
+
+  const ClearCart = async()=>{
+
+      try{
+          await Api.delete("/cart/clear/")
+          toast.success("Cart cleared 🧹")
+          fetchCart()
+      }catch{
+        toast.error("Failed to clear cart")
+      }
+  }
+
+
+
+
+  
+  
 
   const subtotal = 84.99; // Mock subtotal from image reference context
   const discount = 84.99;
-  const total = 0.00;
+ 
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
@@ -156,7 +209,7 @@ const StudentCart = () => {
               {cartItems.map((item) => (
                 <div key={item.id} className="p-4 flex flex-col md:flex-row gap-6 items-start md:items-center border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors group">
                   <div className="w-full md:w-40 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight">{item.title}</h3>
@@ -188,7 +241,7 @@ const StudentCart = () => {
               ))}
             </div>
 
-            <button className="self-start text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors border border-gray-200 bg-white px-6 py-3 rounded-xl hover:bg-gray-50 w-full md:w-auto text-center">
+            <button onClick={ClearCart} className="self-start text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors border border-gray-200 bg-white px-6 py-3 rounded-xl hover:bg-gray-50 w-full md:w-auto text-center">
               Clear Cart
             </button>
           </div>

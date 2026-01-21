@@ -40,13 +40,39 @@ const CourseDetail = () => {
 
 
     useEffect(() => {
+        if (!course?.category_id) return;
 
-    if (!course?.category_id) return;
+        Api.get("/courses/public/", {
+            params: { category: course.category_id }
+        }).then(res =>
+            setRelatedCourses(res.data.filter(c => c.id !== course.id))
+        );
+        }, [course]);
 
-    Api.get("/courses/public/", {
-        params: { category: course.category_id }
-    }).then(res => setRelatedCourses(res.data));
-    }, [course]);
+
+    const handleAddToCart = async()=>{
+
+        if(!isAuthenticated){
+            toast.info("Please login to add course to cart");
+            navigate("/student/login")
+            return
+        }
+
+        try{
+
+            await Api.post("/cart/add/",{
+                course_id:id,
+            })
+
+            toast.success("Course added to cart 🛒")
+        }catch(err){
+            if(err.response?.status===400){
+                toast.warning(err.response.data.detail || "Already in cart" )
+            }else{
+                toast.error("Failed to add to cart")
+            }
+        }
+    }
 
 
     if (loading) {
@@ -83,8 +109,8 @@ const CourseDetail = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-                            <ShoppingCart className="w-5 h-5" />
+                        <button onClick={()=>navigate("/cart")} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <ShoppingCart className="w-5 h-5 cursor-pointer" />
                         </button>
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
@@ -335,7 +361,7 @@ const CourseDetail = () => {
                             <div className="p-6">
                                 <div className="text-3xl font-bold text-gray-900 mb-6">₹{course.price}/-</div>
 
-                                <button className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
+                                <button onClick={handleAddToCart} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
                                     Add to Cart
                                 </button>
                                 <button className="w-full cursor-pointer bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors">

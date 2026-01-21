@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { toast } from "sonner";
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
@@ -53,6 +53,32 @@ const Courses = () => {
             .then((res) => setCategories(res.data));
     }, []);
 
+    const handleAddToCart = async(e,courseId)=>{
+
+        e.stopPropagation()
+
+        if(!isAuthenticated){
+            toast.info("Please login to add course to cart");
+            navigate("/student/login")
+            return
+        }
+
+        try{
+
+            await Api.post("/cart/add/",{
+                course_id:courseId,
+            })
+
+            toast.success("Course added to cart 🛒")
+        }catch(err){
+            if(err.response?.status===400){
+                toast.warning(err.response.data.detail || "Already in cart" )
+            }else{
+                toast.error("Failed to add to cart")
+            }
+        }
+    }
+
 
     if (loading) {
         return (
@@ -86,9 +112,13 @@ const Courses = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-                            <ShoppingCart className="w-5 h-5" />
-                        </button>
+                        <Link
+                            to={isAuthenticated ? "/cart" : "/student/login"}
+                            
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+                        >
+                            <ShoppingCart className="w-5 h-5 cursor-pointer" />
+                        </Link>
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
                         </button>
@@ -252,8 +282,8 @@ const Courses = () => {
 
                                 <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
                                     <span className="text-xl font-bold text-blue-600">₹{course.price}</span>
-                                    <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
-                                        <ShoppingCart className="w-5 h-5" />
+                                    <button onClick={(e)=>handleAddToCart(e, course.id)} className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                                        <ShoppingCart className="w-5 h-5 cursor-pointer" />
                                     </button>
 
                                 </div>

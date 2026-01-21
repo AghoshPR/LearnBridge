@@ -506,6 +506,7 @@ class TeacherLessonDetailView(APIView):
 
 class PublicCourseListView(APIView):
 
+    authentication_classes = [] 
     permission_classes=[AllowAny]
 
     def get(self,request):
@@ -534,6 +535,7 @@ class PublicCourseListView(APIView):
 
 class PublicCategoryListView(APIView):
 
+    authentication_classes = [] 
     permission_classes=[AllowAny]
 
     def get(self,request):
@@ -547,7 +549,9 @@ class PublicCategoryListView(APIView):
 
 class PublicCourseDetailView(APIView):
 
+    authentication_classes = [] 
     permission_classes = [AllowAny]
+    
 
     def get(self,request,pk):
 
