@@ -10,7 +10,7 @@ from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max,Q
 from .pagination import CoursePagination
-from authapp.utils import PublicAuthentication
+from authapp.authentication import PublicAuthentication
 
 # Create your views here.
 

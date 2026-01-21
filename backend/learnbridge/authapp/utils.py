@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from datetime import datetime
-from rest_framework.authentication import BaseAuthentication
+
 
 OTP_EXPIRY = 60
 
@@ -46,7 +46,3 @@ def send_otp(email):
     email_msg.send()
 
 
-
-class PublicAuthentication(BaseAuthentication):
-    def authenticate(self, request):
-        return None

@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import SessionAuthentication
-
+from rest_framework.authentication import BaseAuthentication
 
 class CookieJWTAuthentication(JWTAuthentication):
 
@@ -18,3 +18,10 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 
     def enforce_csrf(self, request):
         return
+    
+
+# athentication for for all users
+
+class PublicAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        return None
