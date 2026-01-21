@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max,Q
-
+from .pagination import CoursePagination
 
 
 # Create your views here.
@@ -517,7 +517,7 @@ class PublicCourseListView(APIView):
 
         courses = Course.objects.filter(
             status="published"
-        ).select_related("teacher","category")
+        ).select_related("teacher","category").order_by("-created_at")
 
         if search:
             courses = courses.filter(
@@ -528,9 +528,10 @@ class PublicCourseListView(APIView):
 
             courses = courses.filter(category_id=category)
 
-
-        serializer = PublicCourseSerializer(courses,many=True)
-        return Response(serializer.data)
+        paginator = CoursePagination()
+        page = paginator.paginate_queryset(courses, request)
+        serializer = PublicCourseSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class PublicCategoryListView(APIView):

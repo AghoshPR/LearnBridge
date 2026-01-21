@@ -30,6 +30,10 @@ const Courses = () => {
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState("")
 
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const PAGE_SIZE = 8
+
     const { isAuthenticated, username } = useSelector((state) => state.auth);
 
     const goToCourseDetail = (id) => {
@@ -37,43 +41,53 @@ const Courses = () => {
     };
 
     useEffect(() => {
+        setLoading(true);
         Api.get("/courses/public/", {
             params: {
+                page,
                 search: search || undefined,
                 category: selectedCategory || undefined,
             }
         })
-            .then((res) => setCourses(res.data))
+            .then((res) => {
+                setCourses(res.data.results);
+                setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
+            })
             .finally(() => setLoading(false))
-    }, [search, selectedCategory])
+    }, [page, search, selectedCategory])
 
+    useEffect(() => {
+        setPage(1);
+    }, [search, selectedCategory]);
 
     useEffect(() => {
         Api.get("/courses/categories/public/")
             .then((res) => setCategories(res.data));
     }, []);
 
-    const handleAddToCart = async(e,courseId)=>{
+
+
+    const handleAddToCart = async (e, courseId) => {
 
         e.stopPropagation()
 
-        if(!isAuthenticated){
+        if (!isAuthenticated) {
             toast.info("Please login to add course to cart");
             navigate("/student/login")
             return
         }
 
-        try{
+        try {
 
-            await Api.post("/cart/add/",{
-                course_id:courseId,
+            await Api.post("/cart/add/", {
+                course_id: courseId,
             })
 
             toast.success("Course added to cart 🛒")
-        }catch(err){
-            if(err.response?.status===400){
-                toast.warning(err.response.data.detail || "Already in cart" )
-            }else{
+        } catch (err) {
+            if (err.response?.status === 400) {
+                toast.warning(err.response.data.detail || "Already in cart")
+            } else {
                 toast.error("Failed to add to cart")
             }
         }
@@ -114,7 +128,7 @@ const Courses = () => {
                     <div className="flex items-center gap-4">
                         <Link
                             to={isAuthenticated ? "/cart" : "/student/login"}
-                            
+
                             className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
                         >
                             <ShoppingCart className="w-5 h-5 cursor-pointer" />
@@ -282,7 +296,7 @@ const Courses = () => {
 
                                 <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
                                     <span className="text-xl font-bold text-blue-600">₹{course.price}</span>
-                                    <button onClick={(e)=>handleAddToCart(e, course.id)} className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                                    <button onClick={(e) => handleAddToCart(e, course.id)} className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                                         <ShoppingCart className="w-5 h-5 cursor-pointer" />
                                     </button>
 
@@ -290,7 +304,42 @@ const Courses = () => {
                             </div>
                         </div>
                     ))}
+
                 </div>
+
+                {totalPages > 0 && (
+                    <div className="flex justify-center items-center gap-2 mt-12">
+                        <button
+                            disabled={page === 1}
+                            onClick={() => setPage(page - 1)}
+                            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+                        >
+                            Prev
+                        </button>
+
+                        {[...Array(totalPages)].map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setPage(i + 1)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium
+                                ${page === i + 1
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-100 hover:bg-gray-200"
+                                    }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            disabled={page === totalPages}
+                            onClick={() => setPage(page + 1)}
+                            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </main>
         </div>
     );

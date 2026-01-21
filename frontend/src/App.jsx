@@ -33,6 +33,7 @@ import StudentCart from './Pages/Student/StudentCart'
 import QuestionCommunity from './Pages/Public/QuestionCommunity'
 import AdminCourses from './Pages/Admin/AdminCourses'
 import AdminCategories from './Pages/Admin/AdminCategories'
+import CourseVideos from './Pages/Course/CourseVideos'
 
 
 
@@ -82,8 +83,8 @@ function App() {
 
         {/* Student */}
 
-       
-      
+
+
 
         <Route path="/student/profile" element={
           <ProtectedRoute role="student">
@@ -98,10 +99,12 @@ function App() {
         } />
 
 
-      <Route path='/student/wishlist' element={<StudentWishlist />} />
-      <Route path='/cart' element={<StudentCart />} />
+        <Route path='/student/wishlist' element={<StudentWishlist />} />
+        <Route path='/cart' element={<StudentCart />} />
 
-      <Route path='/question-community' element={<QuestionCommunity />} />
+        <Route path='/course/videos' element={<CourseVideos />} />
+
+        <Route path='/question-community' element={<QuestionCommunity />} />
 
 
 
@@ -149,7 +152,7 @@ function App() {
 
 
 
-        
+
 
 
       </Routes>
