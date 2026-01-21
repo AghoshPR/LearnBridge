@@ -10,7 +10,7 @@ from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max,Q
 from .pagination import CoursePagination
-
+from authapp.utils import PublicAuthentication
 
 # Create your views here.
 
@@ -506,7 +506,7 @@ class TeacherLessonDetailView(APIView):
 
 class PublicCourseListView(APIView):
 
-    authentication_classes = [] 
+    authentication_classes = [PublicAuthentication] 
     permission_classes=[AllowAny]
 
     def get(self,request):
@@ -536,7 +536,7 @@ class PublicCourseListView(APIView):
 
 class PublicCategoryListView(APIView):
 
-    authentication_classes = [] 
+    authentication_classes = [PublicAuthentication] 
     permission_classes=[AllowAny]
 
     def get(self,request):
@@ -550,7 +550,7 @@ class PublicCategoryListView(APIView):
 
 class PublicCourseDetailView(APIView):
 
-    authentication_classes = [] 
+    authentication_classes = [PublicAuthentication] 
     permission_classes = [AllowAny]
     
 
