@@ -99,7 +99,7 @@ const StudentLogin = () => {
 
   const hangleGoogle = async (credentialResponse) => {
             dispatch(loginStart());
-            toast("Loggin with google")
+            toast("Login with google")
 
             try {
               const res = await Api.post(
