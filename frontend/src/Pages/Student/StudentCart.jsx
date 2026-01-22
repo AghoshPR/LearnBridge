@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
   Trash2, ArrowLeft, CreditCard
@@ -25,20 +25,20 @@ const StudentCart = () => {
   const [loading, setLoading] = useState(true);
 
 
-//  Fetching Cart
+  //  Fetching Cart
 
-  const fetchCart = async()=>{
+  const fetchCart = async () => {
 
-      try{
-        const res = await Api.get("/cart/")
-        setCartItems(res.data.items)
-        setTotal(res.data.total_amount)
+    try {
+      const res = await Api.get("/cart/")
+      setCartItems(res.data.items)
+      setTotal(res.data.total_amount)
 
-      }catch{
-        toast.error("Failed to load cart")
-      }finally{
-        setLoading(false)
-      }
+    } catch {
+      toast.error("Failed to load cart")
+    } finally {
+      setLoading(false)
+    }
   }
 
 
@@ -58,47 +58,47 @@ const StudentCart = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = async() => {
-    
-    try{
-      
+  const confirmDelete = async () => {
+
+    try {
+
       await Api.delete(`/cart/remove/${itemToDelete.course_id}/`)
 
       toast.success("Course removed from cart 🗑️");
       setIsDeleteModalOpen(false);
-      setItemToDelete(null);  
+      setItemToDelete(null);
       fetchCart()
 
-    }catch{
+    } catch {
       toast.error("Failed to remove course")
     }
 
-    
-    
+
+
   }
 
   // Clear Cart
 
-  const ClearCart = async()=>{
+  const ClearCart = async () => {
 
-      try{
-          await Api.delete("/cart/clear/")
-          toast.success("Cart cleared 🧹")
-          fetchCart()
-      }catch{
-        toast.error("Failed to clear cart")
-      }
+    try {
+      await Api.delete("/cart/clear/")
+      toast.success("Cart cleared 🧹")
+      fetchCart()
+    } catch {
+      toast.error("Failed to clear cart")
+    }
   }
 
 
 
 
-  
-  
+
+
 
   const subtotal = 84.99; // Mock subtotal from image reference context
   const discount = 84.99;
- 
+
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
@@ -205,9 +205,9 @@ const StudentCart = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left Column: Cart Items */}
           <div className="flex-1 flex flex-col gap-4">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="flex flex-col gap-3">
               {cartItems.map((item) => (
-                <div key={item.id} className="p-4 flex flex-col md:flex-row gap-6 items-start md:items-center border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors group">
+                <div key={item.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col md:flex-row gap-6 items-start md:items-center hover:bg-gray-50/50 transition-colors group">
                   <div className="w-full md:w-40 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                     <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                   </div>
