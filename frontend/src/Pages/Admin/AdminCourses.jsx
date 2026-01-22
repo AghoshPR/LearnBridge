@@ -38,18 +38,25 @@ const AdminCourses = () => {
   // Mock data to match the image
   const [courses, setCourses] = useState([])
   
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const PAGE_SIZE = 10
   
-  const fetchCourses = async()=>{
-
-      try{
-        const res = await Api.get('/courses/admin/courses/')
-        setCourses(res.data)
-
-      }catch{
-        toast.error("Failed to load courses")
+  const fetchCourses = async () => {
+  try {
+    const res = await Api.get('/courses/admin/courses/', {
+      params: {
+        page,
+        search: searchQuery || undefined
       }
+    })
 
+    setCourses(res.data.results)
+    setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
+  } catch {
+    toast.error("Failed to load courses")
   }
+}
 
   const toggleCourseStatus =async(id)=>{
 
@@ -76,7 +83,7 @@ const AdminCourses = () => {
 
   useEffect(()=>{
     fetchCourses()
-  },[])
+  },[page,searchQuery])
 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -345,6 +352,42 @@ const AdminCourses = () => {
                 ))}
               </tbody>
             </table>
+
+            {totalPages > 0 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+                className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i + 1)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium
+                    ${page === i + 1
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-800 hover:bg-gray-700"
+                    }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(page + 1)}
+                className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+
           </div>
         </div>
 

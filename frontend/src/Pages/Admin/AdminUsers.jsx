@@ -57,30 +57,42 @@ const AdminUsers = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
 
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const PAGE_SIZE = 10
+
+
 
   useEffect(() => {
     fetchUsers()
-  }, [])
+  }, [page, searchQuery])
 
   const fetchUsers = async () => {
-
     try {
-      const res = await Api.get("/admin/users/")
+      const res = await Api.get("/admin/users/", {
+        params: {
+          page,
+          search: searchQuery || undefined
+        }
+      })
+
       setUsers(
-        res.data.map((u) => ({
+        res.data.results.map(u => ({
           id: u.id,
           name: u.username,
           email: u.email,
-          joinDate: new Date(u.date_joined).toLocaleTimeString(),
-          status: u.is_active ? "Active" : "Blocked"
+          joinDate: new Date(u.date_joined).toLocaleDateString(),
+          status: u.is_active ? "Active" : "Blocked",
+          courses: u.courses_count || 0
         }))
       )
+
+      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
     } catch (err) {
-      console.log("Fetch users failed", err);
-
+      toast.error("Failed to load users")
     }
-
   }
+
 
 
 
@@ -477,6 +489,43 @@ const AdminUsers = () => {
                 )}
               </tbody>
             </table>
+                {/* Pagination */}
+      {/* Pagination */}
+        {totalPages > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium
+                  ${page === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 hover:bg-gray-700"
+                  }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+              
           </div>
         </div>
 

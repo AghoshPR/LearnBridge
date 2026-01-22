@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Max,Q
 from .pagination import CoursePagination
 from authapp.authentication import PublicAuthentication
-from adminapp.pagination import AdminCategoryPagination
+from adminapp.pagination import *
 # Create your views here.
 
 
@@ -23,11 +23,38 @@ class AdminCategoryView(APIView):
 
     def get(self,request):
 
+
+        search = request.GET.get("search","").strip()
         categories = Category.objects.all().order_by('-created_at')
+
+        if search:
+
+            categories = categories.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search)
+            )
+
+
         paginator = AdminCategoryPagination()
         page = paginator.paginate_queryset(categories, request)
+
         serializer = CategorySerializer(page,many=True)
-        return Response(serializer.data)
+
+        return paginator.get_paginated_response(serializer.data)
+    
+    def post(self, request):
+
+        serializer = CategorySerializer(
+            data=request.data,
+            context={"request":request}
+        )
+
+        if serializer.is_valid():
+                serializer.save(created_by=request.user)
+                return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+    
     
     def patch(self,request,pk):
 
@@ -99,10 +126,23 @@ class AdminCourseView(APIView):
             serializer = CourseSerializer(course)
             return Response(serializer.data)
         
+        search = request.GET.get("search", "")
+
         courses = Course.objects.select_related('teacher','category').order_by('-created_at')
 
-        serializer = CourseSerializer(courses,many=True)
-        return Response(serializer.data)
+        if search:
+            courses = courses.filter(
+                Q(title__icontains=search) |
+                Q(teacher__username__icontains=search) | 
+                Q(category__name__icontains=search)
+            )
+
+        paginator = AdminCoursePagination()
+
+        paginated_courses = paginator.paginate_queryset(courses, request)
+
+        serializer = CourseSerializer(paginated_courses,many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self,request):
 

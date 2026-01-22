@@ -40,20 +40,59 @@ const AdminCategories = () => {
   
   const [categories, setCategories] = useState([])
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  const [newCategory, setNewCategory] = useState({
+    name: "",
+    description: ""
+  })
+
   const fetchCategories = async()=>{
 
     try{
-        const res = await Api.get('/courses/admin/categories/')
+        const res = await Api.get('/courses/admin/categories/',{
 
-        setCategories(res.data)
+          params: {
+          page,
+          search: searchQuery || undefined
+        }
+
+        })
+
+        setCategories(res.data.results)
+        setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
+
     }catch(err){
       toast.error("Failed to load categories")
     }
   }
 
+
+  const handleAddCategory = async()=>{
+
+      if (!newCategory.name.trim()) {
+        toast.error("Category name required")
+        return
+      }
+
+      try{
+
+        await Api.post("/courses/admin/categories/",newCategory)
+
+        toast.success("Category added successfully")
+        setIsAddModalOpen(false)
+        setNewCategory({name:"",description:""})
+        fetchCategories()
+
+
+      }catch(err){
+        toast.error("Failed to create category")
+      }
+  }
+
   useEffect(()=>{
     fetchCategories()
-  },[])
+  },[page, searchQuery])
 
   // block and unblock
 
@@ -247,7 +286,10 @@ const AdminCategories = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Course Categories</h1>
-          <button className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm"
+          >
             <Plus size={18} /> Add Category
           </button>
         </div>
@@ -329,6 +371,86 @@ const AdminCategories = () => {
             </table>
           </div>
         </div>
+
+        {totalPages > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium
+                  ${page === i + 1
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-800 hover:bg-gray-700"
+                  }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {isAddModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsAddModalOpen(false)}
+            ></div>
+
+            <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl">
+              <h3 className="text-xl font-bold text-white mb-4">Add Category</h3>
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Category name"
+                  value={newCategory.name}
+                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                  className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                />
+
+                <textarea
+                  placeholder="Category description"
+                  value={newCategory.description}
+                  onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                  className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
+                />
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => setIsAddModalOpen(false)}
+                    className="px-4 py-2 rounded-lg bg-gray-800 text-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddCategory}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
 
       </main>
     </div>

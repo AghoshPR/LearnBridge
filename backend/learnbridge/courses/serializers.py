@@ -72,6 +72,8 @@ class CourseSerializer(serializers.ModelSerializer):
             return obj.thumbnail.url
 
         return None
+    
+    
 
 
     def validate_category(self,category):
@@ -80,6 +82,8 @@ class CourseSerializer(serializers.ModelSerializer):
 
         if not request:
             raise serializers.ValidationError("Invalid request context.")
+        
+    
 
 
         if category.created_by != request.user:

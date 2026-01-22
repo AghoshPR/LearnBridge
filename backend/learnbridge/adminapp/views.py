@@ -10,7 +10,8 @@ from .serializers import *
 from rest_framework.response import Response
 from adminapp.utils import send_teacher_rejection_email
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Q
+from .pagination import *
 
 
 
@@ -254,11 +255,24 @@ class AdminUsers(APIView):
 
     def get(self,request):
 
+        search = request.GET.get("search","")
+
         
         
         users=User.objects.filter(role="student").order_by("-date_joined")
-        serializer=AdminUserSerializer(users,many=True)
-        return Response(serializer.data)
+
+        if search:
+            users = users.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        paginator = AdminUserPagination()
+
+        page = paginator.paginate_queryset(users,request)
+        serializer=AdminUserSerializer(page,many=True)
+
+        return paginator.get_paginated_response(serializer.data)
     
 
 class BlockUser(APIView):

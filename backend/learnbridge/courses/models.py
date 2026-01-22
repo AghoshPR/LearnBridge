@@ -11,7 +11,7 @@ class Category(models.Model):
         ('blocked','Blocked')
     ]
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=20)
     description = models.TextField(blank=True)
 
     created_by = models.ForeignKey(
