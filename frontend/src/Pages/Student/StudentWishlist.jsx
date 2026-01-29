@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
   Trash2, ShoppingBag, ArrowLeft
@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
+import Api from '../Services/Api';
 
 const StudentWishlist = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,30 +24,65 @@ const StudentWishlist = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    // API Call to remove item would go here
-    toast.success(`${itemToDelete?.title} removed from wishlist`);
-    setIsDeleteModalOpen(false);
-    setItemToDelete(null);
-  };
 
-  // Mock Wishlist Data
-  const wishlistItems = [
-    {
-      id: 1,
-      title: 'Complete Web Development Bootcamp',
-      instructor: 'Dr. Sarah Johnson',
-      rating: 4.8,
-      price: 2499,
-      originalPrice: 3999,
-      image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600',
-      tag: 'Flash Sale: ₹1500 off!'
+  
+
+
+  const [wishlistItems,setWishlistItems] = useState([])
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(()=>{
+    fetchWishlist()
+  },[])
+
+  const fetchWishlist = async ()=>{
+    try{
+      const res = await Api.get("/student/wishlist")
+      setWishlistItems(res.data)
+    }catch(err){
+      toast.error("Failed to load wishlist")
+    }finally{
+      setLoading(false)
     }
-  ];
+  }
+
+
+  const confirmDelete  = async()=>{
+    try{
+      await Api.delete(`/student/wishlist/remove/${itemToDelete.course}/`)
+      toast.success("Removed from wishlist");
+      setWishlistItems(prev =>
+        prev.filter(item => item.course !== itemToDelete.course)
+      );
+
+    }catch{
+      toast.error("Failed to remove")
+    }finally{
+      setIsDeleteModalOpen(false)
+      setItemToDelete(null)
+
+    }
+  }
 
   const totalValue = wishlistItems.reduce((acc, item) => acc + item.price, 0);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg font-semibold text-gray-600">
+          Loading wishlist...
+        </p>
+      </div>
+    );
+  }
+
+
   return (
+
+
+    
+
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
       {/* Navbar (Copied from Home.jsx) */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
@@ -149,74 +185,73 @@ const StudentWishlist = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">My Wishlist</h1>
+      <main className="container mx-auto px-6 py-8 flex-1">
+        <h1 className="text-3xl font-bold mb-6">My Wishlist</h1>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left Column: Wishlist Items */}
-          <div className="flex-1 space-y-4">
-            {wishlistItems.map((item) => (
-              <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 items-start md:items-center hover:shadow-md transition-shadow">
-                <div className="w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-500 mb-2">By {item.instructor}</p>
-                  {item.tag && (
-                    <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md mb-2 border border-gray-200">
-                      {item.tag}
+        {wishlistItems.length === 0 ? (
+          <p className="text-gray-500">Your wishlist is empty.</p>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* ITEMS */}
+            <div className="flex-1 space-y-4">
+              {wishlistItems.map(item => (
+                <div key={item.id} className="bg-white p-4 rounded-xl flex gap-6 border">
+                  <img
+                    src={item.thumbnail}
+                    alt={item.title}
+                    className="w-48 h-32 object-cover rounded-lg"
+                  />
+
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold">{item.title}</h3>
+                    <p className="text-sm text-gray-500">
+                      By {item.instructor}
+                    </p>
+
+                    {/* Dummy tag */}
+                    <span className="inline-block mt-2 text-xs bg-gray-100 px-2 py-1 rounded">
+                      Bestseller
                     </span>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <span className="text-gray-400 text-sm line-through">₹{item.originalPrice}</span>
-                    <span className="text-xl font-bold text-blue-600">₹{item.price}</span>
+
+                    <div className="flex gap-3 items-center mt-3">
+                      <span className="line-through text-gray-400">₹3999</span>
+                      <span className="text-xl font-bold text-blue-600">
+                        ₹{item.price}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <button className="border px-4 py-2 rounded-lg flex gap-2 items-center">
+                      <ShoppingBag size={16} /> Go to Cart
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(item)}
+                      className="text-red-500"
+                    >
+                      <Trash2 />
+                    </button>
                   </div>
                 </div>
-                <div className="flex flex-row md:flex-col items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
-                  <button
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors w-full"
-                  >
-                    <ShoppingBag size={16} />
-                    Go to Cart
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(item)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+              ))}
+            </div>
+
+            {/* SUMMARY */}
+            <div className="w-full lg:w-80 bg-white p-6 rounded-xl border h-fit">
+              <h2 className="font-bold mb-4">Wishlist Summary</h2>
+              <div className="flex justify-between text-sm">
+                <span>Total Items</span>
+                <span>{wishlistItems.length}</span>
               </div>
-            ))}
-          </div>
-
-          {/* Right Column: Summary */}
-          <div className="w-full lg:w-80 h-fit">
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm sticky top-24">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Wishlist Summary</h2>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Total Items</span>
-                  <span>{wishlistItems.length}</span>
-                </div>
-                <div className="flex justify-between font-bold text-gray-900 pt-3 border-t border-gray-100">
-                  <span>Total Value</span>
-                  <span className="text-blue-600">₹{totalValue}</span>
-                </div>
+              <div className="flex justify-between font-bold mt-4">
+                <span>Total Value</span>
+                <span className="text-blue-600">₹{totalValue}</span>
               </div>
-
-              <button
-                onClick={() => navigate('/courses')}
-                className="w-full py-2.5 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm"
-              >
-                Continue Shopping
-              </button>
             </div>
           </div>
-        </div>
+        )}
       </main>
+
 
       {/* Footer (Copied from Home.jsx) */}
       <footer className="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto">

@@ -194,7 +194,7 @@ const Home = () => {
                                             My Courses
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={()=>navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <Heart className="w-4 h-4" />
                                             Wishlist
                                         </button>

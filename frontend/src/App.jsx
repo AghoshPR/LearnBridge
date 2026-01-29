@@ -99,7 +99,7 @@ function App() {
         } />
 
 
-        <Route path='/student/wishlist' element={<StudentWishlist />} />
+        <Route path='/wishlist' element={<StudentWishlist />} />
         <Route path='/cart' element={<StudentCart />} />
 
         <Route path='/course/videos' element={<CourseVideos />} />

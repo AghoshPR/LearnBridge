@@ -217,6 +217,7 @@ class TeacherCategoryView(APIView):
 
 
     def get(self,request):
+        
 
         if request.user.role == 'admin':
             categories = Category.objects.all()
