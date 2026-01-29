@@ -10,6 +10,8 @@ from rest_framework import status
 from .models import Cart,CartItem
 from .serializers import *
 from courses.models import *
+from .utils import stripe
+
 
 class CartDetailView(APIView):
 
@@ -90,3 +92,65 @@ class ClearCartView(APIView):
 
         return Response({"detail":"Cart cleared"})
 
+
+# order page
+
+class CreateOrderView(APIView):
+
+
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request):
+
+        user = request.user
+
+        cart_items = CartItem.objects.filter(cart__user=user)
+
+        if not cart_items.exists():
+            return Response({"error":"Cart is empty"},status=400)
+        
+
+        total=0
+
+        for item in cart_items:
+            total+= item.course.price
+
+
+        # create order 
+
+        order = Order.objects.create(
+            user=user,
+            total_amount=total,
+            discount_amount = 0,
+            final_amount = total,
+            payment_status="pending",
+            payment_method="stripe"
+
+        )
+
+        # create order item
+
+
+        for item in cart_items:
+
+            OrderItem.objects.create(
+                order=order,
+                course=item.course,
+                price=item.course.price,
+                discount=0
+            )
+
+        intent = stripe.PaymentIntent.create(
+            amount=int(total * 100),
+            currency="inr",
+            metadata={
+                "order_id":order.id,
+                "user_id":user.id
+            }
+        )
+
+        return Response({
+            "order_id":order.id,
+            "client_secret":intent.client_secret
+        })
+        

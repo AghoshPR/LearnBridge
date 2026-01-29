@@ -45,3 +45,21 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_total_amount(self,obj):
         return sum(item.course.price for item in obj.items.all())
+    
+
+class OrderItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = OrderItem
+        fields = "__all__"
+
+
+class OrderSerializer(serializers.ModelSerializer):
+
+    items = OrderItemSerializer(many=True,read_only=True)
+
+    class Meta:
+
+        model = Order
+        fields = "__all__"

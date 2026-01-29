@@ -11,6 +11,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = config("SECRET_KEY")
+
+
 DEBUG = config("DEBUG", cast=bool)
 
 ALLOWED_HOSTS = [
@@ -238,3 +240,10 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME")
 AWS_S3_SIGNATURE_VERSION = "s3v4"
+
+
+# Stripe
+
+
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")

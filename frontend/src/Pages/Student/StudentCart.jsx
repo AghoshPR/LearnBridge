@@ -9,7 +9,7 @@ import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
 import Api from '../Services/Api';
-
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 
 const StudentCart = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,6 +23,12 @@ const StudentCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+
+
+  // stipe
+
+  const stripe = useStripe();
+  const elements = useElements();
 
 
   //  Fetching Cart
@@ -91,7 +97,10 @@ const StudentCart = () => {
   }
 
 
+const handleCheckout = async()=>{
 
+    if(!stripe)
+}
 
 
 
