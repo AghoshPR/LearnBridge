@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
   Trash2, ShoppingBag, ArrowLeft
@@ -25,40 +25,40 @@ const StudentWishlist = () => {
   };
 
 
-  
 
 
-  const [wishlistItems,setWishlistItems] = useState([])
+
+  const [wishlistItems, setWishlistItems] = useState([])
   const [loading, setLoading] = useState(true);
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchWishlist()
-  },[])
+  }, [])
 
-  const fetchWishlist = async ()=>{
-    try{
+  const fetchWishlist = async () => {
+    try {
       const res = await Api.get("/student/wishlist")
       setWishlistItems(res.data)
-    }catch(err){
+    } catch (err) {
       toast.error("Failed to load wishlist")
-    }finally{
+    } finally {
       setLoading(false)
     }
   }
 
 
-  const confirmDelete  = async()=>{
-    try{
+  const confirmDelete = async () => {
+    try {
       await Api.delete(`/student/wishlist/remove/${itemToDelete.course}/`)
       toast.success("Removed from wishlist");
       setWishlistItems(prev =>
         prev.filter(item => item.course !== itemToDelete.course)
       );
 
-    }catch{
+    } catch {
       toast.error("Failed to remove")
-    }finally{
+    } finally {
       setIsDeleteModalOpen(false)
       setItemToDelete(null)
 
@@ -81,7 +81,7 @@ const StudentWishlist = () => {
   return (
 
 
-    
+
 
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
       {/* Navbar (Copied from Home.jsx) */}
@@ -253,53 +253,7 @@ const StudentWishlist = () => {
       </main>
 
 
-      {/* Footer (Copied from Home.jsx) */}
-      <footer className="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">L</div>
-                <span className="text-xl font-bold text-gray-900">LearnBridge</span>
-              </div>
-              <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                Empowering learners worldwide with quality education. Join our community and start your journey today.
-              </p>
-            </div>
 
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Platform</h4>
-              <ul className="space-y-3 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-blue-600">Browse Courses</a></li>
-                <li><a href="#" className="hover:text-blue-600">Live Classes</a></li>
-                <li><a href="#" className="hover:text-blue-600">Q&A Community</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Support</h4>
-              <ul className="space-y-3 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-blue-600">Help Center</a></li>
-                <li><a href="#" className="hover:text-blue-600">Contact Us</a></li>
-                <li><a href="#" className="hover:text-blue-600">FAQs</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-blue-600">About Us</a></li>
-                <li><a href="#" className="hover:text-blue-600">Careers</a></li>
-                <li><a href="#" className="hover:text-blue-600">Blog</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-100 pt-8 text-center text-xs text-gray-400">
-            © 2024 LearnBridge. All rights reserved.
-          </div>
-        </div>
-      </footer>
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (

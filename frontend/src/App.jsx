@@ -34,6 +34,8 @@ import QuestionCommunity from './Pages/Public/QuestionCommunity'
 import AdminCourses from './Pages/Admin/AdminCourses'
 import AdminCategories from './Pages/Admin/AdminCategories'
 import CourseVideos from './Pages/Course/CourseVideos'
+import OrdersCheckout from './Pages/Payments/OrdersCheckout'
+import MyCourses from './Pages/Course/MyCourses'
 
 
 
@@ -99,10 +101,12 @@ function App() {
         } />
 
 
-        <Route path='/wishlist' element={<StudentWishlist />} />
-        <Route path='/cart' element={<StudentCart />} />
+        <Route path='/wishlist' element={<ProtectedRoute role="student"><StudentWishlist/></ProtectedRoute>} />
+        <Route path='/cart' element={<ProtectedRoute role="student"><StudentCart/></ProtectedRoute>} />
+        <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout/></ProtectedRoute>} />
+        <Route path='/mycourse' element={<MyCourses />} />
 
-        <Route path='/course/videos' element={<CourseVideos />} />
+        <Route path='/course/videos' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
 
         <Route path='/question-community' element={<QuestionCommunity />} />
 

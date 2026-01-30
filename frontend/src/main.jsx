@@ -33,7 +33,7 @@ createRoot(document.getElementById('root')).render(
         <Elements stripe={stripePromise}>
         
             <App />
-            <Toaster position="top-right" />
+            <Toaster position="bottom-right" />
         
         </Elements>
           

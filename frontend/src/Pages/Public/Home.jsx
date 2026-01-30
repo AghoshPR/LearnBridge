@@ -127,11 +127,14 @@ const Home = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button onClick={()=>navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                        <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <ShoppingCart className="w-5 h-5  cursor-pointer" />
                         </button>
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <Heart className="w-5 h-5" />
                         </button>
 
 
@@ -189,20 +192,20 @@ const Home = () => {
                                             Profile
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={()=>navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <BookOpen className="w-4 h-4" />
                                             My Courses
                                         </button>
 
-                                        <button onClick={()=>navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <Heart className="w-4 h-4" />
                                             Wishlist
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        {/* <button onClick={() => navigate("/orders")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <Package className="w-4 h-4" />
                                             Orders
-                                        </button>
+                                        </button> */}
 
                                         <hr className="my-1 border-gray-100" />
 

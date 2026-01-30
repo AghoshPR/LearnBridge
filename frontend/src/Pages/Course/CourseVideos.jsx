@@ -79,6 +79,9 @@ const CourseVideos = () => {
             <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
               <Bell className="w-5 h-5" />
             </button>
+            <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+              <Heart className="w-5 h-5" />
+            </button>
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
@@ -127,6 +130,45 @@ const CourseVideos = () => {
             </button>
           </div>
         </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full z-50">
+            <Link to="/courses" className="text-gray-700 font-medium">Explore</Link>
+            <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
+            <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+            <hr className="border-gray-100" />
+
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3">
+                <button onClick={() => navigate("/student/login")} className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>
+                <button onClick={() => navigate("/student/register")} className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">Sign Up</button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {username ? username.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <span className="text-sm font-medium">{username || "User"}</span>
+                </div>
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button className="text-gray-700 font-medium text-left">Orders</button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}

@@ -5,7 +5,7 @@ import Logo from '../../assets/learnbridge-logo.png';
 import { useParams } from "react-router-dom";
 import Api from "../Services/Api";
 
-import { useSelector,useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { logout } from '@/Store/authSlice';
 
@@ -26,16 +26,16 @@ const CourseDetail = () => {
     const [relatedCourses, setRelatedCourses] = useState([]);
 
 
-    useEffect(()=>{
+    useEffect(() => {
 
         setLoading(true)
 
         Api.get(`/courses/public/${id}/`)
-        .then((res)=>setCourse(res.data))
+            .then((res) => setCourse(res.data))
 
-        .finally(()=>setLoading(false))
+            .finally(() => setLoading(false))
 
-    },[id])
+    }, [id])
 
 
 
@@ -47,28 +47,28 @@ const CourseDetail = () => {
         }).then(res =>
             setRelatedCourses(res.data.filter(c => c.id !== course.id))
         );
-        }, [course]);
+    }, [course]);
 
 
-    const handleAddToCart = async()=>{
+    const handleAddToCart = async () => {
 
-        if(!isAuthenticated){
+        if (!isAuthenticated) {
             toast.info("Please login to add course to cart");
             navigate("/student/login")
             return
         }
 
-        try{
+        try {
 
-            await Api.post("/cart/add/",{
-                course_id:id,
+            await Api.post("/cart/add/", {
+                course_id: id,
             })
 
             toast.success("Course added to cart 🛒")
-        }catch(err){
-            if(err.response?.status===400){
-                toast.warning(err.response.data.detail || "Already in cart" )
-            }else{
+        } catch (err) {
+            if (err.response?.status === 400) {
+                toast.warning(err.response.data.detail || "Already in cart")
+            } else {
                 toast.error("Failed to add to cart")
             }
         }
@@ -76,20 +76,20 @@ const CourseDetail = () => {
 
 
     if (loading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center">
-            <p className="text-lg font-semibold text-gray-600">Loading course...</p>
-        </div>
-    );
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-lg font-semibold text-gray-600">Loading course...</p>
+            </div>
+        );
     }
 
     if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600 font-semibold">Course not found</p>
-      </div>
-    );
-  }
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <p className="text-red-600 font-semibold">Course not found</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -109,20 +109,23 @@ const CourseDetail = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button onClick={()=>navigate("/cart")} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                        <button onClick={() => navigate("/cart")} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <ShoppingCart className="w-5 h-5 cursor-pointer" />
                         </button>
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Bell className="w-5 h-5" />
                         </button>
+                        <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                            <Heart className="w-5 h-5" />
+                        </button>
                         <div className="relative group">
                             <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
                                 <span className="text-sm font-medium">
-                                {isAuthenticated ? `Hi, ${username}` : "User"}
+                                    {isAuthenticated ? `Hi, ${username}` : "User"}
                                 </span>
 
                                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+                                    {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                                 </div>
                             </button>
 
@@ -132,71 +135,71 @@ const CourseDetail = () => {
 
                                 {/* NOT LOGGED IN */}
                                 {!isAuthenticated && (
-                                <>
-                                    <button
-                                    onClick={() => navigate("/student/login")}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                    >
-                                    <User className="w-4 h-4" />
-                                    Login
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => navigate("/student/login")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            Login
+                                        </button>
 
-                                    <button
-                                    onClick={() => navigate("/student/register")}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                    >
-                                    <BookOpen className="w-4 h-4" />
-                                    Sign Up
-                                    </button>
-                                </>
+                                        <button
+                                            onClick={() => navigate("/student/register")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                        >
+                                            <BookOpen className="w-4 h-4" />
+                                            Sign Up
+                                        </button>
+                                    </>
                                 )}
 
                                 {/* LOGGED IN */}
                                 {isAuthenticated && (
-                                <>
-                                    <button
-                                    onClick={() => navigate("/student/profile")}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                    >
-                                    <User className="w-4 h-4" />
-                                    Profile
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => navigate("/student/profile")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            Profile
+                                        </button>
 
-                                    <button
-                                    onClick={() => navigate("/student/courses")}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
-                                    >
-                                    <BookOpen className="w-4 h-4" />
-                                    My Courses
-                                    </button>
+                                        <button
+                                            onClick={() => navigate("/student/courses")}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                        >
+                                            <BookOpen className="w-4 h-4" />
+                                            My Courses
+                                        </button>
 
-                                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                    <Heart className="w-4 h-4" />
-                                    Wishlist
-                                    </button>
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                            <Heart className="w-4 h-4" />
+                                            Wishlist
+                                        </button>
 
-                                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                    <Package className="w-4 h-4" />
-                                    Orders
-                                    </button>
+                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                            <Package className="w-4 h-4" />
+                                            Orders
+                                        </button>
 
-                                    <hr className="my-1 border-gray-100" />
+                                        <hr className="my-1 border-gray-100" />
 
-                                    <button
-                                    onClick={() => {
-                                        dispatch(logout());
-                                        navigate("/student/login", { replace: true });
-                                        toast.success("Logged out successfully 👋");
-                                    }}
-                                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                                    >
-                                    <LogOut className="w-4 h-4" />
-                                    Logout
-                                    </button>
-                                </>
+                                        <button
+                                            onClick={() => {
+                                                dispatch(logout());
+                                                navigate("/student/login", { replace: true });
+                                                toast.success("Logged out successfully 👋");
+                                            }}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Logout
+                                        </button>
+                                    </>
                                 )}
                             </div>
-                            </div>
+                        </div>
 
                         <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -205,17 +208,51 @@ const CourseDetail = () => {
                 </div>
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
+                    <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full z-50">
                         <a href="#" className="text-gray-700 font-medium">Explore</a>
                         <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
                         <a href="#" className="text-gray-700 font-medium">Live Classes</a>
                         <hr className="border-gray-100" />
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                A
+
+                        {!isAuthenticated ? (
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => navigate("/student/login")}
+                                    className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    onClick={() => navigate("/student/register")}
+                                    className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                                >
+                                    Sign Up
+                                </button>
                             </div>
-                            <span className="text-sm font-medium">Aghosh</span>
-                        </div>
+                        ) : (
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                        {username ? username.charAt(0).toUpperCase() : "U"}
+                                    </div>
+                                    <span className="text-sm font-medium">{username || "User"}</span>
+                                </div>
+                                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                                <button className="text-gray-700 font-medium text-left">My Courses</button>
+                                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                                <button className="text-gray-700 font-medium text-left">Orders</button>
+                                <button
+                                    onClick={() => {
+                                        dispatch(logout());
+                                        navigate("/student/login", { replace: true });
+                                        toast.success("Logged out successfully 👋");
+                                    }}
+                                    className="text-red-600 font-medium text-left"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </nav>
@@ -333,13 +370,13 @@ const CourseDetail = () => {
 
                                             <div className="mt-auto pt-3 border-t border-gray-50">
                                                 <span className="text-lg font-bold text-blue-600">{course.price}</span>
-                                                
+
                                             </div>
 
                                             {/* <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                                                 <ShoppingCart className="w-5 h-5" />
                                             </button> */}
-                                            
+
                                         </div>
                                     </div>
                                 ))}

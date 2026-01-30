@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createElement } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
   Trash2, ArrowLeft, CreditCard
@@ -9,7 +9,7 @@ import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
 import Api from '../Services/Api';
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+
 
 const StudentCart = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,10 +25,7 @@ const StudentCart = () => {
   const [loading, setLoading] = useState(true);
 
 
-  // stipe
 
-  const stripe = useStripe();
-  const elements = useElements();
 
 
   //  Fetching Cart
@@ -97,16 +94,12 @@ const StudentCart = () => {
   }
 
 
-const handleCheckout = async()=>{
-
-    if(!stripe)
-}
 
 
 
 
-  const subtotal = 84.99; // Mock subtotal from image reference context
-  const discount = 84.99;
+  const subtotal = 0; // Mock subtotal from image reference context
+  const discount = 0;
 
 
   return (
@@ -285,7 +278,9 @@ const handleCheckout = async()=>{
                 </div>
               </div>
 
-              <button className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
+              
+
+              <button onClick={()=>navigate('/checkout')} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
                 Proceed to Checkout
               </button>
               <button

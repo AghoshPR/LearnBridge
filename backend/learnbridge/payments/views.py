@@ -142,7 +142,7 @@ class CreateOrderView(APIView):
 
         intent = stripe.PaymentIntent.create(
             amount=int(total * 100),
-            currency="inr",
+            currency="INR",
             metadata={
                 "order_id":order.id,
                 "user_id":user.id
