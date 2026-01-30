@@ -11,6 +11,9 @@ urlpatterns = [
     path("cart/remove/<int:course_id>/", RemoveFromCartView.as_view()),
     path("cart/clear/", ClearCartView.as_view()),
 
-    path("createorder/",CreateOrderView.as_view())
+    path("createorder/",CreateOrderView.as_view()),
+
+    path("stripe/success/", StripePaymentSuccessView.as_view()),
+
 
 ]

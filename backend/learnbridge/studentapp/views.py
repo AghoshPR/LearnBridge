@@ -6,8 +6,9 @@ from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAut
 from authapp.models import User
 from rest_framework import status
 from .models import Wishlist
-from .serializers import WishlistSerializer
+from .serializers import *
 from courses.models import Course
+from studentapp.models import *
 
 # Create your views here.
 
@@ -89,4 +90,18 @@ class WishlistRemoveView(APIView):
 
         Wishlist.objects.filter(user=request.user,course_id=course_id).delete()
         return Response({"detail":"Removed from wishlist"},status=204)
+    
+
+
+class MyCourseView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request):
+
+        enrollments = Enrollment.objects.filter(user=request.user)
+        serializer = MyCourseSerializer(enrollments,many=True)
+        return Response(serializer.data)
+    
+
     

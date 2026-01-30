@@ -9,4 +9,9 @@ urlpatterns = [
     path("wishlist/add/",WishlistAddView.as_view()),
     path("wishlist/remove/<int:course_id>/",WishlistRemoveView.as_view()),
 
+
+    # course view
+
+    path("mycourses/",MyCourseView.as_view())
+
 ]

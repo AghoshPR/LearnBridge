@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Package, Calendar, User, Eye, Search, ShoppingCart, Bell, BookOpen, Heart, LogOut, Menu, X } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { toast } from "sonner";
 import Logo from '../../assets/learnbridge-logo.png';
+import Api from '../Services/Api';
 
 const MyCourses = () => {
   const navigate = useNavigate();
@@ -12,36 +13,15 @@ const MyCourses = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Dummy purchased courses data
-  const purchasedCourses = [
-    {
-      id: 1,
-      title: 'Complete Web Development Bootcamp 2024',
-      instructor: 'Dr. Angela Yu',
-      purchaseDate: 'Jan 24, 2024',
-      price: '₹499.00',
-      image: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1031&q=80',
-      status: 'Completed',
-    },
-    {
-      id: 2,
-      title: 'Advanced React Patterns & Best Practices',
-      instructor: 'Kent C. Dodds',
-      purchaseDate: 'Feb 10, 2024',
-      price: '₹799.00',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80',
-      status: 'In Progress',
-    },
-    {
-      id: 3,
-      title: 'Next.js 14: The Big Guide',
-      instructor: 'Vercel Team',
-      purchaseDate: 'Mar 05, 2024',
-      price: '₹699.00',
-      image: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80',
-      status: 'Pending',
-    }
-  ];
+  
+  const [purchasedCourses,setPurchasedCourses] = useState([])
+
+  useEffect(()=>{
+    Api.get("/student/mycourses/")
+    .then(res=>setPurchasedCourses(res.data))
+  },[])
+
+
 
   return (
     <div className="min-h-screen bg-background font-sans text-gray-800">
@@ -212,7 +192,7 @@ const MyCourses = () => {
                   {/* Course Image */}
                   <div className="w-full sm:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden border border-border relative">
                     <img
-                      src={course.image}
+                      src={course.thumbnail}
                       alt={course.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -234,10 +214,12 @@ const MyCourses = () => {
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>Purchased: {course.purchaseDate}</span>
+                        <span>
+                          Purchased: {new Date(course.purchaseDate).toLocaleDateString()}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground">{course.price}</span>
+                        <span className="font-medium text-foreground">₹ {course.price}</span>
                       </div>
                       <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${course.status === 'Completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                         course.status === 'In Progress' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :

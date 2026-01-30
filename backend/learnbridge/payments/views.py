@@ -10,6 +10,7 @@ from rest_framework import status
 from .models import Cart,CartItem
 from .serializers import *
 from courses.models import *
+from studentapp.models import *
 from .utils import stripe
 
 
@@ -154,3 +155,58 @@ class CreateOrderView(APIView):
             "client_secret":intent.client_secret
         })
         
+
+class StripePaymentSuccessView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request):
+
+        payment_intent_id = request.data.get("payment_intent_id")
+
+        if not payment_intent_id:
+
+            return Response({"error":"payment intend id required"},status=400)
+        
+
+        # stripe verifying
+
+        intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+
+        if intent.status != "succeeded":
+
+            return Response({"error":"Payment not successful"},status=400)
+        
+        order_id = intent.metadata.get("order_id")
+        order = Order.objects.get(id=order_id)
+
+
+        order.payment_status="paid"
+        order.save()
+
+        # payment record creating
+
+        Payment.objects.create(
+            order=order,
+            provider="stripe",
+            provider_payment_id=intent.id,
+            amount = order.final_amount,
+            currency = "INR",
+            status="completed"
+        )
+
+        # create enrollments
+
+        for item in order.items.all():
+
+            Enrollment.objects.get_or_create(
+                user = order.user,
+                course=item.course
+            )
+
+        Cart.objects.filter(user=order.user).first().items.all().delete()
+
+        return Response({"detail":"Payment processed & enrolled"})
+
+
+

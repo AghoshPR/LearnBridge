@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Tag, CreditCard, Trash2, X } from 'lucide-react';
+import { MapPin, Plus, Tag, CreditCard, Trash2, X, Search, ShoppingCart, Bell, Heart, User, BookOpen, LogOut, Menu } from 'lucide-react';
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import Logo from '../../assets/learnbridge-logo.png';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 
 const OrdersCheckout = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, username } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(1);
   const [couponCode, setCouponCode] = useState('');
 
-    // stipe
+  // stipe
 
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
 
-  const [paymentMethod,setPaymentMethod]=useState("card")
+  const [paymentMethod, setPaymentMethod] = useState("card")
 
 
 
@@ -50,26 +57,26 @@ const OrdersCheckout = () => {
     },
   ]);
 
-  
 
 
 
-  useEffect(()=>{
+
+  useEffect(() => {
     fetchCart()
-  },[])
+  }, [])
 
-  const fetchCart = async() =>{
+  const fetchCart = async () => {
 
-        try{
-            const res = await Api.get("/cart/")
-            setCartItems(res.data.items)
-            setTotal(res.data.total_amount)
-        
-        }catch{
-            toast.error("Failed to load checkout data")
-        }finally{
-            setLoading(false)
-        }
+    try {
+      const res = await Api.get("/cart/")
+      setCartItems(res.data.items)
+      setTotal(res.data.total_amount)
+
+    } catch {
+      toast.error("Failed to load checkout data")
+    } finally {
+      setLoading(false)
+    }
   }
 
 
@@ -81,10 +88,10 @@ const OrdersCheckout = () => {
 
 
 
-  
-const payWithStripe  = async ()=>{
 
-    if(!stripe || !elements){
+  const payWithStripe = async () => {
+
+    if (!stripe || !elements) {
 
       toast.error("Stripe not loaded")
       return
@@ -92,218 +99,338 @@ const payWithStripe  = async ()=>{
 
 
 
-    try{
-        const res = await Api.post("/createorder/")
-        const { client_secret } = res.data
+    try {
+      const res = await Api.post("/createorder/")
+      const { client_secret, order_id } = res.data
 
 
-        const result = await stripe.confirmCardPayment(client_secret,{
-          payment_method:{
-            card:elements.getElement(CardElement)
-          }
-        })
-
-        if (result.error){
-
-            toast.error(result.error.message)
-        }else{
-
-          if(result.paymentIntent.status==="succeeded"){
-            await Api.delete("/cart/clear/");
-            toast.success("Payment Successful")
-            navigate("/mycourse")
-          }
+      const result = await stripe.confirmCardPayment(client_secret, {
+        payment_method: {
+          card: elements.getElement(CardElement)
         }
+      })
 
-    }catch(err){
+      if (result.error) {
+
+        toast.error(result.error.message)
+      } else {
+
+        if (result.paymentIntent.status === "succeeded") {
+
+          await Api.post("/stripe/success/", {
+            payment_intent_id: result.paymentIntent.id,
+          })
+
+
+          toast.success("Payment Successful")
+          navigate("/mycourse")
+
+        }
+      }
+
+    } catch (err) {
       toast.error("Payment Failed")
     }
-}
+  }
 
-const payWithRazorpay = () => {
-  toast.info("Razorpay UPI flow will open here");
-};
-
-
+  const payWithRazorpay = () => {
+    toast.info("Razorpay UPI flow will open here");
+  };
 
 
-const handleCheckout = async ()=>{
 
-    if (paymentMethod==="card"){
-        payWithStripe()
-    }else{
-        payWithRazorpay()
+
+  const handleCheckout = async () => {
+
+    if (paymentMethod === "card") {
+      payWithStripe()
+    } else {
+      payWithRazorpay()
     }
-}
+  }
 
-if (loading) {
+  if (loading) {
     return <div className="text-center py-20">Loading checkout...</div>;
   }
 
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Addresses and Items */}
-          <div className="lg:col-span-2 space-y-6">
-
-            {/* Delivery Address Section */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Delivery Address</h2>
-                </div>
-                <button
-                  onClick={() => setIsAddressModalOpen(true)}
-                  className="flex items-center gap-1 text-sm font-medium border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Address
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {addresses.map((addr) => (
-                  <div
-                    key={addr.id}
-                    className={`relative flex gap-4 p-4 rounded-lg border cursor-pointer transition-all ${selectedAddress === addr.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                      }`}
-                    onClick={() => setSelectedAddress(addr.id)}
-                  >
-                    <div className="mt-1">
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedAddress === addr.id ? 'border-primary' : 'border-muted-foreground'
-                        }`}>
-                        {selectedAddress === addr.id && (
-                          <div className="w-2 h-2 rounded-full bg-primary" />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm">{addr.name}</span>
-                        {addr.type && (
-                          <span className="text-[10px] px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-medium uppercase tracking-wider">
-                            {addr.type}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {addr.address}, {addr.city}, {addr.state && `${addr.state} - `}{addr.zip}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Phone: {addr.phone}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+    <div className="min-h-screen bg-background">
+      {/* Navbar */}
+      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 mb-8">
+        <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-2">
+              <img src={Logo} alt="LearnBridge Logo" className="h-8" />
+              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
+              <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
+              <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
             </div>
-
-            {/* Order Items Section */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <h2 className="text-lg font-semibold">Order Items ({cartItems.length})</h2>
-              </div>
-
-              <div className="space-y-6">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-border">
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium text-sm sm:text-base truncate pr-4" title={item.title}>
-                            {item.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">Instructor: {item.instructor}</p>
-                        </div>
-                        <div className="text-right">
-                          {/* <div className="text-sm text-muted-foreground line-through">₹{Number(item.originalPrice).toFixed(2)}</div> */}
-                          <div className="font-bold text-primary">₹{Number(item.price).toFixed(2)}</div>
-                        </div>
-                      </div>
-                      {item.tag && (
-                        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground border border-border w-fit px-2 py-1 rounded">
-                          <Tag className="w-3 h-3" />
-                          <span>{item.tag}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
           </div>
 
-          {/* Right Column - Summary & Coupons */}
-          <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+              <ShoppingCart className="w-5 h-5  cursor-pointer" />
+            </button>
+            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+              <Bell className="w-5 h-5" />
+            </button>
+            <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+              <Heart className="w-5 h-5" />
+            </button>
 
-            {/* Apply Coupon */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Tag className="w-4 h-4" />
-                <h2 className="font-semibold">Apply Coupon</h2>
-              </div>
-
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  placeholder="ENTER COUPON CODE"
-                  className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase placeholder:normal-case"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                />
-                <button className="px-4 py-2 text-sm font-medium bg-secondary hover:bg-secondary/80 rounded-lg transition-colors">
-                  Apply
-                </button>
-              </div>
-
-              <div className="relative">
-                <p className="text-xs text-muted-foreground mb-2">Or select from available coupons:</p>
-                <select className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
-                  <option>Select a coupon</option>
-                  <option>WELCOME50</option>
-                  <option>LEARN20</option>
-                </select>
-                <div className="absolute right-3 top-[2.2rem] pointer-events-none">
-                  <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            <div className="relative group">
+              <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
+                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
+                <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                 </div>
+              </button>
+
+              {/* Profile Dropdown */}
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+                {/* Not Logged In */}
+                {!isAuthenticated && (
+                  <>
+                    <button
+                      onClick={() => navigate("/student/login")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <User className='w-4 h-4' />
+                      Login
+                    </button>
+                    <button
+                      onClick={() => navigate("/student/register")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Sign Up
+                    </button>
+                  </>
+                )}
+
+                {/*  LOGGED IN */}
+                {isAuthenticated && (
+                  <>
+                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <BookOpen className="w-4 h-4" />
+                      My Courses
+                    </button>
+                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <Heart className="w-4 h-4" />
+                      Wishlist
+                    </button>
+                    <hr className="my-1 border-gray-100" />
+                    <button
+                      onClick={() => {
+                        dispatch(logout());
+                        navigate("/student/login", { replace: true });
+                        toast.success("Logged out successfully 👋", {
+                          description: "See you again!",
+                          duration: 2500,
+                        });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 cursor-pointer" />
+                      Logout
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Order Summary */}
-            <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
-              <h2 className="font-semibold mb-4">Order Summary</h2>
+            <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
+            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
+            <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
+            <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+            <hr className="border-gray-100" />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+              </div>
+              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
+            </div>
+          </div>
+        )}
+      </nav>
 
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal (1 items)</span>
-                  <span>₹{total}</span>
+      <div className="pb-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Addresses and Items */}
+            <div className="lg:col-span-2 space-y-6">
+
+              {/* Delivery Address Section */}
+              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-muted-foreground" />
+                    <h2 className="text-lg font-semibold">Delivery Address</h2>
+                  </div>
+                  <button
+                    onClick={() => setIsAddressModalOpen(true)}
+                    className="flex items-center gap-1 text-sm font-medium border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Address
+                  </button>
                 </div>
-                <div className="flex justify-between text-green-600 dark:text-green-500">
-                  <span>% Offer Discount</span>
-                  <span>-₹ 0</span>
-                </div>
-                <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span className="text-primary">₹{total}</span>
+
+                <div className="space-y-4">
+                  {addresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className={`relative flex gap-4 p-4 rounded-lg border cursor-pointer transition-all ${selectedAddress === addr.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                        }`}
+                      onClick={() => setSelectedAddress(addr.id)}
+                    >
+                      <div className="mt-1">
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedAddress === addr.id ? 'border-primary' : 'border-muted-foreground'
+                          }`}>
+                          {selectedAddress === addr.id && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-sm">{addr.name}</span>
+                          {addr.type && (
+                            <span className="text-[10px] px-2 py-0.5 bg-muted text-muted-foreground rounded-full font-medium uppercase tracking-wider">
+                              {addr.type}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {addr.address}, {addr.city}, {addr.state && `${addr.state} - `}{addr.zip}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Phone: {addr.phone}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* <div className="mt-4 p-3 bg-secondary/50 rounded-lg text-xs text-muted-foreground space-y-1">
+              {/* Order Items Section */}
+              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-6">
+                  <h2 className="text-lg font-semibold">Order Items ({cartItems.length})</h2>
+                </div>
+
+                <div className="space-y-6">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex gap-4">
+                      <div className="w-24 h-16 sm:w-32 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden border border-border">
+                        <img
+                          src={item.thumbnail}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-sm sm:text-base truncate pr-4" title={item.title}>
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mt-1">Instructor: {item.instructor}</p>
+                          </div>
+                          <div className="text-right">
+                            {/* <div className="text-sm text-muted-foreground line-through">₹{Number(item.originalPrice).toFixed(2)}</div> */}
+                            <div className="font-bold text-primary">₹{Number(item.price).toFixed(2)}</div>
+                          </div>
+                        </div>
+                        {item.tag && (
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground border border-border w-fit px-2 py-1 rounded">
+                            <Tag className="w-3 h-3" />
+                            <span>{item.tag}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column - Summary & Coupons */}
+            <div className="space-y-6">
+
+              {/* Apply Coupon */}
+              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag className="w-4 h-4" />
+                  <h2 className="font-semibold">Apply Coupon</h2>
+                </div>
+
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="text"
+                    placeholder="ENTER COUPON CODE"
+                    className="flex-1 px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase placeholder:normal-case"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                  />
+                  <button className="px-4 py-2 text-sm font-medium bg-secondary hover:bg-secondary/80 rounded-lg transition-colors">
+                    Apply
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <p className="text-xs text-muted-foreground mb-2">Or select from available coupons:</p>
+                  <select className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option>Select a coupon</option>
+                    <option>WELCOME50</option>
+                    <option>LEARN20</option>
+                  </select>
+                  <div className="absolute right-3 top-[2.2rem] pointer-events-none">
+                    <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+                <h2 className="font-semibold mb-4">Order Summary</h2>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Subtotal (1 items)</span>
+                    <span>₹{total}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600 dark:text-green-500">
+                    <span>% Offer Discount</span>
+                    <span>-₹ 0</span>
+                  </div>
+                  <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span className="text-primary">₹{total}</span>
+                  </div>
+                </div>
+
+                {/* <div className="mt-4 p-3 bg-secondary/50 rounded-lg text-xs text-muted-foreground space-y-1">
                 <p>Revenue Distribution:</p>
                 <div className="flex justify-between">
                   <span>Platform (25%):</span>
@@ -315,45 +442,46 @@ if (loading) {
                 </div>
               </div> */}
 
-              {/* Payment Method */}
+                {/* Payment Method */}
                 <div className="mb-4 space-y-3">
-                <h3 className="font-semibold text-sm">Payment Method</h3>
+                  <h3 className="font-semibold text-sm">Payment Method</h3>
 
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
-                    type="radio"
-                    name="payment"
-                    value="card"
-                    checked={paymentMethod === "card"}
-                    onChange={() => setPaymentMethod("card")}
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === "card"}
+                      onChange={() => setPaymentMethod("card")}
                     />
                     <CreditCard className="w-4 h-4" />
                     Card (Stripe)
-                </label>
+                  </label>
 
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
                     <input
-                    type="radio"
-                    name="payment"
-                    value="upi"
-                    checked={paymentMethod === "upi"}
-                    onChange={() => setPaymentMethod("upi")}
+                      type="radio"
+                      name="payment"
+                      value="upi"
+                      checked={paymentMethod === "upi"}
+                      onChange={() => setPaymentMethod("upi")}
                     />
                     UPI (Razorpay)
-                </label>
+                  </label>
                 </div>
 
-              {paymentMethod === "card" && (
-                <div className="mb-4 p-3 border rounded-lg">
+                {paymentMethod === "card" && (
+                  <div className="mb-4 p-3 border rounded-lg">
                     <CardElement />
-                </div>
+                  </div>
                 )}
 
-              <button onClick={handleCheckout} className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
-                Place Order
-              </button>
-            </div>
+                <button onClick={handleCheckout} className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
+                  Place Order
+                </button>
+              </div>
 
+            </div>
           </div>
         </div>
       </div>
