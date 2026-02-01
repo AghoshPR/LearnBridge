@@ -12,6 +12,10 @@ urlpatterns = [
 
     # course view
 
-    path("mycourses/",MyCourseView.as_view())
+    path("mycourses/",MyCourseView.as_view()),
+
+    path("courses/<int:course_id>/lessons/",StudentCourseLessonsView.as_view()),
+    path("lessons/<int:lesson_id>/video/", StudentLessonVideoView.as_view()),
+
 
 ]

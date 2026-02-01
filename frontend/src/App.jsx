@@ -106,7 +106,7 @@ function App() {
         <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout/></ProtectedRoute>} />
         <Route path='/mycourse' element={<MyCourses />} />
 
-        <Route path='/course/videos' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
+        <Route path='/course/videos/:courseId' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
 
         <Route path='/question-community' element={<QuestionCommunity />} />
 

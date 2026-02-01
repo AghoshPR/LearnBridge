@@ -227,7 +227,7 @@ const Courses = () => {
                                             Profile
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={()=>navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <BookOpen className="w-4 h-4" />
                                             My Courses
                                         </button>
@@ -383,7 +383,7 @@ const Courses = () => {
                                 onClick={() => goToCourseDetail(course.id)}
                                 className="cursor-pointer"
                             >
-                                <div className="relative h-40 overflow-hidden bg-gray-100">
+                                <div className="relative h-60 overflow-hidden bg-gray-100">
                                     <img
                                         src={course.thumbnail}
                                         alt={course.title}

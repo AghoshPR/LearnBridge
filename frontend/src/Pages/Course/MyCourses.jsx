@@ -13,13 +13,13 @@ const MyCourses = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  
-  const [purchasedCourses,setPurchasedCourses] = useState([])
 
-  useEffect(()=>{
+  const [purchasedCourses, setPurchasedCourses] = useState([])
+
+  useEffect(() => {
     Api.get("/student/mycourses/")
-    .then(res=>setPurchasedCourses(res.data))
-  },[])
+      .then(res => setPurchasedCourses(res.data))
+  }, [])
 
 
 
@@ -182,78 +182,76 @@ const MyCourses = () => {
         </div>
 
         {purchasedCourses.length > 0 ? (
-          <div className="grid gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {purchasedCourses.map((course) => (
               <div
                 key={course.id}
-                className="group bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200"
+                className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col"
               >
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  {/* Course Image */}
-                  <div className="w-full sm:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden border border-border relative">
+                {/* Clickable Area */}
+                <div
+                  onClick={() => navigate(`/course/videos/${course.course_id}`)}
+                  className="cursor-pointer flex-1"
+                >
+                  {/* Image - Taller height (h-60) for "half of card" look */}
+                  <div className="relative h-60 overflow-hidden bg-gray-100">
                     <img
                       src={course.thumbnail}
                       alt={course.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-                  </div>
-
-                  {/* Course Details */}
-                  <div className="flex-1 w-full text-center sm:text-left space-y-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground line-clamp-1" title={course.title}>
-                        {course.title}
-                      </h3>
-                      <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground mt-1">
-                        <User className="w-4 h-4" />
-                        <span>{course.instructor}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          Purchased: {new Date(course.purchaseDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground">₹ {course.price}</span>
-                      </div>
-                      <div className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${course.status === 'Completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                        course.status === 'In Progress' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                          'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
-                        }`}>
-                        {course.status}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <div className="w-full sm:w-auto mt-4 sm:mt-0">
-                    <button
-                      onClick={() => navigate(`/courseview/${course.id}`)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]"
+                    <span
+                      className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white shadow-sm
+                        ${course.status === 'Completed' ? 'bg-green-500' :
+                          course.status === 'In Progress' ? 'bg-blue-500' :
+                            'bg-yellow-500'}`}
                     >
-                      <Eye className="w-4 h-4" />
-                      <span>View</span>
-                    </button>
+                      {course.status}
+                    </span>
                   </div>
+
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                      <User className="w-4 h-4" />
+                      <span>{course.instructor}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        Purchased: {new Date(course.purchaseDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
+                  <span className="text-xl font-bold text-blue-600">
+                    ₹{course.price}
+                  </span>
+
+
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
-              <Package className="w-10 h-10 text-muted-foreground" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+              <Package className="w-10 h-10 text-gray-400" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">No orders yet</h2>
-            <p className="text-muted-foreground mb-8 max-w-sm">
-              You haven't made any purchases yet. Explore our courses and start learning today!
+            <h2 className="text-xl font-semibold mb-2 text-gray-900">No courses found</h2>
+            <p className="text-gray-500 mb-8 max-w-sm">
+              You haven't purchased any courses yet. Explore our catalog to start learning!
             </p>
-            <button className="px-6 py-2.5 bg-primary text-primary-foreground font-medium rounded-lg hover:opacity-90 transition-all">
+            <button
+              onClick={() => navigate("/courses")}
+              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+            >
               Browse Courses
             </button>
           </div>

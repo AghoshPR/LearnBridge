@@ -121,7 +121,7 @@ const OrdersCheckout = () => {
             payment_intent_id: result.paymentIntent.id,
           })
 
-
+        //   await Api.delete("cart/clear/")
           toast.success("Payment Successful")
           navigate("/mycourse")
 

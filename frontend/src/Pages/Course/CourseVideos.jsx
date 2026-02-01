@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, ChevronRight, LogOut,
   Heart, BookOpen, Package, Star, Play, MoreVertical, MessageCircle,
@@ -7,11 +7,15 @@ import {
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from "sonner";
 import Logo from '../../assets/learnbridge-logo.png';
+import Api from '../Services/Api';
 
 const CourseVideos = () => {
+
+  const { courseId } = useParams();
+
   // Navbar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, username } = useSelector((state) => state.auth);
@@ -25,22 +29,56 @@ const CourseVideos = () => {
   const [review, setReview] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // overview, comments, notes
 
-  // Dummy Data
-  const course = {
-    title: "Complete React Course",
-    lessonTitle: "Introduction to React Hooks",
-    currentLesson: 3,
-    totalLessons: 8,
-    description: "Learn how to use React Hooks to manage state and side effects in functional components. We'll cover useState, useEffect, and custom hooks in detail with practical examples."
-  };
 
-  const playlist = [
-    { id: 1, title: "1. Introduction to React", duration: "12:34", comments: 3, completed: true, thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=200&h=120&fit=crop" },
-    { id: 2, title: "2. Components & Props", duration: "15:45", comments: 1, completed: true, thumbnail: "https://images.unsplash.com/photo-1555099962-4199c345e5dd?w=200&h=120&fit=crop" },
-    { id: 3, title: "3. State Management", duration: "22:10", comments: 0, completed: false, active: true, thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=200&h=120&fit=crop" },
-    { id: 4, title: "4. Hooks Deep Dive", duration: "28:55", comments: 0, completed: false, thumbnail: "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=200&h=120&fit=crop" },
-    { id: 5, title: "5. Building Custom Hooks", duration: "18:20", comments: 0, completed: false, thumbnail: "https://images.unsplash.com/photo-1607705703571-c5a8695f18f6?w=200&h=120&fit=crop" },
-  ];
+  const [lessons,setLessons] = useState([])
+  const [activeLesson,setActiveLesson]=useState(null)
+  const [videoUrl,setVideoUrl] = useState(null)
+
+  
+
+  // playlist
+ useEffect(() => {
+    Api.get(`/student/courses/${courseId}/lessons/`)
+      .then(res => {
+        setLessons(res.data)
+        setActiveLesson(res.data[0])
+
+        if (res.data.length > 0) {
+            setActiveLesson(res.data[0])
+          }
+      })
+      .catch(() => toast.error("Failed to load lessons"));
+  }, [courseId]);
+
+  // Load video when lesson changes
+
+  useEffect(()=>{
+
+      if(activeLesson){
+          Api.get(`/student/lessons/${activeLesson.id}/video/`)
+          .then(res=>setVideoUrl(res.data.signed_url))
+          .catch(()=>toast.error("Falied to load video"))
+      }
+  },[activeLesson])
+
+
+
+  const totalLessons  = lessons.length
+
+
+  const currentLessonIndex = lessons.findIndex(
+  l => l.id === activeLesson?.id
+) + 1
+
+  const totalSeconds = lessons.reduce((acc,lesson)=>{
+    const [min,sec] = lesson.duration.split(":").map(Number)
+    return acc + (min * 60 + sec)
+  },0)
+
+
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+
 
   const comments = [
     { id: 1, user: "John Doe", time: "2 hours ago", text: "Great introduction! Very clear explanation of React basics.", likes: 12, replies: 0, initial: "J", color: "bg-purple-100 text-purple-600" },
@@ -177,8 +215,8 @@ const CourseVideos = () => {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{course.lessonTitle}</h1>
-            <p className="text-gray-500 text-sm mt-1">{course.title} • Lesson {course.currentLesson} of {course.totalLessons}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{activeLesson?.title}</h1>
+            <p className="text-gray-500 text-sm mt-1">{activeLesson?.title} • Lesson {currentLessonIndex} of {totalLessons}</p>
           </div>
           <button
             onClick={() => setShowRatingModal(true)}
@@ -195,29 +233,28 @@ const CourseVideos = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player Placeholder */}
             <div className="relative aspect-video bg-black rounded-2xl overflow-hidden group shadow-2xl">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center cursor-pointer group-hover:scale-110 transition-transform">
-                  <Play className="w-8 h-8 text-white fill-current ml-1" />
+              
+              {videoUrl ? (
+                <video
+                  src={videoUrl}
+                  controls
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="text-white flex items-center justify-center h-full">
+                  Loading video...
                 </div>
-                <p className="absolute bottom-1/2 translate-y-12 text-white/50 text-sm">Click to play lesson</p>
-              </div>
+              )}
 
-              {/* Video Controls Bar Mockup */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-between text-white/90">
-                <span className="text-xs font-mono">08:32 / 22:10</span>
-                <div className="flex items-center gap-4 text-xs font-medium">
-                  <span className="cursor-pointer hover:text-white">Speed: 1x</span>
-                  <span className="cursor-pointer hover:text-white">Quality: 1080p</span>
-                  <Maximize className="w-4 h-4 cursor-pointer hover:text-white" />
-                </div>
-              </div>
+          
+              
             </div>
 
             {/* About This Lesson */}
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold text-gray-900 mb-3">About this lesson</h3>
               <p className="text-gray-600 leading-relaxed text-sm">
-                {course.description}
+                {lessons.description}
               </p>
             </div>
 
@@ -362,13 +399,19 @@ const CourseVideos = () => {
                     Course Playlist
                   </h3>
                 </div>
-                <p className="text-xs text-gray-500">8 lessons • 3h 14m total</p>
+                <p className="text-xs text-gray-500">{totalLessons} lessons • {hours}h {minutes}m total</p>
               </div>
               <div className="max-h-[400px] overflow-y-auto">
-                {playlist.map((video) => (
+
+                {lessons.map((video) => (
                   <div
                     key={video.id}
-                    className={`p-3 flex gap-3 hover:bg-blue-50 transition-colors cursor-pointer border-l-2 ${video.active ? 'bg-blue-50/50 border-blue-500' : 'border-transparent'}`}
+
+                    onClick={() => {
+                        setVideoUrl(null)
+                        setActiveLesson(video)
+                      }}
+                    className={`p-3 flex gap-3 hover:bg-blue-50 transition-colors cursor-pointer border-l-2 ${activeLesson ?. id===video.id ? 'bg-blue-50/50 border-blue-500' : 'border-transparent'}`}
                   >
                     <div className="relative w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-200">
                       <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />

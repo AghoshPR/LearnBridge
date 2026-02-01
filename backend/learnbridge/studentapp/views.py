@@ -9,6 +9,7 @@ from .models import Wishlist
 from .serializers import *
 from courses.models import Course
 from studentapp.models import *
+from courses.utils import generate_signed_url
 
 # Create your views here.
 
@@ -104,4 +105,67 @@ class MyCourseView(APIView):
         return Response(serializer.data)
     
 
-    
+
+# course video view
+
+class StudentCourseLessonsView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+
+    def get(self,request,course_id):
+
+        enrolled = Enrollment.objects.filter(
+            user = request.user,
+            course_id=course_id
+
+        ).exists()
+
+        if not enrolled:
+            return Response({"error":"Not enrolled"},status=403)
+        
+        lessons = Lesson.objects.filter(course_id=course_id)
+        serializer = StudentLessonSerializer(lessons,many=True)
+
+        return Response(serializer.data)
+
+
+class StudentLessonVideoView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request,lesson_id):
+
+        try:
+
+            lesson = Lesson.objects.select_related("course").get(id=lesson_id)
+
+        except Lesson.DoesNotExist:
+            return Response(
+                {"error":"Lesson not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    # checking enrollment
+        enrolled = Enrollment.objects.filter(
+            user=request.user,
+            course=lesson.course
+        ).exists()
+
+        if not enrolled:
+                return Response(
+                    {"error": "Not enrolled in this course"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        if not lesson.video_key:
+            return Response(
+                {"error": "Video not uploaded"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        signed_url = generate_signed_url(lesson.video_key)
+
+        return Response({
+            "signed_url":signed_url
+        })

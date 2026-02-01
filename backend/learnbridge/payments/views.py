@@ -144,6 +144,7 @@ class CreateOrderView(APIView):
         intent = stripe.PaymentIntent.create(
             amount=int(total * 100),
             currency="INR",
+
             metadata={
                 "order_id":order.id,
                 "user_id":user.id
@@ -164,25 +165,41 @@ class StripePaymentSuccessView(APIView):
 
         payment_intent_id = request.data.get("payment_intent_id")
 
-        if not payment_intent_id:
-
-            return Response({"error":"payment intend id required"},status=400)
-        
-
         # stripe verifying
-
         intent = stripe.PaymentIntent.retrieve(payment_intent_id)
 
         if intent.status != "succeeded":
-
-            return Response({"error":"Payment not successful"},status=400)
+            return Response({"error": "Payment not successful"}, status=400)
         
         order_id = intent.metadata.get("order_id")
-        order = Order.objects.get(id=order_id)
+        user_id = intent.metadata.get("user_id")
 
+        
+        order = Order.objects.get(id=order_id)
+        user = User.objects.get(id=user_id)
+
+        if order.payment_status == "paid":
+            return Response({"detail": "Already processed"})
+       
+
+        order = Order.objects.get(
+            id=order_id,
+            user=request.user
+            )
+
+        if order.payment_status == "paid":
+            return Response({"detail": "Already processed"})
 
         order.payment_status="paid"
         order.save()
+
+        order_items = OrderItem.objects.filter(order=order)
+
+        for item in order_items:
+            Enrollment.objects.get_or_create(
+                user=user,
+                course=item.course
+            )
 
         # payment record creating
 
@@ -195,6 +212,10 @@ class StripePaymentSuccessView(APIView):
             status="completed"
         )
 
+        cart = Cart.objects.filter(user=user).first()
+        if cart:
+            cart.items.all().delete()
+
         # create enrollments
 
         for item in order.items.all():
@@ -204,7 +225,8 @@ class StripePaymentSuccessView(APIView):
                 course=item.course
             )
 
-        Cart.objects.filter(user=order.user).first().items.all().delete()
+        
+        
 
         return Response({"detail":"Payment processed & enrolled"})
 

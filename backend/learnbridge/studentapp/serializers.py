@@ -38,6 +38,7 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 class MyCourseSerializer(serializers.ModelSerializer):
 
+    course_id = serializers.IntegerField(source="course.id")
     title = serializers.CharField(source="course.title")
     thumbnail = serializers.SerializerMethodField()
     instructor = serializers.CharField(source="course.teacher.username")
@@ -48,6 +49,7 @@ class MyCourseSerializer(serializers.ModelSerializer):
         model = Enrollment
         fields = [
             "id",
+            "course_id",
             "title",
             "thumbnail",
             "instructor",
@@ -57,6 +59,19 @@ class MyCourseSerializer(serializers.ModelSerializer):
             "status",
             "enrolled_at"
         ]
+    def get_thumbnail(self,obj):
+
+        return obj.course.thumbnail.url if obj.course.thumbnail else None
+
+class StudentLessonSerializer(serializers.ModelSerializer):
+
+    thumbnail = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model=Lesson
+        fields = ["id","title","duration","position","thumbnail"]
+
     def get_thumbnail(self,obj):
 
         return obj.course.thumbnail.url if obj.course.thumbnail else None
