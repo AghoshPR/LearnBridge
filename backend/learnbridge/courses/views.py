@@ -706,3 +706,33 @@ class DeleteCommentView(APIView):
         comment.save()
 
         return Response({"detail":"Deleted"})
+    
+
+# Course Review
+
+class CourseReviewView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,course_id):
+
+        reviews = CourseReview.objects.filter(course_id=course_id)
+        serializer = CourseReviewSerializer(reviews,many=True)
+        return Response(serializer.data)
+    
+
+    def post(self,request,course_id):
+
+        rating = request.data.get("rating")
+        review = request.data.get("review")
+
+        obj,created = CourseReview.objects.update_or_create(
+            course_id=course_id,
+            user=request.user,
+            defaults={
+                "rating":rating,
+                "review":review
+            }
+        )
+
+        return Response({"deatil":"Review saved"})

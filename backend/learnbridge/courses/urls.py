@@ -70,6 +70,9 @@ urlpatterns = [
 
     path("comments/like/<int:comment_id>/", ToggleCommentLikeView.as_view()),
 
+    path("reviews/<int:course_id>/",CourseReviewView.as_view()),
+
+
 
 
 

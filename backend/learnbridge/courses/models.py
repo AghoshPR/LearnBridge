@@ -125,5 +125,24 @@ class CommentLike(models.Model):
     class Meta:
         unique_together = ("user", "comment")
 
-# Public Course view
+
+
+# Public Course Review
+
+
+class CourseReview(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="reviews")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()  
+    review = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("course", "user")  
+
+
+        
+
+
+
 

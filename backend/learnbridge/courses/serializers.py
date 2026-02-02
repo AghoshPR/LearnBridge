@@ -211,3 +211,21 @@ class LessonCommentSerializer(serializers.ModelSerializer):
     def get_is_liked_by_me(self, obj):
         user = self.context["request"].user
         return obj.likes.filter(user=user).exists()
+    
+
+
+class CourseReviewSerializer(serializers.ModelSerializer):
+
+    user_name = serializers.CharField(source="user.username",read_only=True)
+    
+    
+    class Meta:
+
+        model = CourseReview
+        fields = [
+            "id",
+            "user_name",
+            "rating",
+            "review",
+            "created_at"
+        ]

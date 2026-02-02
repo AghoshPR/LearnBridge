@@ -315,14 +315,33 @@ const CourseVideos = () => {
   const minutes = Math.floor((totalSeconds % 3600) / 60)
 
 
+// Course Review
+
+  const [reviews,setReviews]=useState([])
 
 
-  const dummyReviews = [
-    { id: 1, user: "Sarah Jenkins", rating: 5, date: "2 days ago", text: "This course was absolutely amazing! The explanation of hooks was crystal clear. I've been struggling with useEffect for weeks and this finally made it click.", initial: "S", color: "bg-pink-100 text-pink-600" },
-    { id: 2, user: "Michael Chen", rating: 4, date: "1 week ago", text: "Great content, but I wish there were more assignments to practice. The instructor is very knowledgeable though.", initial: "M", color: "bg-blue-100 text-blue-600" },
-    { id: 3, user: "Jessica Williams", rating: 5, date: "2 weeks ago", text: "Best React course I've taken so far. Highly recommended for beginners! The project-based approach is really helpful.", initial: "J", color: "bg-orange-100 text-orange-600" },
-    { id: 4, user: "David Thompson", rating: 3, date: "3 weeks ago", text: "Good explanation but the audio quality could be better in some videos. Content is solid otherwise.", initial: "D", color: "bg-indigo-100 text-indigo-600" }
-  ];
+  const loadReviews = ()=>{
+      Api.get(`/courses/reviews/${courseId}/`)
+      .then(res=>setReviews(res.data))
+  }
+
+  const submitReview = async ()=>{
+
+      await Api.post(`/courses/reviews/${courseId}/`,{
+        rating,
+        review
+      })
+
+      toast.success('Review submitted')
+      setShowRatingModal(false)
+      setRating(0)
+      setReview("")
+      loadReviews()
+  }
+
+  useEffect(()=>{
+    loadReviews()
+  },[courseId])
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -544,15 +563,15 @@ const CourseVideos = () => {
               </div>
 
               <div className="grid gap-6">
-                {dummyReviews.map((review) => (
+                {reviews.map((review) => (
                   <div key={review.id} className="border-b border-gray-50 last:border-0 pb-6 last:pb-0">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full ${review.color} flex items-center justify-center font-bold text-sm shrink-0`}>
-                          {review.initial}
+                          {review.user_name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <h4 className="font-bold text-gray-900 text-sm">{review.user}</h4>
+                          <h4 className="font-bold text-gray-900 text-sm">{review.user_name}</h4>
                           <div className="flex items-center gap-2">
                             <div className="flex text-yellow-400">
                               {[...Array(5)].map((_, i) => (
@@ -565,7 +584,7 @@ const CourseVideos = () => {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 leading-relaxed mt-2 ml-13">
-                      {review.text}
+                      {review.review}
                     </p>
                   </div>
                 ))}
@@ -769,12 +788,7 @@ const CourseVideos = () => {
               </div>
 
               <button
-                onClick={() => {
-                  toast.success("Review submitted successfully!");
-                  setShowRatingModal(false);
-                  setRating(0);
-                  setReview('');
-                }}
+                onClick={submitReview}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98]"
               >
                 Submit Review
