@@ -102,6 +102,28 @@ class Lesson(models.Model):
         ordering=["position"]
 
 
+class LessonComments(models.Model):
+
+    lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE,related_name="comments")
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    parent = models.ForeignKey("self",null=True,blank=True,on_delete=models.CASCADE,related_name="replies")
+    content = models.TextField()
+    is_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+
+        ordering = ["created_at"]
+
+
+class CommentLike(models.Model):
+
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    comment = models.ForeignKey(LessonComments,on_delete=models.CASCADE,related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "comment")
 
 # Public Course view
 

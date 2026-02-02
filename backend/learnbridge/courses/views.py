@@ -627,3 +627,82 @@ class StudentLessonVideoView(APIView):
         )
 
     
+class LessonCommentsView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,lesson_id):
+
+        comments = LessonComments.objects.filter(
+            lesson_id=lesson_id,
+            parent=None,
+            is_deleted=False
+        )
+        
+        serializer = LessonCommentSerializer(
+        comments,
+        many=True,
+        context={"request": request} 
+    )
+
+        return Response(serializer.data)
+    
+    def post(self,request,lesson_id):
+
+        LessonComments.objects.create(
+            lesson_id = lesson_id,
+            user=request.user,
+            content = request.data.get("content")
+        )
+
+        return Response({"detail":"Comment added"})
+    
+class ReplyCommentsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request,comment_id):
+
+        parent = LessonComments.objects.get(id=comment_id)
+
+        LessonComments.objects.create(
+            lesson = parent.lesson,
+            user=request.user,
+            parent=parent,
+            content = request.data.get("content")
+        )
+
+        return Response({"detail":"Reply added"})
+    
+class ToggleCommentLikeView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def post(self,request,comment_id):
+
+        comment = LessonComments.objects.get(id=comment_id)
+
+        like,created = CommentLike.objects.get_or_create(
+            user=request.user,
+            comment=comment
+        )
+
+        if not created:
+            like.delete()
+
+        return Response({
+            "likes":comment.likes.count(),
+            "liked":"created"
+        })
+
+class DeleteCommentView(APIView):
+
+    permission_classes=[IsAuthenticated]
+
+    def delete(self,request,comment_id):
+        
+        comment = LessonComments.objects.get(id=comment_id,user=request.user)
+        comment.is_deleted=True
+        comment.save()
+
+        return Response({"detail":"Deleted"})

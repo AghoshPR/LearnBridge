@@ -60,6 +60,17 @@ urlpatterns = [
     path("categories/public/", PublicCategoryListView.as_view()),
     path("public/<int:pk>/",PublicCourseDetailView.as_view()),
 
+    # comments
+
+    path("lessons/comments/<int:lesson_id>/",LessonCommentsView.as_view(),name="lesson_comments"),
+
+    path("comments/reply/<int:comment_id>/",ReplyCommentsView.as_view(),name="reply_comment"),
+
+    path("comments/<int:comment_id>/",DeleteCommentView.as_view(),name="delete_comment"),
+
+    path("comments/like/<int:comment_id>/", ToggleCommentLikeView.as_view()),
+
+
 
 
 ]

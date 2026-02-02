@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category,Course,Lesson
+from .models import *
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -176,3 +176,38 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
+    
+
+class LessonCommentSerializer(serializers.ModelSerializer):
+    
+    user_name = serializers.CharField(source="user.username",read_only=True)
+    replies = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    is_liked_by_me = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = LessonComments
+        fields =[
+
+            "id",
+            "user_name",
+            "content",
+            "created_at",
+            "replies",
+            "likes_count",
+            "is_liked_by_me"
+        ]
+
+    def get_replies(self,obj):
+
+        qs = obj.replies.filter(is_deleted=False)
+        return LessonCommentSerializer(qs,many=True,context=self.context).data
+    
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked_by_me(self, obj):
+        user = self.context["request"].user
+        return obj.likes.filter(user=user).exists()

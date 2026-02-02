@@ -70,7 +70,7 @@ class StudentLessonSerializer(serializers.ModelSerializer):
     class Meta:
 
         model=Lesson
-        fields = ["id","title","duration","position","thumbnail"]
+        fields = ["id","title","description","duration","position","thumbnail"]
 
     def get_thumbnail(self,obj):
 
