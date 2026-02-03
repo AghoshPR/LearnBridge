@@ -1,6 +1,7 @@
 from django.db import models
 from authapp.models import User
 from cloudinary.models import CloudinaryField
+from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 
 
@@ -80,6 +81,8 @@ class Course(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    is_deleted = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title
 
@@ -97,6 +100,7 @@ class Lesson(models.Model):
     description = models.TextField(blank=True)
     position = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering=["position"]
@@ -133,7 +137,9 @@ class CommentLike(models.Model):
 class CourseReview(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="reviews")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.IntegerField()  
+    rating = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
     review = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from django.db.models import Avg
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -50,6 +51,10 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    students_count = serializers.SerializerMethodField()
+
+    average_rating = serializers.SerializerMethodField()
+
 
     class Meta:
 
@@ -73,8 +78,17 @@ class CourseSerializer(serializers.ModelSerializer):
 
         return None
     
+    def get_students_count(self, obj):
+        return obj.enrollments.count()
+    
+    def get_average_rating(self, obj):
+        return round(
+            obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0,
+            1
+        )
     
 
+    
 
     def validate_category(self,category):
 
@@ -121,6 +135,7 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source="category.name",read_only=True)
     category_id = serializers.IntegerField(source="category.id", read_only=True)
     thumbnail = serializers.SerializerMethodField()
+
 
     class Meta:
 

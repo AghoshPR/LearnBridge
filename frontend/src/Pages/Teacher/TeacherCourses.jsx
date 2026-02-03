@@ -297,14 +297,14 @@ const TeacherCourses = () => {
                                         <div className="flex justify-center mb-1 text-blue-400">
                                             <Users size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.students || 0}</p>
+                                        <p className="text-white font-bold">{course.students_count  || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Students</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                                         <div className="flex justify-center mb-1 text-yellow-400">
                                             <Star size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.rating || 0}</p>
+                                        <p className="text-white font-bold">{course.average_rating  || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Rating</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">

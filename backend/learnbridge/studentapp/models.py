@@ -23,7 +23,7 @@ class Enrollment(models.Model):
     )
 
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="enrollments")
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE,related_name="enrollments")
     progress = models.IntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS, default="in_progress")
     enrolled_at = models.DateTimeField(auto_now_add=True)

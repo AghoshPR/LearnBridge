@@ -363,13 +363,13 @@ class TeacherCourseView(APIView):
         # SINGLE COURSES
 
         if pk:
-            courses = get_object_or_404(Course,pk=pk,teacher=request.user)
+            courses = get_object_or_404(Course,pk=pk,teacher=request.user,is_deleted=False)
             serialzer = CourseSerializer(courses)
             return Response(serialzer.data)
         
         #  ALL COURSES
         
-        courses = Course.objects.filter(teacher=request.user)
+        courses = Course.objects.filter(teacher=request.user,is_deleted=False)
         serialzer = CourseSerializer(courses,many=True)
         return Response(serialzer.data)
     
@@ -431,7 +431,9 @@ class TeacherCourseView(APIView):
             teacher=request.user
         )
 
-        course.delete()
+        course.is_deleted=True
+        course.save()
+
         return Response(
             {"detail":"Course deleted"},
             status=status.HTTP_204_NO_CONTENT
@@ -445,7 +447,7 @@ class TeacherLessonCreateView(APIView):
 
     def get(self,request,course_id):
 
-        lessons = Lesson.objects.filter(course_id=course_id).order_by("position")
+        lessons = Lesson.objects.filter(course_id=course_id,is_deleted=False).order_by("position")
         serializer = LessonSerializer(lessons,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
@@ -534,8 +536,10 @@ class TeacherLessonDetailView(APIView):
 
         lesson = get_object_or_404(Lesson,id=lesson_id)
 
-        delete_video_from_s3(lesson.video_key)
-        lesson.delete()
+        # delete_video_from_s3(lesson.video_key)
+        lesson.is_deleted = True
+        lesson.save()
+        
 
         return Response(
             {"message":"Lesson deleted successfully"},
@@ -559,7 +563,10 @@ class PublicCourseListView(APIView):
 
 
         courses = Course.objects.filter(
-            status="published"
+            is_deleted=False,
+            status="published",
+            category__status="active"
+
         ).select_related("teacher","category").order_by("-created_at")
 
         if search:
@@ -602,7 +609,8 @@ class PublicCourseDetailView(APIView):
         course = get_object_or_404(
             Course.objects.select_related("teacher","category"),
             id=pk,
-            status="published"
+            status="published",
+            category__status="active"
         )
 
         serializer = PublicCourseDetailSerializer(course)
