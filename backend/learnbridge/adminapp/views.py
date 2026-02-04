@@ -50,6 +50,54 @@ class PendingTeachersView(APIView):
 #----------admin approve and reject ----------#
 
 
+   
+# admin teacher reject with reson
+    
+class AdminTeacherRejectView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request,teacher_id):
+
+        reason = request.data.get("reason")
+
+        if not reason:
+
+            return Response(
+                {"error":"Rejection reason is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+
+            profile = TeacherProfile.objects.select_related("user").get(id=teacher_id)
+        
+        except TeacherProfile.DoesNotExist:
+
+            return Response(
+                {"error":"Teacher not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+   
+
+        # Send rejection email
+
+        send_teacher_rejection_email(
+            email=profile.user.email,
+            name=profile.user.username,
+            reason=reason
+        )
+        profile.user.delete()
+
+        return Response(
+            {"message":"Teacher rejected and email sent successfully"},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
 
 class ApproveTeacherView(APIView):
     
@@ -58,7 +106,7 @@ class ApproveTeacherView(APIView):
 
     def get(self,request):
 
-        profiles = TeacherProfile.objects.select_related("user").filter(status="approved")
+        profiles = TeacherProfile.objects.select_related("user").filter(status="approved",is_deleted=False)
 
         data = []
 
@@ -175,52 +223,7 @@ class UnBlockTeacherView(APIView):
         return Response({
             "message":"Teacher unblocked successfully"
         })
-    
-# admin teacher reject with reson
-    
-class AdminTeacherRejectView(APIView):
-
-    permission_classes=[IsAdmin]
-
-    def post(self,request,teacher_id):
-
-        reason = request.data.get("reason")
-
-        if not reason:
-
-            return Response(
-                {"error":"Rejection reason is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        try:
-
-            profile = TeacherProfile.objects.select_related("user").get(id=teacher_id)
-        
-        except TeacherProfile.DoesNotExist:
-
-            return Response(
-                {"error":"Teacher not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-   
-
-        # Send rejection email
-
-        send_teacher_rejection_email(
-            email=profile.user.email,
-            name=profile.user.username,
-            reason=reason
-        )
-        profile.user.delete()
-
-        return Response(
-            {"message":"Teacher rejected and email sent successfully"},
-            status=status.HTTP_200_OK
-        )
-
-
+ 
 
 
 # AdminUsers
@@ -259,7 +262,7 @@ class AdminUsers(APIView):
 
         
         
-        users=User.objects.filter(role="student").order_by("-date_joined")
+        users=User.objects.filter(role="student",is_deleted=False).order_by("-date_joined")
 
         if search:
             users = users.filter(
@@ -358,7 +361,10 @@ class DeleteUserView(APIView):
     def delete(self, request, user_id):
         try:
             user = User.objects.get(id=user_id, role="student")
-            user.delete()
+            user.is_deleted=True
+            user.is_active = False
+            user.save()
+
             return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -399,8 +405,13 @@ class AdminTeacherDeleteView(APIView):
             profile = TeacherProfile.objects.get(id=id)
             user = profile.user
             
-            profile.delete()
-            user.delete()
+            profile.is_deleted = True
+            profile.save()
+
+            user.is_deleted = True
+            user.is_active = False
+            user.status = "deleted"
+            user.save()
 
             return Response(
                 {"message":"Teacher Deleted Successfully"},

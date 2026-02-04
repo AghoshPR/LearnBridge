@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from .models import *
 from django.db.models import Avg
-
+from .utils import *
 
 class CategorySerializer(serializers.ModelSerializer):
 
-    createdBy = serializers.CharField(source='created_by.role', read_only=True)
-
+    createdBy = serializers.CharField(source='created_by.username', read_only=True)
+    is_owner = serializers.SerializerMethodField()
     courses = serializers.IntegerField(
         source = 'courses.count',
         read_only=True
@@ -21,18 +21,36 @@ class CategorySerializer(serializers.ModelSerializer):
             'status',
             'createdBy',
             'courses',
+            "status",
+            "is_owner",
             'created_at'
         ]
     
     def validate_name(self,value):
 
-        request = self.context['request']
+        value = value.strip()
 
-        if Category.objects.filter(name__iexact=value,created_by=request.user).exists():
-            raise serializers.ValidationError(
-                "Category already exists"
+        qs = Category.objects.filter(
+            name__iexact=value,
+            is_deleted=False
             )
+
+        
+        if self.instance:
+            qs = qs.exclude(id=self.instance.id)
+
+        if qs.exists():
+            raise serializers.ValidationError("Category already exists")
+
         return value
+    
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        if request:
+            return obj.created_by == request.user
+        return False
+    
+    
 
 
 class CourseSerializer(serializers.ModelSerializer):
@@ -67,6 +85,23 @@ class CourseSerializer(serializers.ModelSerializer):
             'updated_at'
         )
 
+    def validate_title(self, value):
+        request = self.context.get("request")
+
+        qs = Course.objects.filter(
+            title__iexact=value,
+            teacher=request.user
+        )
+
+        if self.instance:
+            qs = qs.exclude(id=self.instance.id)
+
+        if qs.exists():
+            raise serializers.ValidationError("You already have a course with this title")
+
+        return value
+    
+
     def get_total_lessons(self, obj):
         return obj.lessons.count()
     
@@ -100,10 +135,7 @@ class CourseSerializer(serializers.ModelSerializer):
     
 
 
-        if category.created_by != request.user:
-            raise serializers.ValidationError(
-                "You can only use your own categories."
-            )
+        
         
 
         if category.status != 'active':
@@ -116,6 +148,9 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
 
+    video_url = serializers.SerializerMethodField()
+    course_thumbnail = serializers.SerializerMethodField()
+
     class Meta:
 
         model = Lesson
@@ -126,7 +161,20 @@ class LessonSerializer(serializers.ModelSerializer):
             "description",
             "type",
             "position",
+            "video_url",
+            "course_thumbnail",
+            
         ]
+
+    def get_video_url(self, obj):
+        return generate_signed_url(obj.video_key)
+    
+    def get_course_thumbnail(self, obj):
+        if obj.course.thumbnail:
+            return obj.course.thumbnail.url
+        return None
+    
+    
 
 
 class PublicCourseSerializer(serializers.ModelSerializer):

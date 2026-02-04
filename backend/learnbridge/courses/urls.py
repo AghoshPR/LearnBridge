@@ -10,6 +10,7 @@ urlpatterns = [
     path('admin/courses/', AdminCourseView.as_view()),
     path('admin/courses/<int:pk>/',AdminCourseView.as_view()),
     path('admin/courses/toggle/<int:pk>/',AdminCourseToggleStatus.as_view()),
+    path('admin/lessons/<int:course_id>/',AdminLessonView.as_view()),
 
 
 

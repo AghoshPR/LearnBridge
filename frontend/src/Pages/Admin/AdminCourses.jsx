@@ -25,7 +25,8 @@ import {
   Trash2,
   Star,
   Unlock,
-  Lock
+  Lock,
+  PlayCircle
 } from 'lucide-react';
 import Api from '../Services/Api';
 
@@ -35,55 +36,92 @@ const AdminCourses = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Mock data to match the image
+
   const [courses, setCourses] = useState([])
-  
+
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const PAGE_SIZE = 10
-  
+
+  // admin Course lesson
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [courseVideos, setCourseVideos] = useState([]);
+  const [activeVideo, setActiveVideo] = useState(null);
+
+
+
+
+
   const fetchCourses = async () => {
-  try {
-    const res = await Api.get('/courses/admin/courses/', {
-      params: {
-        page,
-        search: searchQuery || undefined
-      }
-    })
+    try {
+      const res = await Api.get('/courses/admin/courses/', {
+        params: {
+          page,
+          search: searchQuery || undefined
+        }
+      })
 
-    setCourses(res.data.results)
-    setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
-  } catch {
-    toast.error("Failed to load courses")
-  }
-}
-
-  const toggleCourseStatus =async(id)=>{
-
-      try{
-          await Api.post(`/courses/admin/courses/toggle/${id}/`)
-          toast.success("Course status updated")
-          fetchCourses()
-      }catch{
-          toast.error("Action Failed")
-      }
+      setCourses(res.data.results)
+      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
+    } catch {
+      toast.error("Failed to load courses")
+    }
   }
 
-  const deleteCourse=async(id)=>{
+  const toggleCourseStatus = async (id) => {
 
-      try{
-        await Api.delete(`/courses/admin/courses/${id}/`)
-        toast.success("Course deleted")
-        fetchCourses()
-      }catch{
-        toast.error("Delete failed")
-      }
+    try {
+      await Api.post(`/courses/admin/courses/toggle/${id}/`)
+      toast.success("Course status updated")
+      fetchCourses()
+    } catch {
+      toast.error("Action Failed")
+    }
   }
 
+  const deleteCourse = async (id) => {
 
-  useEffect(()=>{
+    try {
+      await Api.delete(`/courses/admin/courses/${id}/`)
+      toast.success("Course deleted")
+      fetchCourses()
+    } catch {
+      toast.error("Delete failed")
+    }
+  }
+
+  useEffect(() => {
     fetchCourses()
-  },[page,searchQuery])
+  }, [page, searchQuery])
+
+
+  // admin course view
+
+  const handleViewClick = async (course) => {
+
+    try {
+
+      setSelectedCourse(course);
+      setIsViewModalOpen(true);
+
+      const res = await Api.get(`/courses/admin/lessons/${course.id}/`)
+      setCourseVideos(res.data)
+
+    } catch {
+      toast.error("Failed to load lessons")
+    }
+
+  };
+
+
+  const handleDeleteVideo = async (lessonId) => {
+    await Api.delete(`/courses/lessons/${lessonId}/`)
+    setCourseVideos(prev => prev.filter(v => v.id !== lessonId));
+    toast.success("Video deleted");
+  };
+
+
 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -312,7 +350,7 @@ const AdminCourses = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-white">
                         <Star size={14} className="text-amber-400 fill-amber-400" />
-                        <span>{course.rating||0}</span>
+                        <span>{course.rating || 0}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">{course.price}</td>
@@ -326,25 +364,30 @@ const AdminCourses = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        {/* <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                          <Eye size={16} />
-                        </button> */}
-                        <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
+
+                        <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer">
                           <Pencil size={16} />
                         </button>
 
                         <button
-                        onClick={()=>toggleCourseStatus(course.id)}
-                        className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+                          onClick={() => toggleCourseStatus(course.id)}
+                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer">
                           {course.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
 
-                       <button
-                        onClick={() => deleteCourse(course.id)}
-                        className="p-2 text-gray-400 hover:bg-red-500/10 rounded-lg"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                        <button
+                          onClick={() => handleViewClick(course)}
+                          className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye size={16} />
+                        </button>
+
+                        <button
+                          onClick={() => deleteCourse(course.id)}
+                          className="p-2 text-gray-400 hover:bg-red-500/10 rounded-lg cursor-pointer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
 
                       </div>
                     </td>
@@ -354,44 +397,171 @@ const AdminCourses = () => {
             </table>
 
             {totalPages > 0 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-              >
-                Prev
-              </button>
-
-              {[...Array(totalPages)].map((_, i) => (
+              <div className="flex justify-center items-center gap-2 mt-8">
                 <button
-                  key={i}
-                  onClick={() => setPage(i + 1)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium
-                    ${page === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-800 hover:bg-gray-700"
-                    }`}
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
                 >
-                  {i + 1}
+                  Prev
                 </button>
-              ))}
 
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-                className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i + 1)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium
+                    ${page === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 hover:bg-gray-700"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(page + 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
 
           </div>
         </div>
 
       </main>
+
+      {/* View Course Modal */}
+      {isViewModalOpen && selectedCourse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsViewModalOpen(false)}
+          ></div>
+
+          <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-2xl p-6 relative z-10 shadow-2xl overflow-y-auto max-h-[85vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-4">
+              <div>
+                <h3 className="text-xl font-bold text-white">{selectedCourse.title}</h3>
+                <p className="text-gray-400 text-xs mt-1">Course Content & Videos</p>
+              </div>
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="p-1 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Video Playlist */}
+            <div className="space-y-3">
+              {courseVideos.length > 0 ? (
+                courseVideos.map((video, index) => (
+                  <div
+                    key={video.id}
+                    className="flex items-center gap-4 p-3 bg-[#0F1014] border border-gray-800 rounded-xl group hover:border-gray-700 transition-colors"
+                  >
+                    {/* Thumbnail */}
+                    <div
+                      onClick={() => setActiveVideo(video)}
+                      className="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 cursor-pointer group/thumb"
+                    >
+                      <img
+                        src={video.course_thumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover/thumb:bg-black/40 transition-colors flex items-center justify-center">
+                        <PlayCircle className="text-white/80 w-8 h-8 opacity-0 group-hover/thumb:opacity-100 transition-opacity transform scale-75 group-hover/thumb:scale-100 duration-200" />
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-white truncate mb-1">
+                        {index + 1}. {video.title}
+                      </h4>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span className="flex items-center gap-1">
+                          Duration: {video.duration}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pl-2 border-l border-gray-800">
+                      <button
+                        onClick={() => handleDeleteVideo(video.id)}
+                        className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                        title="Delete Video"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-10 text-gray-500">
+                  <p>No videos available for this course.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-gray-800 flex justify-end">
+              <button
+                onClick={() => setIsViewModalOpen(false)}
+                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors border border-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeVideo && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#181a20] rounded-xl w-full max-w-4xl p-4 relative border border-gray-700 shadow-2xl">
+
+            <button
+              onClick={() => setActiveVideo(null)}
+              className="absolute -top-12 right-0 text-white hover:text-red-500 transition-colors"
+            >
+              <X size={32} />
+            </button>
+
+            <h3 className="text-white text-lg font-bold mb-4 px-1">{activeVideo.title}</h3>
+
+            {activeVideo.video_url ? (
+              <video
+                key={activeVideo.id}
+                src={activeVideo.video_url}
+                controls
+                autoPlay
+                playsInline
+                className="w-full rounded-lg bg-black aspect-video"
+              >
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <div className="w-full aspect-video bg-black rounded-lg flex items-center justify-center text-gray-500">
+                Video URL not available
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+
+
+
     </div>
   );
 };

@@ -103,6 +103,19 @@ const AdminUsers = () => {
     setUserToDelete(user);
   };
 
+  const confirmDeleteAction = async () => {
+  if (!userToDelete) return;
+
+  try {
+    await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
+    toast.success("User deleted successfully");
+    setUserToDelete(null);
+    fetchUsers();   
+  } catch (err) {
+    toast.error("Failed to delete user");
+  }
+};
+
 //  block and unblock user
 
   const blockUser = async (user) => {

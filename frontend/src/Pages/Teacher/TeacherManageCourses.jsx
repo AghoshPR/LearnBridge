@@ -167,6 +167,42 @@ const TeacherManageCourses = () => {
 
   const handleUpdateCourse = async () => {
 
+
+    if(!title.trim()){
+      toast.error("Title is required");
+      return
+    }
+
+    if (!description.trim()) {
+    toast.error("Description is required");
+    return;
+  }
+
+  if (!category) {
+    toast.error("Please select a category");
+    return;
+  }
+
+  if (!level) {
+    toast.error("Please select a level");
+    return;
+  }
+
+  if (!price) {
+    toast.error("Price is required");
+    return;
+  }
+
+  if (isNaN(price) || Number(price) <= 0) {
+    toast.error("Price must be a positive number");
+    return;
+  }
+
+  if (Number(price) > 999999) {
+    toast.error("Price cannot exceed 999,999");
+    return;
+  }
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -193,11 +229,13 @@ const TeacherManageCourses = () => {
     } 
     catch (err) {
       
-      toast.error(
+      const errorMsg =
+        err.response?.data?.title?.[0] ||
+        err.response?.data?.category?.[0] ||
         err.response?.data?.detail ||
-        JSON.stringify(err.response?.data) ||
-        "Failed to update course"
-      );
+        "Failed to update course";
+
+      toast.error(errorMsg);
     }
 
   }

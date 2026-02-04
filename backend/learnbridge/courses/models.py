@@ -29,6 +29,8 @@ class Category(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
+    is_deleted = models.BooleanField(default=False)
+
     def __str__(self):
         return self.name
     
@@ -44,8 +46,10 @@ class Course(models.Model):
     )
 
     STATUS_CHOICES = (
-        ('draft','Draft'),
-        ('published','Published')
+        ("draft", "Draft"),
+        ("published", "Published"),
+        ("blocked", "Blocked"),
+       
     )
 
     teacher = models.ForeignKey(

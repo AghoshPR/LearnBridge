@@ -69,6 +69,64 @@ const TeacherProfile = () => {
 
 
     const handleSaveProfile = async () => {
+
+
+        if (!profileData.phone.trim()) {
+        toast.error("Phone number is required");
+        return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(profileData.phone)) {
+        toast.error("Enter a valid 10-digit phone number");
+        return;
+    }
+
+    if (!profileData.qualification.trim()) {
+        toast.error("Qualification is required");
+        return;
+    }
+
+    if (!profileData.subjects.trim()) {
+        toast.error("Subjects are required");
+        return;
+    }
+
+    // if (!profileData.experience.trim()) {
+    //     toast.error("Experience is required");
+    //     return;
+    // }
+
+    // if (isNaN(profileData.experience) || profileData.experience < 0) {
+    //     toast.error("Experience must be a valid number");
+    //     return;
+    // }
+
+    if (!profileData.bio.trim()) {
+        toast.error("Bio is required");
+        return;
+    }
+
+    if (profileData.bio.length < 10) {
+        toast.error("Bio must be at least 20 characters");
+        return;
+    }
+
+    
+    if (profileData.avatar instanceof File) {
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!allowedTypes.includes(profileData.avatar.type)) {
+            toast.error("Only JPG, PNG or WEBP images allowed");
+            return;
+        }
+
+        if (profileData.avatar.size > 2 * 1024 * 1024) {
+            toast.error("Image must be less than 2MB");
+            return;
+        }
+    }
+
+
+
         try {
             const payload = new FormData()
 
@@ -247,7 +305,7 @@ const TeacherProfile = () => {
                         </div>
 
                         <p className="text-slate-500 text-sm font-mono">
-                            Teacher ID: TCH-2024-001
+                            Teacher ID: TCH-{profileData.id}
                         </p>
                         </div>
 
@@ -403,6 +461,7 @@ const TeacherProfile = () => {
                                     <input
                                         type="email"
                                         name="email"
+                                        disabled
                                         value={profileData.email}
                                         onChange={handleInputChange}
                                         className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"

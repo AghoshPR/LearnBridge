@@ -103,8 +103,18 @@ const TeacherCourseCategory = () => {
   const handleCreateCategory  = async()=>{
 
     if (!name.trim()) {
-      toast.error('Category name is required')
-      return
+    toast.error("Category name is required");
+    return;
+    }
+
+    if (name.trim().length < 3) {
+      toast.error("Category name must be at least 3 characters");
+      return;
+    }
+
+    if (name.trim().length > 50) {
+      toast.error("Category name cannot exceed 50 characters");
+      return;
     }
 
       try{
@@ -118,7 +128,8 @@ const TeacherCourseCategory = () => {
         setDescription('')
         fetchCategories()
 
-      }catch(err){
+      }
+      catch(err){
         const errorMsg =
         err.response?.data?.name?.[0] ||
         err.response?.data?.detail ||
@@ -138,6 +149,21 @@ const TeacherCourseCategory = () => {
 }
 
   const handleUpdateCategory  = async() => {
+
+    if (!name.trim()) {
+    toast.error("Category name is required");
+    return;
+    }
+
+    if (name.trim().length < 3) {
+      toast.error("Category name must be at least 3 characters");
+      return;
+    }
+
+    if (name.trim().length > 50) {
+      toast.error("Category name cannot exceed 50 characters");
+      return;
+    }
     
       try{
         await Api.patch(`/courses/categories/${selectedCategory.id}/`,{
@@ -147,9 +173,15 @@ const TeacherCourseCategory = () => {
         toast.success('Category Updated')
         setIsEditModalOpen(false)
         fetchCategories()
-      }catch{
-        toast.error('Update Failed')
-      }
+        
+      }catch(err){
+          const errorMsg =
+          err.response?.data?.name?.[0] ||
+          err.response?.data?.detail ||
+          "Failed to create category";
+  
+          toast.error(errorMsg);
+        }
 
   };
 
@@ -359,36 +391,42 @@ const TeacherCourseCategory = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleEdit(category)}
-                          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
 
-                        <button
-                          onClick={()=>{
-                            setSelectedCategory(category);
-                            setIsBlockModalOpen(true);
-                          }}    
-                          className={`p-1.5 rounded-lg transition-colors ${category.status === 'blocked' ? 'text-red-400 hover:bg-red-500/10' : 'text-green-400 hover:bg-green-500/10'
+                      {category.is_owner && (
+                        <div className="flex items-center justify-center gap-2">
+
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg"
+                          >
+                            <Edit size={16} />
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setSelectedCategory(category);
+                              setIsBlockModalOpen(true);
+                            }}
+                            className={`p-1.5 rounded-lg ${
+                              category.status === 'blocked'
+                                ? 'text-red-400 hover:bg-red-500/10'
+                                : 'text-green-400 hover:bg-green-500/10'
                             }`}
-                          title={category.status === 'blocked' ? 'Unlock' : 'Lock'}
-                        >
-                          {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
-                        </button>
+                          >
+                            {category.status === 'blocked'
+                              ? <Lock size={16} />
+                              : <Unlock size={16} />}
+                          </button>
 
+                          <button
+                            onClick={() => handleDelete(category)}
+                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg"
+                          >
+                            <Trash2 size={16} />
+                          </button>
 
-                        <button
-                          onClick={() => handleDelete(category)}
-                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

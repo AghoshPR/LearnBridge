@@ -121,10 +121,45 @@ const TeacherCourses = () => {
 
     const handleCreateCourse = async () => {
 
-        //  if (!title || !description || !category || !level || !price) {
-        //     toast.error("All fields are required");
-        //     return;
-        // }
+        if (!title.trim()) {
+            toast.error("Title is required");
+            return;
+        }
+
+        if (!description.trim()) {
+            toast.error("Description is required");
+            return;
+        }
+
+        if (!category) {
+            toast.error("Please select a category");
+            return;
+        }
+
+        if (!level) {
+            toast.error("Please select a level");
+            return;
+        }
+
+        if (!price) {
+            toast.error("Price is required");
+            return;
+        }
+
+        if (isNaN(price) || Number(price) <= 0) {
+            toast.error("Price must be a positive number");
+            return;
+        }
+
+        if (Number(price) > 999999) {
+        toast.error("Price cannot exceed 999,999");
+        return;
+        }
+
+        if (isNaN(price) || Number(price) <= 0) {
+            toast.error("Price must be a positive number");
+            return;
+        }
 
         const formData = new FormData()
         formData.append('title', title)
@@ -154,7 +189,13 @@ const TeacherCourses = () => {
 
             fetchCourses()
         } catch (err) {
-            toast.error('Failed to create course')
+            const errorMsg =
+                    err.response?.data?.title?.[0] ||
+                    err.response?.data?.category?.[0] ||
+                    err.response?.data?.detail ||
+                    "Failed to create course";
+            
+                  toast.error(errorMsg);
         }
     }
 
@@ -459,6 +500,7 @@ const TeacherCourses = () => {
                                         <input
                                             type="number"
                                             value={price}
+                                            
                                             onChange={(e) => setPrice(e.target.value)}
                                             placeholder="1249.99"
                                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"

@@ -25,7 +25,7 @@ class AdminCategoryView(APIView):
 
 
         search = request.GET.get("search","").strip()
-        categories = Category.objects.all().order_by('-created_at')
+        categories = Category.objects.filter(is_deleted=False).order_by('-created_at')
 
         if search:
 
@@ -77,7 +77,8 @@ class AdminCategoryView(APIView):
     def delete(self,request,pk):
         
         category = get_object_or_404(Category,pk=pk)
-        category.delete()
+        category.is_deleted = True
+        category.save()
 
         return Response(
             {"detail":"Category deleted"},
@@ -128,7 +129,7 @@ class AdminCourseView(APIView):
         
         search = request.GET.get("search", "")
 
-        courses = Course.objects.select_related('teacher','category').order_by('-created_at')
+        courses = Course.objects.select_related('teacher','category').filter(is_deleted=False).order_by('-created_at')
 
         if search:
             courses = courses.filter(
@@ -177,7 +178,8 @@ class AdminCourseView(APIView):
 
     def delete(self,request,pk):
         course = get_object_or_404(Course,pk=pk)
-        course.delete()
+        course.is_deleted=True
+        course.save()
 
         return Response(
             {"detail":"Course deleted"},
@@ -194,7 +196,7 @@ class AdminCourseToggleStatus(APIView):
 
         course = get_object_or_404(Course,pk=pk)
 
-        course.status = 'blocked' if course.status == 'active' else 'active'
+        course.status = "blocked" if course.status == "published" else "published"
 
         course.save()
 
@@ -206,6 +208,36 @@ class AdminCourseToggleStatus(APIView):
             status=status.HTTP_200_OK
         )
 
+
+# admin course videos
+
+class AdminLessonView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def get(self,request,course_id):
+
+        lessons = Lesson.objects.filter(
+            
+            course_id=course_id,
+            is_deleted = False,
+        ).order_by("position")
+
+        serializer = LessonSerializer(lessons,many=True)
+        return Response(serializer.data)
+
+class AdminLessonDeleteView(APIView):
+    permission_classes=[IsAdmin]
+
+    def delete(self,request,pk):
+        lesson = get_object_or_404(Lesson, pk=pk)
+        lesson.is_deleted = True
+        lesson.save()
+
+        return Response(
+            {"detail":"Lesson deleted"},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 # Teacher create category
@@ -219,13 +251,9 @@ class TeacherCategoryView(APIView):
     def get(self,request):
         
 
-        if request.user.role == 'admin':
-            categories = Category.objects.all()
-        else:
-            categories = Category.objects.filter(created_by=request.user)
+        categories = Category.objects.filter(is_deleted=False,status="active")
 
-
-        serializer = CategorySerializer(categories,many=True)
+        serializer = CategorySerializer(categories,many=True,context={"request": request}  )
         return Response(serializer.data)
     
 
@@ -259,7 +287,8 @@ class TeacherCategoryView(APIView):
         serializer = CategorySerializer(
             category,
             data=request.data,
-            partial=True
+            partial=True,
+            context={"request": request}
         )
 
         if serializer.is_valid():
@@ -276,7 +305,8 @@ class TeacherCategoryView(APIView):
             created_by=request.user
         )
 
-        category.delete()
+        category.is_deleted=True
+        category.save()
         return Response(
 
             {"detail":"Category deleted"},
@@ -370,7 +400,7 @@ class TeacherCourseView(APIView):
         #  ALL COURSES
         
         courses = Course.objects.filter(teacher=request.user,is_deleted=False)
-        serialzer = CourseSerializer(courses,many=True)
+        serialzer = CourseSerializer(courses,many=True,context={"request":request})
         return Response(serialzer.data)
     
 
@@ -566,6 +596,8 @@ class PublicCourseListView(APIView):
             is_deleted=False,
             status="published",
             category__status="active"
+            
+            
 
         ).select_related("teacher","category").order_by("-created_at")
 
@@ -591,7 +623,7 @@ class PublicCategoryListView(APIView):
 
     def get(self,request):
 
-        categories = Category.objects.all().order_by("name")
+        categories = Category.objects.filter(is_deleted=False,status="active").order_by("name")
         serializer = PublicCategorySerializer(categories,many=True)
         return Response(serializer.data)
 
@@ -611,6 +643,7 @@ class PublicCourseDetailView(APIView):
             id=pk,
             status="published",
             category__status="active"
+            
         )
 
         serializer = PublicCourseDetailSerializer(course)

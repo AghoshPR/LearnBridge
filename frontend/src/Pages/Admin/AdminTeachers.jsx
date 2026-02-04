@@ -262,13 +262,13 @@ const AdminTeachers = () => {
 
     const handleViewClick = async (teacher) => {
 
-        try{
+        try {
             const res = await Api.get(`/admin/teachers/pending/${teacher.id}/`)
             setTeacherToView(res.data);
-        }catch(err){
+        } catch (err) {
             toast.error("Failed to load teaher detail")
         }
-        
+
     };
 
     const confirmDeleteAction = async () => {
@@ -1089,13 +1089,13 @@ const AdminTeachers = () => {
                                     <div className="flex items-center gap-2">
                                         {teacherToView.years_of_experience ? (
                                             <span className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-2.5 py-1 rounded-md text-xs font-medium border border-amber-500/20">
-                                            <Briefcase size={12} />
-                                            {teacherToView.years_of_experience} Years
+                                                <Briefcase size={12} />
+                                                {teacherToView.years_of_experience} Years
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-1.5 bg-purple-500/10 text-purple-400 px-2.5 py-1 rounded-md text-xs font-medium border border-purple-500/20">
-                                            <GradCapIcon size={12} />
-                                            Fresher
+                                                <GradCapIcon size={12} />
+                                                Fresher
                                             </span>
                                         )}
                                     </div>
@@ -1123,7 +1123,7 @@ const AdminTeachers = () => {
                                 </div>
                             </div>
 
-                             <div className="space-y-4">
+                            <div className="space-y-4">
                                 <div>
                                     <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">Phone</label>
                                     <div className="bg-[#0F1014] p-3 rounded-lg border border-gray-800 text-gray-300 text-xs leading-relaxed">
@@ -1170,7 +1170,7 @@ const AdminTeachers = () => {
                                                 rel="noopener noreferrer"
                                                 className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-blue-600/20"
                                             >
-                                                Download
+                                                View Resume
                                             </a>
                                         ) : (
                                             <span className="text-xs text-gray-500">No Resume</span>

@@ -109,7 +109,7 @@ const CourseVideos = () => {
   }
 
 
- 
+
 
   const CommentItem = ({ comment, isReply = false }) => {
 
@@ -172,15 +172,14 @@ const CourseVideos = () => {
 
           <div className="flex items-center gap-4 text-xs text-gray-500">
 
-           <button
-            onClick={toggleLike}
-            className={`flex items-center gap-1 ${
-              liked ? "text-blue-600" : ""
-            }`}
-          >
-            <ThumbsUp className={`w-3 h-3 ${!liked ? "fill-blue-600" : ""}`} />
-            {likes}
-          </button>
+            <button
+              onClick={toggleLike}
+              className={`flex items-center gap-1 ${liked ? "text-blue-600" : ""
+                }`}
+            >
+              <ThumbsUp className={`w-3 h-3 ${!liked ? "fill-blue-600" : ""}`} />
+              {likes}
+            </button>
 
             {!isReply && (
               <button
@@ -315,33 +314,33 @@ const CourseVideos = () => {
   const minutes = Math.floor((totalSeconds % 3600) / 60)
 
 
-// Course Review
+  // Course Review
 
-  const [reviews,setReviews]=useState([])
+  const [reviews, setReviews] = useState([])
 
 
-  const loadReviews = ()=>{
-      Api.get(`/courses/reviews/${courseId}/`)
-      .then(res=>setReviews(res.data))
+  const loadReviews = () => {
+    Api.get(`/courses/reviews/${courseId}/`)
+      .then(res => setReviews(res.data))
   }
 
-  const submitReview = async ()=>{
+  const submitReview = async () => {
 
-      await Api.post(`/courses/reviews/${courseId}/`,{
-        rating,
-        review
-      })
+    await Api.post(`/courses/reviews/${courseId}/`, {
+      rating,
+      review
+    })
 
-      toast.success('Review submitted')
-      setShowRatingModal(false)
-      setRating(0)
-      setReview("")
-      loadReviews()
-  }
-
-  useEffect(()=>{
+    toast.success('Review submitted')
+    setShowRatingModal(false)
+    setRating(0)
+    setReview("")
     loadReviews()
-  },[courseId])
+  }
+
+  useEffect(() => {
+    loadReviews()
+  }, [courseId])
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">

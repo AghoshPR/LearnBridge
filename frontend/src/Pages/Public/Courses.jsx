@@ -29,7 +29,10 @@ const Courses = () => {
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
 
+    
     const [search, setSearch] = useState("")
+
+
     const [categories, setCategories] = useState([])
     const [selectedCategory, setSelectedCategory] = useState("")
 
@@ -64,10 +67,7 @@ const Courses = () => {
         setPage(1);
     }, [search, selectedCategory]);
 
-    useEffect(() => {
-        Api.get("/courses/categories/public/")
-            .then((res) => setCategories(res.data));
-    }, []);
+    
 
 
 
@@ -108,6 +108,11 @@ const Courses = () => {
         }
     }, [isAuthenticated]);
 
+    useEffect(() => {
+        Api.get("/courses/categories/public/")
+            .then((res) => setCategories(res.data));
+    }, []);
+
 
 
     const handleWishlistToggle = async (e, courseId) => {
@@ -145,15 +150,15 @@ const Courses = () => {
     }
 
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <p className="text-lg font-semibold text-gray-600">
-                    Loading courses...
-                </p>
-            </div>
-        );
-    }
+    // if (loading) {
+    //     return (
+    //         <div className="min-h-screen flex items-center justify-center">
+    //             <p className="text-lg font-semibold text-gray-600">
+    //                 Loading courses...
+    //             </p>
+    //         </div>
+    //     );
+    // }
 
 
 
@@ -334,11 +339,19 @@ const Courses = () => {
                                 type="text"
                                 placeholder="Search resources"
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm"
-                            />
+                                onChange={(e) => {
+                                    setPage(1)
+                                    setSearch(e.target.value)
+                                }}
+                                className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl"
+                                />
                         </div>
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
+                        <button
+                        onClick={() => {
+                            setPage(1);
+                            setSearch(searchInput);
+                            }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
                     </div>

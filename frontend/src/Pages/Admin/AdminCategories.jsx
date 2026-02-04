@@ -75,6 +75,11 @@ const AdminCategories = () => {
         return
       }
 
+      if (!newCategory.description.trim()) {
+        toast.error("Description required")
+        return
+      }
+
       try{
 
         await Api.post("/courses/admin/categories/",newCategory)
@@ -86,8 +91,14 @@ const AdminCategories = () => {
 
 
       }catch(err){
-        toast.error("Failed to create category")
-      }
+              const errorMsg =
+              err.response?.data?.name?.[0] ||
+              err.response?.data?.detail ||
+              "Failed to create category";
+      
+              toast.error(errorMsg);
+            }
+      
   }
 
   useEffect(()=>{
@@ -107,7 +118,7 @@ const AdminCategories = () => {
       }
   }
 
-  const deleteCategory =async()=>{
+  const deleteCategory =async(id)=>{
 
       try{
           await Api.delete(`/courses/admin/categories/${id}/`)
@@ -359,7 +370,7 @@ const AdminCategories = () => {
                           {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
                         <button 
-                        onClick={deleteCategory}
+                         onClick={() => deleteCategory(category.id)}
                         className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                           <Trash2 size={16} />
                         </button>
