@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner"
 import {
   LayoutDashboard,
   User,
@@ -37,6 +38,7 @@ const TeacherManageCourses = () => {
   const [lessonToDelete, setLessonToDelete] = useState(null);
 
   // updating the lesson
+
   const [isUpdatingLesson, setIsUpdatingLesson] = useState(false);
 
   const navigate = useNavigate();
@@ -96,6 +98,7 @@ const TeacherManageCourses = () => {
 
 
   // form lessons adding
+  const [isUploadingLesson, setIsUploadingLesson] = useState(false);
 
   const [lessonTitle, setLessonTitle] = useState("");
   const [lessonDuration, setLessonDuration] = useState("");
@@ -168,40 +171,40 @@ const TeacherManageCourses = () => {
   const handleUpdateCourse = async () => {
 
 
-    if(!title.trim()){
+    if (!title.trim()) {
       toast.error("Title is required");
       return
     }
 
     if (!description.trim()) {
-    toast.error("Description is required");
-    return;
-  }
+      toast.error("Description is required");
+      return;
+    }
 
-  if (!category) {
-    toast.error("Please select a category");
-    return;
-  }
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
 
-  if (!level) {
-    toast.error("Please select a level");
-    return;
-  }
+    if (!level) {
+      toast.error("Please select a level");
+      return;
+    }
 
-  if (!price) {
-    toast.error("Price is required");
-    return;
-  }
+    if (!price) {
+      toast.error("Price is required");
+      return;
+    }
 
-  if (isNaN(price) || Number(price) <= 0) {
-    toast.error("Price must be a positive number");
-    return;
-  }
+    if (isNaN(price) || Number(price) <= 0) {
+      toast.error("Price must be a positive number");
+      return;
+    }
 
-  if (Number(price) > 999999) {
-    toast.error("Price cannot exceed 999,999");
-    return;
-  }
+    if (Number(price) > 999999) {
+      toast.error("Price cannot exceed 999,999");
+      return;
+    }
 
     const formData = new FormData();
     formData.append('title', title);
@@ -226,9 +229,9 @@ const TeacherManageCourses = () => {
 
       setIsEditCourseOpen(false);
       setThumbnail(null);
-    } 
+    }
     catch (err) {
-      
+
       const errorMsg =
         err.response?.data?.title?.[0] ||
         err.response?.data?.category?.[0] ||
@@ -258,6 +261,8 @@ const TeacherManageCourses = () => {
 
     try {
 
+      setIsUploadingLesson(true);
+
       await Api.post(`/courses/teacher/courses/${id}/lessons/`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
@@ -274,6 +279,8 @@ const TeacherManageCourses = () => {
 
     } catch {
       toast.error("Lesson upload failed")
+    } finally {
+      setIsUploadingLesson(false);
     }
 
 
@@ -302,10 +309,11 @@ const TeacherManageCourses = () => {
       setIsUpdatingLesson(true)
 
       await Api.put(`/courses/teacher/lessons/${selectedLesson.id}/`,
-        formData, 
-        { headers: { "Content-Type": "multipart/form-data" }
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" }
 
-      });
+        });
 
       toast.success("Lesson updated successfully");
       setIsEditLessonOpen(false);
@@ -315,11 +323,11 @@ const TeacherManageCourses = () => {
       setVideoFile(null);
       setSelectedLesson(null);
       fetchLessons();
-    } catch  {
+    } catch {
       toast.error("Failed to update lesson");
     }
 
-    finally{
+    finally {
       setIsUpdatingLesson(false)
     }
 
@@ -467,6 +475,7 @@ const TeacherManageCourses = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-200">Course Lessons</h2>
             <button
+              type='button'
               onClick={() => setIsAddLessonOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-purple-900/20 transition-all"
             >
@@ -648,6 +657,8 @@ const TeacherManageCourses = () => {
             onClose={() => setIsAddLessonOpen(false)}
             onSave={handleAddLesson}
             saveText="Add Lesson"
+            isLoading={isUploadingLesson}
+            loadingText="Uploading..."
           >
             <div className="space-y-4">
               <div>
@@ -710,6 +721,7 @@ const TeacherManageCourses = () => {
             }}
             onSave={handleUpdateLesson}
             isLoading={isUpdatingLesson}
+            loadingText="Updating..."
           >
             <div className="space-y-4">
               <div>
@@ -748,11 +760,11 @@ const TeacherManageCourses = () => {
                   }}
                 />
 
-                  {videoFile && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      Selected: {videoFile.name}
-                    </p>
-                  )}
+                {videoFile && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Selected: {videoFile.name}
+                  </p>
+                )}
 
               </div>
 
@@ -812,7 +824,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => {
 }
 
 // Modal Component Helper
-const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes", isLoading = false }) => {
+const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes", isLoading = false, loadingText = "Processing..." }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl scale-100 animate-in zoom-in-95 duration-200 overflow-hidden">
@@ -833,13 +845,20 @@ const Modal = ({ title, children, onClose, onSave, saveText = "Save Changes", is
           <button
             onClick={onSave}
             disabled={isLoading}
-            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center
               ${isLoading
                 ? "bg-slate-700 text-slate-400 cursor-not-allowed"
                 : "bg-purple-600 text-white hover:bg-purple-500"}
             `}
           >
-            {isLoading ? "Updating..." : saveText}
+            {isLoading ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                {loadingText}
+              </>
+            ) : (
+              saveText
+            )}
           </button>
 
 
