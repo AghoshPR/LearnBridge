@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Tag, CreditCard, Trash2, X, Search, ShoppingCart, Bell, Heart, User, BookOpen, LogOut, Menu } from 'lucide-react';
+import { MapPin, Plus, Tag, CreditCard, Trash2, X, Search, ShoppingCart, Bell, Heart, User, BookOpen, LogOut, Menu, Check } from 'lucide-react';
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,6 +15,8 @@ const OrdersCheckout = () => {
   const dispatch = useDispatch();
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [orderId, setOrderId] = useState('');
   const [selectedAddress, setSelectedAddress] = useState(1);
   const [couponCode, setCouponCode] = useState('');
 
@@ -121,9 +123,11 @@ const OrdersCheckout = () => {
             payment_intent_id: result.paymentIntent.id,
           })
 
-        //   await Api.delete("cart/clear/")
-          toast.success("Payment Successful")
-          navigate("/mycourse")
+          //   await Api.delete("cart/clear/")
+          // toast.success("Payment Successful")
+          // navigate("/mycourse")
+          setOrderId(order_id || result.paymentIntent.id);
+          setShowSuccessModal(true);
 
         }
       }
@@ -133,8 +137,45 @@ const OrdersCheckout = () => {
     }
   }
 
-  const payWithRazorpay = () => {
-    toast.info("Razorpay UPI flow will open here");
+  const payWithRazorpay = async () => {
+
+    try {
+      const res = await Api.post("/razorpay/create/")
+      const data = res.data
+
+      const options = {
+
+        key: data.key,
+        amount: data.amount,
+        currency: "INR",
+        name: "LearnBridge",
+        description: "Course Purchase",
+        order_id: data.razorpay_order_id,
+
+        handler: async function (response) {
+          await Api.post("/razorpay/verify/", {
+            order_id: data.order_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          })
+         
+          setOrderId(data.order_id);
+          setShowSuccessModal(true);
+        },
+        prefill: {
+          name: username
+        },
+        theme: {
+          color: "#2563eb",
+        },
+      }
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error("Razorpay payment failed")
+    }
+
   };
 
 
@@ -589,6 +630,50 @@ const OrdersCheckout = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl p-12 flex flex-col items-center text-center animate-in zoom-in-95 duration-300 relative">
+
+            <div className="mb-6 relative">
+              <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-2 border-green-500 shadow-sm">
+                  <Check className="w-8 h-8 text-green-500 stroke-[3]" />
+                </div>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Order Placed Successfully!</h2>
+
+            <p className="text-gray-500 mb-4 text-sm font-medium">Your order ID is:</p>
+
+            <div className="bg-gray-50 px-8 py-4 rounded-lg text-gray-600 font-mono text-lg mb-8 tracking-wider shadow-inner w-full max-w-xl mx-auto border border-gray-100">
+              {orderId || "ORD1764937751995MFJ3BD02T"}
+            </div>
+
+            <p className="text-gray-400 mb-10 text-sm">
+              You can now access it from purchased courses.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
+              <button
+                onClick={() => navigate('/mycourse')}
+                className="flex-1 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02]"
+              >
+                View My Courses
+              </button>
+              <button
+                onClick={() => navigate('/courses')}
+                className="flex-1 px-8 py-3 bg-white border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all hover:scale-[1.02]"
+              >
+                Explore Courses
+              </button>
+            </div>
+
           </div>
         </div>
       )}

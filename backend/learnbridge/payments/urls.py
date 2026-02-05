@@ -14,6 +14,10 @@ urlpatterns = [
     path("createorder/",CreateOrderView.as_view()),
 
     path("stripe/success/", StripePaymentSuccessView.as_view()),
+    
+    
+    path("razorpay/create/",CreateRazorpayOrderView.as_view()),
+    path("razorpay/verify/",RazorpayPaymentVerifyView.as_view())
 
 
 ]

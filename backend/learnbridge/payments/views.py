@@ -1,8 +1,3 @@
-from django.shortcuts import render
-
-# Create your views here.
-
-
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,8 +6,9 @@ from .models import Cart,CartItem
 from .serializers import *
 from courses.models import *
 from studentapp.models import *
-from .utils import stripe
-
+from .utils import stripe,razorpay_client
+import hmac
+import hashlib
 
 class CartDetailView(APIView):
 
@@ -156,6 +152,7 @@ class CreateOrderView(APIView):
             "client_secret":intent.client_secret
         })
         
+# Stripe
 
 class StripePaymentSuccessView(APIView):
 
@@ -225,10 +222,115 @@ class StripePaymentSuccessView(APIView):
                 course=item.course
             )
 
-        
-        
-
         return Response({"detail":"Payment processed & enrolled"})
 
 
+# Razorpay
+
+class CreateRazorpayOrderView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request):
+
+        user = request.user
+        cart_items = CartItem.objects.filter(cart__user=user)
+
+        if not cart_items.exists():
+            return Response({"error":"Cart empty"},status=400)
+        
+        total = sum(item.course.price for item in cart_items)
+
+        # create oder
+
+        order = Order.objects.create(
+            user=user,
+            total_amount = total,
+            discount_amount = 0,
+            final_amount = total,
+            payment_status="pending",
+            payment_method="razorpay"
+        )
+
+        for item in cart_items:
+
+            OrderItem.objects.create(
+                order=order,
+                course = item.course,
+                price = item.course.price,
+                discount = 0
+            )
+        
+        razorpay_order = razorpay_client.order.create({
+
+            "amount": int(total * 100),
+            "currency": "INR",
+            "receipt": f"order_{order.id}",
+            "payment_capture": 1
+
+        })
+
+        return Response({
+            "order_id": order.id,
+            "razorpay_order_id": razorpay_order["id"],
+            "amount": razorpay_order["amount"],
+            "currency": "INR",
+            "key": settings.RAZORPAY_KEY_ID
+        })
+
+class RazorpayPaymentVerifyView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request):
+
+        data = request.data
+
+        razorpay_order_id = data.get("razorpay_order_id")
+        razorpay_payment_id = data.get("razorpay_payment_id")
+        razorpay_signature = data.get("razorpay_signature")
+
+        # verify signature
+
+        body = f"{razorpay_order_id}|{razorpay_payment_id}"
+        expected_signature = hmac.new(
+            settings.RAZORPAY_KEY_SECRET.encode(),
+            body.encode(),
+            hashlib.sha256
+        ).hexdigest()
+
+        if expected_signature != razorpay_signature:
+            return Response({"error":"Invalid payment signature"},status=400)
+        
+        order = Order.objects.get(id=data.get("order_id"),user=request.user)
+
+        if order.payment_status =="paid":
+            return Response({"detail":"Already processed"})
+        
+        order.payment_status="paid"
+        order.save()
+
+        # enrollment process
+
+        for item in order.items.all():
+
+            Enrollment.objects.get_or_create(
+                user=order.user,
+                course = item.course
+            )
+        
+        Payment.objects.create(
+            order = order,
+            provider = "razorpay",
+            provider_payment_id = razorpay_payment_id,
+            amount = order.final_amount,
+            currency = "INR",
+            status = "completed"
+        )
+
+        # Clear Cart
+
+        CartItem.objects.filter(cart__user=request.user).delete()
+
+        return Response({"detail":"Payment successful & enrolled"})
 
