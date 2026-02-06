@@ -36,6 +36,8 @@ import AdminCategories from './Pages/Admin/AdminCategories'
 import CourseVideos from './Pages/Course/CourseVideos'
 import OrdersCheckout from './Pages/Payments/OrdersCheckout'
 import MyCourses from './Pages/Course/MyCourses'
+import AdminWallet from './Pages/Admin/AdminWallet'
+import TeacherWallet from './Pages/Teacher/TeacherWallet'
 
 
 
@@ -137,7 +139,8 @@ function App() {
         <Route path='/teacher/managecourses/:id' element={<ProtectedRoute role="teacher"><TeacherManageCourses /></ProtectedRoute>} />
 
         <Route path='/teacher/coursecategory' element={<ProtectedRoute role="teacher"><TeacherCourseCategory /></ProtectedRoute>} />
-
+        
+        <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet/></ProtectedRoute>} />
 
 
 
@@ -155,8 +158,8 @@ function App() {
         <Route path="/admin/categories" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
 
 
-
-
+        <Route path="/admin/wallet" element={<ProtectedRoute role="admin"><AdminWallet /></ProtectedRoute>} />
+        
 
 
       </Routes>

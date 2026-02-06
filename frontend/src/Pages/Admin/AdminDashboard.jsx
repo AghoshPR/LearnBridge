@@ -155,7 +155,7 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={Wallet}
                         label="Wallet"
-                    // onClick={() => navigate("/admin/wallet")}
+                    onClick={() => navigate("/admin/wallet")}
                     />
 
 

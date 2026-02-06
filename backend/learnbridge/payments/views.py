@@ -7,6 +7,7 @@ from .serializers import *
 from courses.models import *
 from studentapp.models import *
 from .utils import stripe,razorpay_client
+from wallet.services import credit_admin_wallet
 import hmac
 import hashlib
 
@@ -209,6 +210,16 @@ class StripePaymentSuccessView(APIView):
             status="completed"
         )
 
+        first_item = order.items.first()
+
+        credit_admin_wallet(
+            amount=order.final_amount,
+            course=first_item.course,
+            description=f"Course purchase – Order #{order.id}"
+        )
+
+
+
         cart = Cart.objects.filter(user=user).first()
         if cart:
             cart.items.all().delete()
@@ -260,6 +271,7 @@ class CreateRazorpayOrderView(APIView):
                 price = item.course.price,
                 discount = 0
             )
+
         
         razorpay_order = razorpay_client.order.create({
 
@@ -326,6 +338,14 @@ class RazorpayPaymentVerifyView(APIView):
             amount = order.final_amount,
             currency = "INR",
             status = "completed"
+        )
+
+        first_item = order.items.first()
+
+        credit_admin_wallet(
+            amount=order.final_amount,
+            course=first_item.course,
+            description=f"Course purchase – Order #{order.id}"
         )
 
         # Clear Cart
