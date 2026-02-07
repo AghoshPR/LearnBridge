@@ -599,7 +599,7 @@ class PublicCourseListView(APIView):
             
             
 
-        ).select_related("teacher","category").order_by("-created_at")
+        ).select_related("teacher","category").prefetch_related("lessons").order_by("-created_at")
 
         if search:
             courses = courses.filter(

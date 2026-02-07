@@ -3,6 +3,8 @@ from .models import *
 from django.db.models import Avg
 from .utils import *
 
+
+
 class CategorySerializer(serializers.ModelSerializer):
 
     createdBy = serializers.CharField(source='created_by.username', read_only=True)
@@ -184,6 +186,11 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     category_id = serializers.IntegerField(source="category.id", read_only=True)
     thumbnail = serializers.SerializerMethodField()
 
+    students_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    total_duration = serializers.SerializerMethodField()
+    
+
 
     class Meta:
 
@@ -201,11 +208,49 @@ class PublicCourseSerializer(serializers.ModelSerializer):
             "thumbnail",
             "total_lessons",
             "created_at",
+            "students_count",
+            "average_rating",
+            "total_duration",
+    
         ]
 
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
+    
+    def get_students_count(self,obj):
+
+        return obj.enrollments.count()
+    
+    def get_average_rating(self, obj):
+        return round(
+            obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0,
+            1
+        )
+    
+    def get_total_duration(self, obj):
+
+        total_seconds = 0
+
+        for lesson in obj.lessons.all():
+            if not lesson.duration:
+                continue
+
+            parts = lesson.duration.split(":")
+            parts = list(map(int, parts))
+
+            if len(parts) == 2:
+                total_seconds += parts[0] * 60 + parts[1]
+            elif len(parts) == 3:
+                total_seconds += parts[0] * 3600 + parts[1] * 60 + parts[2]
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        if hours > 0:
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m"
+    
     
 
 class PublicCategorySerializer(serializers.ModelSerializer):
@@ -213,11 +258,19 @@ class PublicCategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ["id", "name"]
 
+
 class PublicCourseDetailSerializer(serializers.ModelSerializer):
 
     instructor = serializers.CharField(source="teacher.username",read_only=True)
+    category_id = serializers.IntegerField(source="category.id", read_only=True) 
     category = serializers.CharField(source = "category.name",read_only=True)
     thumbnail = serializers.SerializerMethodField()
+
+    students_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    total_duration = serializers.SerializerMethodField() 
+    total_lessons = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -230,16 +283,59 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
             "level",
             "price",
             "instructor",
+            "category_id",
             "category",
             "thumbnail",
             "total_lessons",
             "created_at",
+            "students_count",
+            "average_rating",
+            "reviews_count",
+            "total_duration",
+            "total_lessons",
         ]
 
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
     
+    def get_students_count(self, obj):
+        return obj.enrollments.count()
+
+    def get_average_rating(self, obj):
+        return round(
+            obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0,
+            1
+        )
+
+    def get_reviews_count(self, obj):
+        return obj.reviews.count()
+    
+    def get_total_duration(self, obj):
+
+        total_seconds = 0
+
+        for lesson in obj.lessons.all():
+            if not lesson.duration:
+                continue
+
+            parts = lesson.duration.split(":")
+            parts = list(map(int, parts))
+
+            if len(parts) == 2:
+                total_seconds += parts[0] * 60 + parts[1]
+            elif len(parts) == 3:
+                total_seconds += parts[0] * 3600 + parts[1] * 60 + parts[2]
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        if hours > 0:
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m"
+    
+    def get_total_lessons(self, obj):
+        return obj.lessons.count()
 
 class LessonCommentSerializer(serializers.ModelSerializer):
     

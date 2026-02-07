@@ -10,9 +10,10 @@ from .serializers import *
 from rest_framework.response import Response
 from adminapp.utils import send_teacher_rejection_email
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
+from django.db.models import *
 from .pagination import *
-
+from courses.models import *
+from studentapp.models import *
 
 
 
@@ -112,15 +113,32 @@ class ApproveTeacherView(APIView):
 
         for profile in profiles:
 
+            teacher = profile.user
+
+            courses_count = Course.objects.filter(
+                teacher=teacher,
+                is_deleted = False
+            ).count()
+
+            students_count = Enrollment.objects.filter(
+                course__teacher=teacher
+            ).count()
+            
+            avg_rating = CourseReview.objects.filter(
+                course__teacher=teacher
+            ).aggregate(avg=Avg("rating"))["avg"] or 0
+            
+
+
             data.append({
 
                 "id":profile.id,
                 "name":profile.user.username,
                 'email':profile.user.email,
                 "subjects":profile.subjects,
-                "courses": 0,
-                "students": 0,
-                "rating": 5.0,
+                "courses_count": courses_count,
+                "students_count": students_count,
+                "rating": round(avg_rating, 1),
                 "status":profile.user.status,
                 "is_blocked": profile.user.status == "blocked"
 

@@ -428,13 +428,14 @@ const Courses = () => {
 
                                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
                                         <span className="flex items-center gap-1 text-orange-500">
-                                            <Star className="w-3.5 h-3.5 fill-current" /> {course.rating}
+                                            <Star className="w-3.5 h-3.5 fill-current" /> 
+                                            {course.average_rating ? Number(course.average_rating).toFixed(1) : "0.0"}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <User className="w-3.5 h-3.5" /> {course.reviews}
+                                            <User className="w-3.5 h-3.5" /> {course.students_count || 0}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <Clock className="w-3.5 h-3.5" /> {course.duration}
+                                            <Clock className="w-3.5 h-3.5" /> {course.total_duration || "0m"}
                                         </span>
                                     </div>
                                 </div>

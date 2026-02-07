@@ -44,9 +44,17 @@ const CourseDetail = () => {
 
         Api.get("/courses/public/", {
             params: { category: course.category_id }
-        }).then(res =>
-            setRelatedCourses(res.data.filter(c => c.id !== course.id))
-        );
+        })
+        .then(res => {
+            const filtered = res.data
+                .filter(c => c.id !== course.id)
+                .slice(0, 3);   
+
+            setRelatedCourses(filtered);
+    })
+        .catch(err => {
+            console.error("Failed to load related courses", err);
+        });
     }, [course]);
 
 
@@ -264,35 +272,55 @@ const CourseDetail = () => {
                 <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-8">
                     {/* Left Content */}
                     <div className="md:w-2/3 lg:w-3/4 pr-4">
-                        <div className="flex gap-2 mb-4 text-xs font-semibold">
+                    
+                        {/* <div className="flex gap-2 mb-4 text-xs font-semibold">
                             <span className="text-orange-400">Development</span>
                             <span className="text-gray-400">&gt;</span>
                             <span className="text-orange-400">Web Development</span>
-                        </div>
-                        <span className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md mb-4">
+                        </div> */}
+                         <span className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md mb-4">
                             {course.level}
                         </span>
+                       
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
                             {course.title}
+                            
                         </h1>
+                        
                         <p className="text-gray-300 text-lg mb-6 leading-relaxed">
                             {course.description}
                         </p>
 
                         <div className="flex items-center gap-6 text-sm mb-6">
                             <span className="flex items-center gap-1 text-orange-400 font-bold">
-                                4.8 <div className="flex"><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /></div>
+                                
+                                {course.average_rating
+                                    ? Number(course.average_rating).toFixed(1)
+                                    : "0.0"}
+
+                                    <div className="flex">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                className={`w-3.5 h-3.5 ${
+                                                    i < Math.round(course.average_rating || 0)
+                                                        ? "fill-current"
+                                                        : "text-gray-400"
+                                                }`}
+                                            />
+                                        ))}
+                                    </div>
                             </span>
-                            <span className="text-blue-200">(145,230 reviews)</span>
-                            <span className="text-white">892,450 students</span>
+                            <span className="text-blue-200"> ({course.reviews_count || 0} reviews)</span>
+                            <span className="text-white">{course.students_count || 0} students</span>
                         </div>
 
                         <div className="flex items-center gap-3 text-sm">
                             <span className="text-gray-300">Created by</span>
                             <a href="#" className="text-blue-400 hover:text-blue-300 underline font-medium">{course.instructor}</a>
-                            <div className="flex items-center gap-1 text-gray-300 ml-4">
+                            {/* <div className="flex items-center gap-1 text-gray-300 ml-4">
                                 <AlertCircle className="w-4 h-4" /> Last updated 11/2024
-                            </div>
+                            </div> */}
                             <div className="flex items-center gap-1 text-gray-300 ml-4">
                                 <Globe className="w-4 h-4" /> English
                             </div>
@@ -360,13 +388,13 @@ const CourseDetail = () => {
 
                                             <div className="flex items-center gap-3 text-xs text-gray-500 mb-3 font-medium">
                                                 <span className="flex items-center gap-1 text-orange-500">
-                                                    <Star className="w-3 h-3 fill-current" /> {course.rating}
+                                                    <Star className="w-3 h-3 fill-current" /> {Number(course.average_rating || 0).toFixed(1)}
                                                 </span>
                                                 <span className="flex items-center gap-1">
-                                                    <User className="w-3 h-3" /> {course.reviews}
+                                                    <User className="w-3 h-3" /> {course.students_count || 0}
                                                 </span>
                                                 <span className="flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" /> {course.duration}
+                                                    <Clock className="w-3 h-3" />  {course.total_duration || "0m"}
                                                 </span>
                                             </div>
 
@@ -392,7 +420,7 @@ const CourseDetail = () => {
                         <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                             <div className="relative">
                                 {/* course.thumbnail */}
-                                <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600" alt="Course Preview" className="w-full h-48 object-cover" />
+                                <img src={course.thumbnail} alt={course.title} className="w-full h-48 object-cover" />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                     <PlayCircle className="w-16 h-16 text-white opacity-80" />
                                 </div>
@@ -410,11 +438,15 @@ const CourseDetail = () => {
                                 <div className="space-y-3 text-sm text-gray-600">
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Duration</div>
-                                        <span>42 hours</span>
+                                        <span>
+                                        {course.total_duration
+                                            ? course.total_duration
+                                            : "0h"}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><FileText className="w-4 h-4" /> Lessons</div>
-                                        <span>{course.total_lessons}</span>
+                                        <span>{course.total_lessons || 0}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><Globe className="w-4 h-4" /> Language</div>

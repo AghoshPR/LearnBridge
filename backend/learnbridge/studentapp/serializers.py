@@ -2,6 +2,8 @@ from rest_framework import serializers
 from authapp.models import User
 from .models import Wishlist
 from studentapp.models import *
+
+
 class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
