@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -32,7 +32,7 @@ const TeacherWallet = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
-    { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
+    // { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },
@@ -52,54 +52,30 @@ const TeacherWallet = () => {
     }
   };
 
-  // Mock Data
-  const transactions = [
-    {
-      id: 1,
-      date: 'Dec 5, 2025',
-      description: 'Course Sale - React Fundamentals',
-      source: 'Course Sale',
-      amount: '+₹1,500',
-      status: 'Completed',
-      type: 'credit'
-    },
-    {
-      id: 2,
-      date: 'Dec 5, 2025',
-      description: 'Course Sale - Advanced JavaScript',
-      source: 'Course Sale',
-      amount: '+₹800',
-      status: 'Completed',
-      type: 'credit'
-    },
-    {
-      id: 3,
-      date: 'Dec 5, 2025',
-      description: 'Live Class Registration - React Workshop',
-      source: 'Live Class',
-      amount: '+₹400',
-      status: 'Completed',
-      type: 'credit'
-    },
-    {
-      id: 4,
-      date: 'Dec 5, 2025',
-      description: 'Course Sale - TypeScript Basics (Processing)',
-      source: 'Course Sale',
-      amount: '+₹500',
-      status: 'Pending',
-      type: 'credit'
-    },
-    {
-      id: 5,
-      date: 'Dec 5, 2025',
-      description: 'Withdrawal to Bank Account',
-      source: 'Withdrawal',
-      amount: '-₹1,000',
-      status: 'Completed',
-      type: 'debit'
-    },
-  ];
+
+  useEffect(()=>{
+    fetchWallet()
+  },[])
+
+  const [walletSummary, setWalletSummary] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+
+  const fetchWallet = async()=>{
+    try{
+
+        const [summaryRes,txRes] = await Promise.all([
+          Api.get("/teacher/wallet/summary/"),
+          Api.get("/teacher/wallet/transactions/")
+        ])
+
+        setWalletSummary(summaryRes.data)
+        setTransactions(txRes.data)
+
+    }catch(err){
+      toast.error("failed to load wallet")
+    }
+
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">

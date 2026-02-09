@@ -82,13 +82,17 @@ const AdminWallet = () => {
         );
     }
 
-    const handleTransfer = (id) => {
-        // Optimistic Update for UI Demo
-        setTransactions(prev => prev.map(t =>
-            t.id === id ? { ...t, status: 'Completed' } : t
-        ));
-        toast.success("Funds transferred successfully to Teacher Wallet! 💸");
+    const handleTransfer = async (id) => {
+        try{
+            await Api.post(`/wallet/transfer/${id}/`)
+            toast.success("Funds transferred successfully to Teacher Wallet! 💸");
+            fetchWalletData()
+        }catch(err){
+            toast.error("Transfer Failed")
+        }
+        
     };
+    
 
     
 

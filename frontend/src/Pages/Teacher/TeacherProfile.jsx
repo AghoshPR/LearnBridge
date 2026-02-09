@@ -18,7 +18,10 @@ import {
     Phone,
     GraduationCap,
     Clock,
-    Folder
+    Folder,
+    CreditCard,
+    Landmark,
+    Hash
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +46,9 @@ const TeacherProfile = () => {
         bio: "",
         avatar: null,
         avatarPreview: null,
+        account_holder_name: "",
+        account_number: "",
+        ifsc_code: "",
     });
 
     useEffect(() => {
@@ -58,6 +64,9 @@ const TeacherProfile = () => {
 
                     avatarPreview: res.data.profile_image || null,
                     avatar: null,
+                    account_holder_name: res.data.account_holder_name || "",
+                    account_number: res.data.account_number || "",
+                    ifsc_code: res.data.ifsc_code || "",
                 }))
 
             } catch (err) {
@@ -72,58 +81,58 @@ const TeacherProfile = () => {
 
 
         if (!profileData.phone.trim()) {
-        toast.error("Phone number is required");
-        return;
-    }
-
-    if (!/^[6-9]\d{9}$/.test(profileData.phone)) {
-        toast.error("Enter a valid 10-digit phone number");
-        return;
-    }
-
-    if (!profileData.qualification.trim()) {
-        toast.error("Qualification is required");
-        return;
-    }
-
-    if (!profileData.subjects.trim()) {
-        toast.error("Subjects are required");
-        return;
-    }
-
-    // if (!profileData.experience.trim()) {
-    //     toast.error("Experience is required");
-    //     return;
-    // }
-
-    // if (isNaN(profileData.experience) || profileData.experience < 0) {
-    //     toast.error("Experience must be a valid number");
-    //     return;
-    // }
-
-    if (!profileData.bio.trim()) {
-        toast.error("Bio is required");
-        return;
-    }
-
-    if (profileData.bio.length < 10) {
-        toast.error("Bio must be at least 20 characters");
-        return;
-    }
-
-    
-    if (profileData.avatar instanceof File) {
-        const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-        if (!allowedTypes.includes(profileData.avatar.type)) {
-            toast.error("Only JPG, PNG or WEBP images allowed");
+            toast.error("Phone number is required");
             return;
         }
 
-        if (profileData.avatar.size > 2 * 1024 * 1024) {
-            toast.error("Image must be less than 2MB");
+        if (!/^[6-9]\d{9}$/.test(profileData.phone)) {
+            toast.error("Enter a valid 10-digit phone number");
             return;
         }
-    }
+
+        if (!profileData.qualification.trim()) {
+            toast.error("Qualification is required");
+            return;
+        }
+
+        if (!profileData.subjects.trim()) {
+            toast.error("Subjects are required");
+            return;
+        }
+
+        // if (!profileData.experience.trim()) {
+        //     toast.error("Experience is required");
+        //     return;
+        // }
+
+        // if (isNaN(profileData.experience) || profileData.experience < 0) {
+        //     toast.error("Experience must be a valid number");
+        //     return;
+        // }
+
+        if (!profileData.bio.trim()) {
+            toast.error("Bio is required");
+            return;
+        }
+
+        if (profileData.bio.length < 10) {
+            toast.error("Bio must be at least 20 characters");
+            return;
+        }
+
+
+        if (profileData.avatar instanceof File) {
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+            if (!allowedTypes.includes(profileData.avatar.type)) {
+                toast.error("Only JPG, PNG or WEBP images allowed");
+                return;
+            }
+
+            if (profileData.avatar.size > 2 * 1024 * 1024) {
+                toast.error("Image must be less than 2MB");
+                return;
+            }
+        }
 
 
 
@@ -134,6 +143,9 @@ const TeacherProfile = () => {
             payload.append("qualification", profileData.qualification);
             payload.append("subjects", profileData.subjects);
             payload.append("bio", profileData.bio);
+            payload.append("account_holder_name", profileData.account_holder_name);
+            payload.append("account_number", profileData.account_number);
+            payload.append("ifsc_code", profileData.ifsc_code);
 
             if (profileData.experience) {
                 payload.append(
@@ -205,7 +217,7 @@ const TeacherProfile = () => {
         { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
         { icon: User, label: 'My Profile', path: '/teacher/profile', active: true },
         { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
-        { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
+        // { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
         { icon: Users, label: 'Students', path: '/teacher/students', active: false },
@@ -288,25 +300,25 @@ const TeacherProfile = () => {
 
                         {/* Left Column - Avatar */}
                         <div className="flex flex-col items-center space-y-4">
-                        <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-950 overflow-hidden">
-                            {profileData.avatarPreview ? (
-                            <img
-                                src={profileData.avatarPreview}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                            />
-                            ) : (
-                            <span className="text-4xl font-bold text-white">
-                                {profileData.name
-                                ? profileData.name.charAt(0).toUpperCase()
-                                : "T"}
-                            </span>
-                            )}
-                        </div>
+                            <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-2xl ring-4 ring-slate-950 overflow-hidden">
+                                {profileData.avatarPreview ? (
+                                    <img
+                                        src={profileData.avatarPreview}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-4xl font-bold text-white">
+                                        {profileData.name
+                                            ? profileData.name.charAt(0).toUpperCase()
+                                            : "T"}
+                                    </span>
+                                )}
+                            </div>
 
-                        <p className="text-slate-500 text-sm font-mono">
-                            Teacher ID: TCH-{profileData.id}
-                        </p>
+                            <p className="text-slate-500 text-sm font-mono">
+                                Teacher ID: TCH-{profileData.id}
+                            </p>
                         </div>
 
 
@@ -380,6 +392,45 @@ const TeacherProfile = () => {
                                 </label>
                                 <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-slate-200 leading-relaxed">
                                     {profileData.bio}
+                                </div>
+                            </div>
+
+                            {/* Bank Details Section */}
+                            <div className="col-span-1 md:col-span-2 pt-6 mt-2 border-t border-slate-800">
+                                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                                    <Landmark size={20} className="text-teal-500" />
+                                    Bank Details
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                                            <User size={16} className="text-teal-500" />
+                                            Account Holder Name
+                                        </label>
+                                        <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-slate-200">
+                                            {profileData.account_holder_name || "Not provided"}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                                            <CreditCard size={16} className="text-teal-500" />
+                                            Account Number
+                                        </label>
+                                        <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-slate-200">
+                                            {profileData.account_number || "Not provided"}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="flex items-center gap-2 text-slate-400 text-sm font-medium">
+                                            <Hash size={16} className="text-teal-500" />
+                                            IFSC Code
+                                        </label>
+                                        <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-slate-200">
+                                            {profileData.ifsc_code || "Not provided"}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -521,6 +572,51 @@ const TeacherProfile = () => {
                                         rows="4"
                                         className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all resize-none placeholder:text-slate-600"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Bank Details Inputs */}
+                            <div className="space-y-6 pt-6 border-t border-slate-800">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <Landmark size={20} className="text-teal-500" />
+                                    Bank Information
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-slate-400 text-sm font-semibold">Account Holder Name</label>
+                                        <input
+                                            type="text"
+                                            name="account_holder_name"
+                                            value={profileData.account_holder_name}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter account holder name"
+                                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all placeholder:text-slate-600"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-slate-400 text-sm font-semibold">Account Number</label>
+                                        <input
+                                            type="text"
+                                            name="account_number"
+                                            value={profileData.account_number}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter account number"
+                                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all placeholder:text-slate-600"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-slate-400 text-sm font-semibold">IFSC Code</label>
+                                        <input
+                                            type="text"
+                                            name="ifsc_code"
+                                            value={profileData.ifsc_code}
+                                            onChange={handleInputChange}
+                                            placeholder="Enter IFSC code"
+                                            className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all placeholder:text-slate-600"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

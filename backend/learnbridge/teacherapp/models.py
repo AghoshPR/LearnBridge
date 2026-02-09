@@ -50,6 +50,10 @@ class TeacherProfile(models.Model):
 
     is_deleted = models.BooleanField(default=False)
 
+    account_holder_name = models.CharField(max_length=255,null=True,blank=True)
+    bank_account_number = models.CharField(max_length=30,null=True,blank=True)
+    ifse_code = models.CharField(max_length=20,null=True,blank=True)
+
 
     def __str__(self):
         return f'{self.user.email}-{self.teacher_type}'
