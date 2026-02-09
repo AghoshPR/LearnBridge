@@ -28,11 +28,19 @@ class AdminTransaction(models.Model):
         ("paid", "Paid by Student"),          
         ("transfer_pending", "Pending Transfer"),
         ("transferred", "Transferred to Teacher"),
+        ("payout_processing", "Payout Processing"),
+        ("payout_failed", "Payout Failed"), 
     ]
 
     course = models.ForeignKey(
         Course,
         on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    razorpay_payout_id = models.CharField(
+        max_length=100,
         null=True,
         blank=True
     )

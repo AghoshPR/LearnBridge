@@ -64,8 +64,8 @@ const TeacherWallet = () => {
     try{
 
         const [summaryRes,txRes] = await Promise.all([
-          Api.get("/teacher/wallet/summary/"),
-          Api.get("/teacher/wallet/transactions/")
+          Api.get("wallet/summarydetails/"),
+          Api.get("wallet/transactionsdetails/")
         ])
 
         setWalletSummary(summaryRes.data)
@@ -153,7 +153,7 @@ const TeacherWallet = () => {
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-emerald-500/20"></div>
             <div className="relative z-10">
               <p className="text-sm font-medium text-slate-400 mb-1">Total Earnings</p>
-              <h2 className="text-3xl font-bold text-emerald-400">₹2,700</h2>
+              <h2 className="text-3xl font-bold text-emerald-400">₹{walletSummary?.total_earnings ?? 0}</h2>
               <ArrowUpRight className="absolute bottom-6 right-6 text-emerald-500/50 w-6 h-6" />
             </div>
           </div>
@@ -163,7 +163,7 @@ const TeacherWallet = () => {
             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-blue-500/20"></div>
             <div className="relative z-10">
               <p className="text-sm font-medium text-slate-400 mb-1">Available Balance</p>
-              <h2 className="text-3xl font-bold text-blue-400">₹1,700</h2>
+              <h2 className="text-3xl font-bold text-blue-400">₹{walletSummary?.available_balance ?? 0}</h2>
               <DollarSign className="absolute bottom-6 right-6 text-blue-500/50 w-6 h-6" />
             </div>
           </div>
@@ -173,7 +173,7 @@ const TeacherWallet = () => {
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-amber-500/20"></div>
             <div className="relative z-10">
               <p className="text-sm font-medium text-slate-400 mb-1">Pending Payments</p>
-              <h2 className="text-3xl font-bold text-amber-400">₹500</h2>
+              <h2 className="text-3xl font-bold text-amber-400">₹{walletSummary?.pending_balance ?? 0}</h2>
               <Clock className="absolute bottom-6 right-6 text-amber-500/50 w-6 h-6" />
             </div>
           </div>

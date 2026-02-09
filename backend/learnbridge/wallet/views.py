@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
 from decimal import Decimal, ROUND_HALF_UP
-
+from django.db import transaction
+from  .payout_service import *
 
 class AdminWalletSummaryView(APIView):
 
@@ -23,6 +24,8 @@ class AdminWalletSummaryView(APIView):
 class AdminWalletTransactionsView(APIView):
 
     def get(self,request):
+
+        permission_classes = [IsAdmin]
 
         wallet,_ = AdminWallet.objects.get_or_create(id=1)
 
@@ -65,30 +68,41 @@ class AdminTransferToTeacherView(APIView):
 
     permission_classes = [IsAdmin]
 
-    def post(self,request,trasaction_id):
+    @transaction.atomic
+    def post(self, request, transaction_id):
 
-        admin_tx = AdminTransaction.objects.get(id=trasaction_id)
+        admin_tx = AdminTransaction.objects.select_related(
+            "admin_wallet", "course__teacher"
+        ).get(id=transaction_id)
 
         if admin_tx.status != "transfer_pending":
             return Response({"error": "Already transferred"}, status=400)
-        
+
+        teacher = admin_tx.course.teacher
         amount = admin_tx.amount
-        teacher_share = (amount * Decimal("0.80")).quantize(Decimal("1"))
 
-        # admin wallet update
+        teacher_share = (amount * Decimal("0.80")).quantize(
+            Decimal("1"), rounding=ROUND_HALF_UP
+        )
 
-        admin_wallet =  admin_tx.admin_wallet
+        # =========================
+        # ADMIN WALLET UPDATE
+        # =========================
+        admin_wallet = admin_tx.admin_wallet
+
         admin_wallet.available_balance -= teacher_share
+        admin_wallet.pending_balance -= teacher_share
         admin_wallet.withdrawn_amount += teacher_share
         admin_wallet.save()
 
-        admin_tx.status="transferred"
+        admin_tx.status = "transferred"
         admin_tx.save()
 
-        # Teacher wallet update
-
-        teacher_wallet = TeacherWallet.objects.get(
-            teacher = admin_tx.course.teacher
+        # =========================
+        # TEACHER WALLET UPDATE
+        # =========================
+        teacher_wallet, _ = TeacherWallet.objects.get_or_create(
+            teacher=teacher
         )
 
         teacher_wallet.pending_balance -= teacher_share
@@ -96,19 +110,19 @@ class AdminTransferToTeacherView(APIView):
         teacher_wallet.save()
 
         teacher_tx = TeacherTransaction.objects.filter(
-            teacher_wallet = teacher_wallet,
-            course = admin_tx.course,
-            status = "payment_pending"
-
+            teacher_wallet=teacher_wallet,
+            course=admin_tx.course,
+            status="payment_pending"
         ).first()
 
-
         if teacher_tx:
-
             teacher_tx.status = "payment_completed"
             teacher_tx.save()
 
-        return Response({"message":"Transfer completed successfully"})
+        return Response({
+            "message": "Funds transferred to teacher wallet successfully"
+        })
+
 
 
 class TeacherWalletSummaryView(APIView):

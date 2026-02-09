@@ -17,8 +17,9 @@ def credit_admin_wallet(amount,description,course=None,source="course_fee"):
     teacher_share = (amount * Decimal("0.80")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
 
-    wallet.total_earnings += Decimal(amount)
+    wallet.total_earnings += Decimal(admin_share)
     wallet.available_balance += Decimal(amount)
+    wallet.pending_balance += teacher_share
     wallet.save()
 
     admin_tx = AdminTransaction.objects.create(
