@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/admin/',include('adminapp.urls')),
     path('api/courses/',include('courses.urls')),
     path('api/wallet/',include('wallet.urls')),
-    path('api/',include('payments.urls'))
+    path('api/',include('payments.urls')),
+    path('api/',include('promotions.urls')),
 
 ]

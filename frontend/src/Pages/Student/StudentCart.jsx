@@ -98,8 +98,17 @@ const StudentCart = () => {
 
 
 
-  const subtotal = 0; // Mock subtotal from image reference context
-  const discount = 0;
+  const subtotal = cartItems.reduce(
+    (sum,item)=>sum+Number(item.original_price || 0),0
+  )
+  
+  
+  const totalAfterDiscount  = cartItems.reduce(
+    (sum,item)=>sum + Number(item.final_price || 0),0
+  )
+
+  const discount = subtotal - totalAfterDiscount
+  
 
 
   return (
@@ -222,14 +231,42 @@ const StudentCart = () => {
                       </span>
                     )}
                     <div className="flex items-center gap-3 md:hidden">
-                      <span className="text-gray-400 text-sm line-through">₹{item.originalPrice}</span>
-                      <span className="text-xl font-bold text-blue-600">₹{item.price}.00</span>
+
+                      {item.has_offer?(
+                        <>  
+                            <span className="text-gray-400 text-xs line-through">
+                              ₹{item.original_price}
+                            </span>
+                            <span className="text-lg font-bold text-blue-600">
+                              ₹{item.final_price}
+                            </span>
+                        </>
+                      ):(
+                           <span className="text-lg font-bold text-blue-600">
+                            ₹{item.original_price}
+                          </span>
+                      )}
+
+                      
+
                     </div>
                   </div>
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
                     <div className="hidden md:flex flex-col items-end">
-                      <span className="text-gray-400 text-xs line-through">₹{item.originalPrice}</span>
-                      <span className="text-lg font-bold text-blue-600">₹{item.price}.00</span>
+
+                      
+                      {item.has_offer?(
+                        <>
+                          <span className="text-lg font-bold text-blue-600">
+                            ₹{item.final_price}
+                          </span>
+                        </>
+                      ):(
+                        <span className="text-lg font-bold text-blue-600">
+                          ₹{item.original_price}
+                        </span>
+                      )}
+                      
                     </div>
                     <button
                       onClick={() => handleDeleteClick(item)}
@@ -256,18 +293,18 @@ const StudentCart = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Subtotal ({cartItems.length} items)</span>
-                  <span>₹{subtotal}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-medium text-green-600">
                   <span className="flex items-center gap-1">
                     Offer Discount
                   </span>
-                  <span>-₹{discount}</span>
+                  <span>-₹{discount.toFixed(2)}</span>
                 </div>
                 <div className="pt-4 border-t border-gray-100">
                   <div className="flex justify-between items-end">
                     <span className="font-bold text-gray-900 text-lg">Total</span>
-                    <span className="font-bold text-blue-600 text-2xl">₹{total}.00</span>
+                    <span className="font-bold text-blue-600 text-2xl">₹{totalAfterDiscount.toFixed(2)}</span>
                   </div>
                 </div>
 

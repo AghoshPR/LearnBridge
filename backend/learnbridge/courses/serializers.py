@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from .models import *
-from django.db.models import Avg
+from django.db.models import *
 from .utils import *
-
+from django.utils import timezone
+from promotions.models import *
+from decimal import Decimal
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -189,6 +191,11 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     students_count = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
     total_duration = serializers.SerializerMethodField()
+    total_lessons = serializers.SerializerMethodField()
+
+    final_price = serializers.SerializerMethodField()
+    original_price = serializers.DecimalField(source="price",max_digits=10,decimal_places=2)
+    has_offer = serializers.SerializerMethodField()
     
 
 
@@ -202,6 +209,9 @@ class PublicCourseSerializer(serializers.ModelSerializer):
             "description",
             "level",
             "price",
+            "original_price",
+            "final_price",
+            "has_offer",
             "instructor",
             "category",
             "category_id",
@@ -217,6 +227,9 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     def get_thumbnail(self,obj):
 
         return obj.thumbnail.url if obj.thumbnail else None
+    
+    def get_total_lessons(self, obj):
+        return obj.lessons.count()
     
     def get_students_count(self,obj):
 
@@ -251,7 +264,45 @@ class PublicCourseSerializer(serializers.ModelSerializer):
             return f"{hours}h {minutes}m"
         return f"{minutes}m"
     
+    def get_final_price(self,obj):
+
+        now = timezone.now().date()
+
+        offer = Offer.objects.filter(
+            is_active = True,
+            is_deleted=False,
+            start_date__lte=now,
+            end_date__gte=now
+        ).filter(
+            Q(course=obj) | Q(category=obj.category)
+        ).first()
+
+        if not offer:
+            return obj.price
+        
+        if offer.discount_type=="percentage":
+            discount = (obj.price * Decimal(offer.discount_value)/100)
+            return obj.price - discount
+
+        elif offer.discount_type == "fixed":
+            return max(obj.price-Decimal(offer.discount_value),0)
+        
+        return obj.price
     
+    def get_has_offer(self,obj):
+
+        now = timezone.now().date()
+        
+        return Offer.objects.filter(
+            is_active=True,
+            is_deleted = False,
+            start_date__lte=now,
+            end_date__gte=now
+
+        ).filter(
+            Q(course=obj) | Q(category=obj.category)
+        ).exists()
+        
 
 class PublicCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -272,6 +323,10 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
     total_duration = serializers.SerializerMethodField() 
     total_lessons = serializers.SerializerMethodField()
 
+    final_price = serializers.SerializerMethodField()
+    original_price = serializers.DecimalField(source="price",max_digits=10,decimal_places=2)
+    has_offer = serializers.SerializerMethodField()
+
     class Meta:
 
         model = Course
@@ -282,6 +337,9 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
             "description",
             "level",
             "price",
+            "original_price",
+            "final_price",
+            "has_offer",
             "instructor",
             "category_id",
             "category",
@@ -336,6 +394,45 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
     
     def get_total_lessons(self, obj):
         return obj.lessons.count()
+    
+    def get_final_price(self,obj):
+
+        now = timezone.now().date()
+
+        offer = Offer.objects.filter(
+            is_active = True,
+            is_deleted=False,
+            start_date__lte=now,
+            end_date__gte=now
+        ).filter(
+            Q(course=obj) | Q(category=obj.category)
+        ).first()
+
+        if not offer:
+            return obj.price
+        
+        if offer.discount_type=="percentage":
+            discount = (obj.price * Decimal(offer.discount_value)/100)
+            return obj.price - discount
+
+        elif offer.discount_type == "fixed":
+            return max(obj.price-Decimal(offer.discount_value),0)
+        
+        return obj.price
+    
+    def get_has_offer(self,obj):
+
+        now = timezone.now().date()
+        
+        return Offer.objects.filter(
+            is_active=True,
+            is_deleted = False,
+            start_date__lte=now,
+            end_date__gte=now
+
+        ).filter(
+            Q(course=obj) | Q(category=obj.category)
+        ).exists()
 
 class LessonCommentSerializer(serializers.ModelSerializer):
     

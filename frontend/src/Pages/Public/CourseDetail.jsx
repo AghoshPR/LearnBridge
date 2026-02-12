@@ -45,16 +45,16 @@ const CourseDetail = () => {
         Api.get("/courses/public/", {
             params: { category: course.category_id }
         })
-        .then(res => {
-            const filtered = res.data
-                .filter(c => c.id !== course.id)
-                .slice(0, 3);   
+            .then(res => {
+                const filtered = res.data
+                    .filter(c => c.id !== course.id)
+                    .slice(0, 3);
 
-            setRelatedCourses(filtered);
-    })
-        .catch(err => {
-            console.error("Failed to load related courses", err);
-        });
+                setRelatedCourses(filtered);
+            })
+            .catch(err => {
+                console.error("Failed to load related courses", err);
+            });
     }, [course]);
 
 
@@ -173,7 +173,7 @@ const CourseDetail = () => {
                                             Profile
                                         </button>
 
-                                        
+
 
                                         <button
                                             onClick={() => navigate("/mycourse")}
@@ -272,44 +272,43 @@ const CourseDetail = () => {
                 <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row gap-8">
                     {/* Left Content */}
                     <div className="md:w-2/3 lg:w-3/4 pr-4">
-                    
+
                         {/* <div className="flex gap-2 mb-4 text-xs font-semibold">
                             <span className="text-orange-400">Development</span>
                             <span className="text-gray-400">&gt;</span>
                             <span className="text-orange-400">Web Development</span>
                         </div> */}
-                         <span className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md mb-4">
+                        <span className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-md mb-4">
                             {course.level}
                         </span>
-                       
+
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
                             {course.title}
-                            
+
                         </h1>
-                        
+
                         <p className="text-gray-300 text-lg mb-6 leading-relaxed">
                             {course.description}
                         </p>
 
                         <div className="flex items-center gap-6 text-sm mb-6">
                             <span className="flex items-center gap-1 text-orange-400 font-bold">
-                                
+
                                 {course.average_rating
                                     ? Number(course.average_rating).toFixed(1)
                                     : "0.0"}
 
-                                    <div className="flex">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-3.5 h-3.5 ${
-                                                    i < Math.round(course.average_rating || 0)
-                                                        ? "fill-current"
-                                                        : "text-gray-400"
+                                <div className="flex">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            className={`w-3.5 h-3.5 ${i < Math.round(course.average_rating || 0)
+                                                    ? "fill-current"
+                                                    : "text-gray-400"
                                                 }`}
-                                            />
-                                        ))}
-                                    </div>
+                                        />
+                                    ))}
+                                </div>
                             </span>
                             <span className="text-blue-200"> ({course.reviews_count || 0} reviews)</span>
                             <span className="text-white">{course.students_count || 0} students</span>
@@ -426,7 +425,28 @@ const CourseDetail = () => {
                                 </div>
                             </div>
                             <div className="p-6">
-                                <div className="text-3xl font-bold text-gray-900 mb-6">₹{course.price}/-</div>
+                                <div className="mb-6">
+                                    <p className="text-sm text-gray-500 font-medium mb-1">Total Price</p>
+                                    <div className="flex items-baseline gap-1">
+                                       
+
+                                        {course.has_offer ? (
+                                        <div className="flex flex-col items-start gap-1">
+                                           
+                                            <span className="text-5xl font-black text-gray-900 tracking-tight">
+                                                ₹{course.final_price}
+                                            </span>
+                                             <span className="text-xs font-medium text-gray-800 line-through decoration-black-400/60 decoration-1">
+                                                ₹{course.original_price}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-5xl font-black text-gray-900 tracking-tight">
+                                            ₹{course.original_price}
+                                        </span>
+                                    )}
+                                    </div>
+                                </div>
 
                                 <button onClick={handleAddToCart} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
                                     Add to Cart
@@ -439,9 +459,9 @@ const CourseDetail = () => {
                                     <div className="flex justify-between">
                                         <div className="flex items-center gap-2"><Clock className="w-4 h-4" /> Duration</div>
                                         <span>
-                                        {course.total_duration
-                                            ? course.total_duration
-                                            : "0h"}
+                                            {course.total_duration
+                                                ? course.total_duration
+                                                : "0h"}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">

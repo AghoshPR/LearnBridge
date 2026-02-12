@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import *
+from promotions.models import *
 from courses.models import *
+from django.utils import timezone
+from django.db.models import *
+from decimal import Decimal
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -13,6 +17,13 @@ class CartItemSerializer(serializers.ModelSerializer):
     thumbnail = serializers.SerializerMethodField()
     instructor = serializers.CharField(source="course.teacher.username",read_only=True)
 
+    final_price = serializers.SerializerMethodField()
+    has_offer = serializers.SerializerMethodField()
+    original_price = serializers.DecimalField(
+        source="course.price",
+        max_digits=10,decimal_places=2,read_only=True
+    )
+
     class Meta:
         model = CartItem
         fields = [
@@ -23,11 +34,56 @@ class CartItemSerializer(serializers.ModelSerializer):
             "thumbnail",
             'instructor',
             "added_at",
+            "original_price",
+            "final_price",
+            "has_offer",
             
         ]
 
     def get_thumbnail(self, obj):
         return obj.course.thumbnail.url if obj.course.thumbnail else None
+    
+
+    def get_final_price(self,obj):
+
+        course = obj.course
+        now=timezone.now().date()
+
+        offer = Offer.objects.filter(
+            is_active = True,
+            is_deleted=False,
+            start_date__lte=now,
+            end_date__gte=now
+        ).filter(
+            Q(course=course)|Q(category=course.category)
+        ).first()
+
+        if not offer:
+            return course.price
+        
+        if offer.discount_type =="percentage":
+            discount = (course.price*Decimal(offer.discount_value)/100)
+            return course.price -discount
+        
+        elif offer.discount_type == "fixed":
+            return max(course.price - Decimal(offer.discount_value),0)
+        
+        return course.price
+    
+    def get_has_offer(self,obj):
+
+        course = obj.course
+        now = timezone.now().date()
+
+        return Offer.objects.filter(
+            is_active=True,
+            is_deleted=False,
+            start_date__lte=now,
+            end_date__gte=now
+        ).filter(
+            Q(course=course) | Q(category=course.category)
+        ).exists()
+
 
 class CartSerializer(serializers.ModelSerializer):
 
@@ -44,7 +100,14 @@ class CartSerializer(serializers.ModelSerializer):
         ]
 
     def get_total_amount(self,obj):
-        return sum(item.course.price for item in obj.items.all())
+        
+        total = Decimal("0.00")
+        serializer = CartItemSerializer(obj.items.all(),many=True)
+
+        for item in serializer.data:
+            total += Decimal(item["final_price"])
+        
+        return total
     
 
 class OrderItemSerializer(serializers.ModelSerializer):

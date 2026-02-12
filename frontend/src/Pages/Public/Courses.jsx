@@ -29,7 +29,7 @@ const Courses = () => {
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
 
-    
+
     const [search, setSearch] = useState("")
 
 
@@ -67,7 +67,7 @@ const Courses = () => {
         setPage(1);
     }, [search, selectedCategory]);
 
-    
+
 
 
 
@@ -232,7 +232,7 @@ const Courses = () => {
                                             Profile
                                         </button>
 
-                                        <button onClick={()=>navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <BookOpen className="w-4 h-4" />
                                             My Courses
                                         </button>
@@ -344,14 +344,14 @@ const Courses = () => {
                                     setSearch(e.target.value)
                                 }}
                                 className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl"
-                                />
+                            />
                         </div>
                         <button
-                        onClick={() => {
-                            setPage(1);
-                            setSearch(searchInput);
+                            onClick={() => {
+                                setPage(1);
+                                setSearch(searchInput);
                             }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
                             Search
                         </button>
                     </div>
@@ -423,12 +423,13 @@ const Courses = () => {
                                         {course.category}
                                     </p>
                                     <p className="text-sm text-gray-500 mb-3">
+                                        
                                         {course.instructor}
                                     </p>
 
                                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
                                         <span className="flex items-center gap-1 text-orange-500">
-                                            <Star className="w-3.5 h-3.5 fill-current" /> 
+                                            <Star className="w-3.5 h-3.5 fill-current" />
                                             {course.average_rating ? Number(course.average_rating).toFixed(1) : "0.0"}
                                         </span>
                                         <span className="flex items-center gap-1">
@@ -443,9 +444,23 @@ const Courses = () => {
 
 
                             <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                <span className="text-xl font-bold text-blue-600">
-                                    ₹{course.price}
-                                </span>
+                                <div className="flex flex-col">
+                                    {course.has_offer ? (
+                                        <div className="flex flex-col items-start gap-1">
+                                           
+                                            <span className="text-xl font-bold text-blue-600 tracking-tight">
+                                                ₹{course.final_price}
+                                            </span>
+                                             <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
+                                                ₹{course.original_price}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-xl font-bold text-blue-600 tracking-tight">
+                                            ₹{course.original_price}
+                                        </span>
+                                    )}
+                                </div>
 
                                 <div className="flex gap-2">
 

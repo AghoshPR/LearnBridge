@@ -38,6 +38,8 @@ import OrdersCheckout from './Pages/Payments/OrdersCheckout'
 import MyCourses from './Pages/Course/MyCourses'
 import AdminWallet from './Pages/Admin/AdminWallet'
 import TeacherWallet from './Pages/Teacher/TeacherWallet'
+import AdminCoupon from './Pages/Admin/AdminCoupon'
+import AdminOffer from './Pages/Admin/AdminOffer'
 
 
 
@@ -103,9 +105,9 @@ function App() {
         } />
 
 
-        <Route path='/wishlist' element={<ProtectedRoute role="student"><StudentWishlist/></ProtectedRoute>} />
-        <Route path='/cart' element={<ProtectedRoute role="student"><StudentCart/></ProtectedRoute>} />
-        <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout/></ProtectedRoute>} />
+        <Route path='/wishlist' element={<ProtectedRoute role="student"><StudentWishlist /></ProtectedRoute>} />
+        <Route path='/cart' element={<ProtectedRoute role="student"><StudentCart /></ProtectedRoute>} />
+        <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout /></ProtectedRoute>} />
         <Route path='/mycourse' element={<MyCourses />} />
 
         <Route path='/course/videos/:courseId' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
@@ -139,8 +141,8 @@ function App() {
         <Route path='/teacher/managecourses/:id' element={<ProtectedRoute role="teacher"><TeacherManageCourses /></ProtectedRoute>} />
 
         <Route path='/teacher/coursecategory' element={<ProtectedRoute role="teacher"><TeacherCourseCategory /></ProtectedRoute>} />
-        
-        <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet/></ProtectedRoute>} />
+
+        <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet /></ProtectedRoute>} />
 
 
 
@@ -159,7 +161,10 @@ function App() {
 
 
         <Route path="/admin/wallet" element={<ProtectedRoute role="admin"><AdminWallet /></ProtectedRoute>} />
-        
+
+        <Route path='/admin/coupons' element={<ProtectedRoute role="admin"><AdminCoupon /></ProtectedRoute>} />
+        <Route path='/admin/offers' element={<ProtectedRoute role="admin"><AdminOffer /></ProtectedRoute>} />
+
 
 
       </Routes>

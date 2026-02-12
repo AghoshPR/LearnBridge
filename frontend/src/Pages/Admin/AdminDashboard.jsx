@@ -107,13 +107,13 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={BookOpen}
                         label="Courses"
-                    onClick={() => navigate("/admin/courses")}
+                        onClick={() => navigate("/admin/courses")}
                     />
 
                     <NavItem
                         icon={Folder}
                         label="Categories"
-                    onClick={() => navigate("/admin/categories")}
+                        onClick={() => navigate("/admin/categories")}
                     />
 
                     <NavItem
@@ -143,19 +143,19 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={Percent}
                         label="Offers"
-                    // onClick={() => navigate("/admin/offers")}
+                        onClick={() => navigate("/admin/offers")}
                     />
 
                     <NavItem
                         icon={Ticket}
                         label="Coupons"
-                    // onClick={() => navigate("/admin/coupons")}
+                        onClick={() => navigate("/admin/coupons")}
                     />
 
                     <NavItem
                         icon={Wallet}
                         label="Wallet"
-                    onClick={() => navigate("/admin/wallet")}
+                        onClick={() => navigate("/admin/wallet")}
                     />
 
 

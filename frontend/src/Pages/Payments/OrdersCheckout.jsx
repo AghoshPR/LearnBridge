@@ -35,31 +35,17 @@ const OrdersCheckout = () => {
   const [loading, setLoading] = useState(true);
 
 
-  // Mock Data
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      name: 'aghoshaghu',
-      type: 'Default',
-      address: '123 Main Street, Apartment 4B',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      zip: '400001',
-      phone: '9876543210',
-    },
-    {
-      id: 2,
-      name: 'Tirun',
-      type: '',
-      address: 'Abc123, kiralur',
-      city: 'kerala',
-      state: '',
-      zip: '12345',
-      phone: '123134',
-    },
-  ]);
+  
 
+  const subtotal = cartItems.reduce(
+    (sum,item)=>sum+Number(item.original_price),0
+  )
 
+  const totalAfterDiscount = cartItems.reduce(
+    (sum,item)=>sum+Number(item.final_price),0
+  )
+
+  const offerDiscount = subtotal - totalAfterDiscount
 
 
 
@@ -187,6 +173,30 @@ const OrdersCheckout = () => {
       payWithRazorpay()
     }
   }
+
+  
+  // const [addresses, setAddresses] = useState([
+  //   {
+  //     id: 1,
+  //     name: 'aghoshaghu',
+  //     type: 'Default',
+  //     address: '123 Main Street, Apartment 4B',
+  //     city: 'Mumbai',
+  //     state: 'Maharashtra',
+  //     zip: '400001',
+  //     phone: '9876543210',
+  //   },
+  //   {
+  //     id: 2,
+  //     name: 'Tirun',
+  //     type: '',
+  //     address: 'Abc123, kiralur',
+  //     city: 'kerala',
+  //     state: '',
+  //     zip: '12345',
+  //     phone: '123134',
+  //   },
+  // ]);
 
   if (loading) {
     return <div className="text-center py-20">Loading checkout...</div>;
@@ -317,7 +327,7 @@ const OrdersCheckout = () => {
             <div className="lg:col-span-2 space-y-6">
 
               {/* Delivery Address Section */}
-              <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
+              {/* <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-muted-foreground" />
@@ -369,7 +379,7 @@ const OrdersCheckout = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Order Items Section */}
               <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
@@ -396,9 +406,22 @@ const OrdersCheckout = () => {
                             <p className="text-sm text-muted-foreground mt-1">Instructor: {item.instructor}</p>
                           </div>
                           <div className="text-right">
-                            {/* <div className="text-sm text-muted-foreground line-through">₹{Number(item.originalPrice).toFixed(2)}</div> */}
-                            <div className="font-bold text-primary">₹{Number(item.price).toFixed(2)}</div>
+                              {item.has_offer ? (
+                                <>
+                                  <div className="text-xs text-gray-400 line-through">
+                                    ₹{Number(item.original_price).toFixed(2)}
+                                  </div>
+                                  <div className="font-bold text-primary">
+                                    ₹{Number(item.final_price).toFixed(2)}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="font-bold text-primary">
+                                  ₹{Number(item.original_price).toFixed(2)}
+                                </div>
+                              )}
                           </div>
+                            
                         </div>
                         {item.tag && (
                           <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground border border-border w-fit px-2 py-1 rounded">
@@ -457,15 +480,21 @@ const OrdersCheckout = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal (1 items)</span>
-                    <span>₹{total}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-green-600 dark:text-green-500">
                     <span>% Offer Discount</span>
+                    <span>-₹ {offerDiscount.toFixed(2)}</span>
+                  </div>
+
+                   <div className="flex justify-between text-green-600 dark:text-green-500">
+                    <span>% Coupon Discount</span>
                     <span>-₹ 0</span>
                   </div>
+
                   <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-primary">₹{total}</span>
+                    <span className="text-primary">₹{totalAfterDiscount.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -536,9 +565,9 @@ const OrdersCheckout = () => {
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-bold mb-6">Add New Address</h2>
+            {/* <h2 className="text-xl font-bold mb-6">Add New Address</h2> */}
 
-            <form onSubmit={handleAddAddress} className="space-y-4">
+            {/* <form onSubmit={handleAddAddress} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Full Name</label>
@@ -627,7 +656,7 @@ const OrdersCheckout = () => {
                   Save Address
                 </button>
               </div>
-            </form>
+            </form> */}
           </div>
         </div>
       )}

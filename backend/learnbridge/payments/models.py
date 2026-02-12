@@ -21,6 +21,8 @@ class CartItem(models.Model):
     course = models.ForeignKey(Course,on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
+    
+
     class Meta:
         unique_together = ("cart","course")
 
