@@ -31,33 +31,33 @@ const AdminWallet = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [walletSummary,setWalletSummary] = useState(null)
+    const [walletSummary, setWalletSummary] = useState(null)
     const [transactions, setTransactions] = useState([])
-    const [loading,setLoading] = useState(true)
+    const [loading, setLoading] = useState(true)
 
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchWalletData()
-    },[])
+    }, [])
 
 
-    const fetchWalletData = async ()=>{
+    const fetchWalletData = async () => {
 
-        try{
+        try {
 
-            const [summaryRes,txRes] = await Promise.all([
+            const [summaryRes, txRes] = await Promise.all([
                 Api.get("/wallet/summary/"),
                 Api.get("/wallet/transactions/"),
             ])
 
             setWalletSummary(summaryRes.data)
             setTransactions(txRes.data)
-        
-        }catch(err){
+
+        } catch (err) {
             toast.error("Failed to load wallet data")
-        }finally{
+        } finally {
             setLoading(false)
         }
     }
@@ -77,24 +77,24 @@ const AdminWallet = () => {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center text-gray-400">
-            Loading wallet data...
+                Loading wallet data...
             </div>
         );
     }
 
     const handleTransfer = async (id) => {
-        try{
+        try {
             await Api.post(`/wallet/transfer/${id}/`)
             toast.success("Funds transferred successfully to Teacher Wallet! 💸");
             fetchWalletData()
-        }catch(err){
+        } catch (err) {
             toast.error("Transfer Failed")
         }
-        
-    };
-    
 
-    
+    };
+
+
+
 
     // Sidebar Items Component
     const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
@@ -163,8 +163,8 @@ const AdminWallet = () => {
                     <NavItem icon={GraduationCap} label="Teachers" onClick={() => navigate("/admin/teachers")} />
                     <NavItem icon={MessageSquare} label="Q&A Moderation" />
                     <NavItem icon={Tag} label="Tags Management" />
-                    <NavItem icon={Percent} label="Offers" />
-                    <NavItem icon={Ticket} label="Coupons" />
+                    <NavItem icon={Percent} label="Offers" onClick={() => navigate("/admin/offers")} />
+                    <NavItem icon={Ticket} label="Coupons" onClick={() => navigate("/admin/coupons")} />
                     <NavItem icon={Wallet} label="Wallet" active onClick={() => navigate("/admin/wallet")} />
                 </nav>
 
@@ -275,7 +275,7 @@ const AdminWallet = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium text-white mb-1">{transaction.courseName||"Null"}</span>
+                                                    <span className="text-sm font-medium text-white mb-1">{transaction.courseName || "Null"}</span>
                                                     <span className="text-xs text-blue-400/80 bg-blue-500/10 px-2 py-0.5 rounded w-fit border border-blue-500/20">{transaction.source} : {transaction.description}</span>
                                                 </div>
                                             </td>

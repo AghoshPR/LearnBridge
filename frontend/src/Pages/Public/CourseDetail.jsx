@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package, Ticket } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useParams } from "react-router-dom";
 import Api from "../Services/Api";
@@ -183,14 +183,14 @@ const CourseDetail = () => {
                                             My Courses
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <Heart className="w-4 h-4" />
                                             Wishlist
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                            <Package className="w-4 h-4" />
-                                            Orders
+                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                            <Ticket className="w-4 h-4" />
+                                            Coupons
                                         </button>
 
                                         <hr className="my-1 border-gray-100" />
@@ -248,9 +248,9 @@ const CourseDetail = () => {
                                     <span className="text-sm font-medium">{username || "User"}</span>
                                 </div>
                                 <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                                <button className="text-gray-700 font-medium text-left">My Courses</button>
+                                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
                                 <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                                <button className="text-gray-700 font-medium text-left">Orders</button>
+                                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
                                 <button
                                     onClick={() => {
                                         dispatch(logout());
@@ -303,8 +303,8 @@ const CourseDetail = () => {
                                         <Star
                                             key={i}
                                             className={`w-3.5 h-3.5 ${i < Math.round(course.average_rating || 0)
-                                                    ? "fill-current"
-                                                    : "text-gray-400"
+                                                ? "fill-current"
+                                                : "text-gray-400"
                                                 }`}
                                         />
                                     ))}
@@ -428,23 +428,23 @@ const CourseDetail = () => {
                                 <div className="mb-6">
                                     <p className="text-sm text-gray-500 font-medium mb-1">Total Price</p>
                                     <div className="flex items-baseline gap-1">
-                                       
+
 
                                         {course.has_offer ? (
-                                        <div className="flex flex-col items-start gap-1">
-                                           
+                                            <div className="flex flex-col items-start gap-1">
+
+                                                <span className="text-5xl font-black text-gray-900 tracking-tight">
+                                                    ₹{course.final_price}
+                                                </span>
+                                                <span className="text-xs font-medium text-gray-800 line-through decoration-black-400/60 decoration-1">
+                                                    ₹{course.original_price}
+                                                </span>
+                                            </div>
+                                        ) : (
                                             <span className="text-5xl font-black text-gray-900 tracking-tight">
-                                                ₹{course.final_price}
-                                            </span>
-                                             <span className="text-xs font-medium text-gray-800 line-through decoration-black-400/60 decoration-1">
                                                 ₹{course.original_price}
                                             </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-5xl font-black text-gray-900 tracking-tight">
-                                            ₹{course.original_price}
-                                        </span>
-                                    )}
+                                        )}
                                     </div>
                                 </div>
 

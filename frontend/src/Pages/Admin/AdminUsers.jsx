@@ -42,11 +42,11 @@ const AdminUsers = () => {
 
   // add user admin
   const [formData, setFormData] = useState({
-  username: "",
-  email: "",
-  password: "",
-  confirmPassword: ""
-});
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
 
 
 
@@ -104,19 +104,19 @@ const AdminUsers = () => {
   };
 
   const confirmDeleteAction = async () => {
-  if (!userToDelete) return;
+    if (!userToDelete) return;
 
-  try {
-    await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
-    toast.success("User deleted successfully");
-    setUserToDelete(null);
-    fetchUsers();   
-  } catch (err) {
-    toast.error("Failed to delete user");
-  }
-};
+    try {
+      await Api.delete(`/admin/users/${userToDelete.id}/delete/`);
+      toast.success("User deleted successfully");
+      setUserToDelete(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error("Failed to delete user");
+    }
+  };
 
-//  block and unblock user
+  //  block and unblock user
 
   const blockUser = async (user) => {
 
@@ -159,50 +159,50 @@ const AdminUsers = () => {
   // add user
 
 
-  const handleAddUser =async(e)=>{
+  const handleAddUser = async (e) => {
 
-      e.preventDefault()
+    e.preventDefault()
 
-      const { username, email, password, confirmPassword } = formData;
+    const { username, email, password, confirmPassword } = formData;
 
-      if (!username || !email || !password || !confirmPassword) {
-        toast.error("All fields are required");
-        return;
-      }
+    if (!username || !email || !password || !confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
 
-      if (password !== confirmPassword) {
-        toast.error("Passwords do not match");
-        return;
-      }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
-      try{
-        await Api.post("/admin/users/create/",{
-          username,
-          email,
-          password
-        })
+    try {
+      await Api.post("/admin/users/create/", {
+        username,
+        email,
+        password
+      })
 
-        toast.success("User created successfully")
-        setIsAddUserModalOpen(false)
-        fetchUsers()
+      toast.success("User created successfully")
+      setIsAddUserModalOpen(false)
+      fetchUsers()
 
-        setFormData({
-          username: "",
-          email: "",
-          password: "",
-          confirmPassword: ""
-        });
+      setFormData({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: ""
+      });
 
 
-      }catch (err) {
-        const message =
-          err.response?.data?.email?.[0] ||
-          err.response?.data?.password?.[0] ||
-          err.response?.data?.error ||
-          "Failed to create user";
+    } catch (err) {
+      const message =
+        err.response?.data?.email?.[0] ||
+        err.response?.data?.password?.[0] ||
+        err.response?.data?.error ||
+        "Failed to create user";
 
-        toast.error(message);
-  }
+      toast.error(message);
+    }
 
   }
 
@@ -313,13 +313,13 @@ const AdminUsers = () => {
           <NavItem
             icon={BookOpen}
             label="Courses"
-          onClick={() => navigate("/admin/courses")}
+            onClick={() => navigate("/admin/courses")}
           />
 
           <NavItem
             icon={Folder}
             label="Categories"
-          onClick={() => navigate("/admin/categories")}
+            onClick={() => navigate("/admin/categories")}
           />
 
           <NavItem
@@ -350,19 +350,19 @@ const AdminUsers = () => {
           <NavItem
             icon={Percent}
             label="Offers"
-          // onClick={() => navigate("/admin/offers")}
+            onClick={() => navigate("/admin/offers")}
           />
 
           <NavItem
             icon={Ticket}
             label="Coupons"
-          // onClick={() => navigate("/admin/coupons")}
+            onClick={() => navigate("/admin/coupons")}
           />
 
           <NavItem
             icon={Wallet}
             label="Wallet"
-          // onClick={() => navigate("/admin/wallet")}
+            onClick={() => navigate("/admin/wallet")}
           />
 
 
@@ -502,43 +502,43 @@ const AdminUsers = () => {
                 )}
               </tbody>
             </table>
-                {/* Pagination */}
-      {/* Pagination */}
-        {totalPages > 0 && (
-          <div className="flex justify-center items-center gap-2 mt-8">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-            >
-              Prev
-            </button>
+            {/* Pagination */}
+            {/* Pagination */}
+            {totalPages > 0 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+                >
+                  Prev
+                </button>
 
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setPage(i + 1)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i + 1)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium
                   ${page === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 hover:bg-gray-700"
-                  }`}
-              >
-                {i + 1}
-              </button>
-            ))}
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 hover:bg-gray-700"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
 
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        )}
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(page + 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
-              
+
           </div>
         </div>
 
@@ -635,14 +635,14 @@ const AdminUsers = () => {
                   placeholder="Enter user name"
                   value={formData.username}
                   onChange={(e) =>
-                  setFormData({ ...formData, username: e.target.value })
-                  } 
+                    setFormData({ ...formData, username: e.target.value })
+                  }
                   className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors placeholder-gray-600" />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Email</label>
-                <input  type="email"
+                <input type="email"
                   placeholder="Enter email address"
                   value={formData.email}
                   onChange={(e) =>
@@ -663,7 +663,7 @@ const AdminUsers = () => {
 
               <div>
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Confirm Password</label>
-                <input  type="password"
+                <input type="password"
                   placeholder="Confirm password"
                   value={formData.confirmPassword}
                   onChange={(e) =>

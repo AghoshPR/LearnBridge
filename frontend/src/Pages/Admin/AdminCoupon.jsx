@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -26,50 +26,134 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import Api from '../Services/Api';
+import { toast } from 'sonner';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/Store/authSlice';
 
 const AdminCoupon = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // Mock Data
-  const coupons = [
-    {
-      id: 1,
-      code: 'WELCOME10',
-      discountType: 'Percentage',
-      discountValue: 10,
-      minOrder: 500,
-      validFrom: '2024-01-01',
-      validTill: '2025-12-31',
-      usage: '45 / 500',
-      status: 'Active'
-    },
-    {
-      id: 2,
-      code: 'FLAT200',
-      discountType: 'Fixed',
-      discountValue: 200,
-      minOrder: 1000,
-      validFrom: '2024-01-01',
-      validTill: '2025-12-31',
-      usage: '30 / 200',
-      status: 'Active'
-    },
-    {
-      id: 3,
-      code: 'LEARN25',
-      discountType: 'Percentage',
-      discountValue: 25,
-      minOrder: 2000,
-      validFrom: '2024-01-01',
-      validTill: '2025-12-31',
-      usage: '12 / 100',
-      status: 'Active'
+  const [coupons, setCoupons] = useState([])
+  const [editingId, setEditingId] = useState(null)
+
+  const initialFormState = {
+    code: "",
+    discount_type: "percentage",
+    discount_value: "",
+    max_uses_per_user: 1,
+    min_purchase_amount: "",
+    valid_from: "",
+    valid_till: "",
+    max_uses: "",
+    is_active: true
+
+  }
+
+  const [formData, setFormData] = useState(initialFormState)
+
+
+  useEffect(() => {
+    fetchCoupons()
+  }, [])
+
+
+  const fetchCoupons = async () => {
+
+    try {
+      const res = await Api.get("/coupons/")
+      setCoupons(res.data)
+    } catch {
+      toast.error("Failed to load coupons")
     }
-  ];
+  }
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target
+
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value
+    })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    try {
+
+      if (editingId) {
+
+        await Api.put(`/coupons/update/${editingId}/`, formData)
+        toast.success("Coupon updated")
+      } else {
+        await Api.post("/coupons/create/", formData)
+        toast.success("Coupon Created")
+      }
+
+      setIsModalOpen(false)
+      setEditingId(null)
+      setFormData(initialFormState)
+      fetchCoupons()
+
+    } catch (err) {
+
+      if (err.response?.data) {
+        Object.values(err.response.data).flat().forEach(msg => {
+          toast.error(msg)
+        })
+      } else {
+        toast.error("something went wrong")
+      }
+    }
+  }
+
+  const handleEdit = (coupon) => {
+
+    setEditingId(coupon.id)
+    setFormData({
+      ...coupon
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (id) => {
+
+    try {
+
+      await Api.delete(`/coupons/delete/${id}/`)
+      toast.success("Coupon deactivated")
+      fetchCoupons()
+    } catch {
+      toast.error("Delete failed")
+    }
+  }
+
+
+
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const handleLogout = async () => {
+    try {
+      await Api.post("/auth/logout/");
+      toast.success("Logged out successfully 👋", {
+        description: "See you again, Admin!",
+        duration: 2500,
+      });
+    } catch (err) {
+      toast.error("Logout failed", {
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      dispatch(logout()); // Redux clear
+      navigate("/admin/login", { replace: true });
+    }
+
+  }
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
@@ -129,7 +213,6 @@ const AdminCoupon = () => {
           <NavItem icon={Percent} label="Offers" onClick={() => navigate("/admin/offers")} />
           <NavItem icon={Ticket} label="Coupons" active onClick={() => navigate("/admin/coupons")} />
           <NavItem icon={Wallet} label="Wallet" onClick={() => navigate("/admin/wallet")} />
-          <NavItem icon={Settings} label="Settings" />
         </nav>
 
         {/* Sidebar Footer */}
@@ -145,7 +228,7 @@ const AdminCoupon = () => {
                   <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
                 </div>
               </div>
-              <button className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
                 <LogOut size={18} />
               </button>
             </div>
@@ -200,20 +283,20 @@ const AdminCoupon = () => {
                       </td>
                       <td className="p-4">
                         <span className="text-sm font-medium text-white">
-                          {coupon.discountType === 'Percentage' ? `${coupon.discountValue}%` : `₹ ${coupon.discountValue}`}
+                          {coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : `₹ ${coupon.discount_value}`}
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm text-gray-400 font-mono">₹{coupon.minOrder}</span>
+                        <span className="text-sm text-gray-400 font-mono">₹{coupon.min_purchase_amount}</span>
                       </td>
                       <td className="p-4">
                         <div className="text-xs text-gray-400">
-                          <span className="block">{coupon.validFrom} to {coupon.validTill}</span>
+                          <span className="block">{coupon.valid_from} to {coupon.valid_till}</span>
                         </div>
                       </td>
                       <td className="p-4">
                         <div className="text-sm text-gray-400">
-                          {coupon.usage}
+                          {coupon.used_count}
                         </div>
                       </td>
                       <td className="p-4">
@@ -221,15 +304,15 @@ const AdminCoupon = () => {
                           ? 'bg-green-500/10 text-green-400 border-green-500/20'
                           : 'bg-red-500/10 text-red-400 border-red-500/20'
                           }`}>
-                          {coupon.status}
+                          {coupon.is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
+                          <button onClick={() => handleEdit(coupon)} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                             <Pencil size={16} />
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                          <button onClick={() => handleDelete(coupon.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -249,7 +332,8 @@ const AdminCoupon = () => {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
           <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 overflow-y-auto max-h-[90vh] animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Add New Coupon</h2>
+              <h2 className="text-xl font-bold text-white">{editingId ? "Edit Coupon" : "Add Coupon"}</h2>
+
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -258,13 +342,15 @@ const AdminCoupon = () => {
               </button>
             </div>
 
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Coupon Code */}
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Coupon Code *</label>
                 <input
-                  type="text"
+                  name='code'
+                  value={formData.code}
                   placeholder="E.G. SUMMER20"
+                  onChange={handleChange}
                   className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                 />
               </div>
@@ -274,10 +360,16 @@ const AdminCoupon = () => {
                 <div>
                   <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Type *</label>
                   <div className="relative">
-                    <select className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer">
-                      <option>Percentage (%)</option>
-                      <option>Fixed Amount (₹)</option>
+                    <select
+                      name='discount_type'
+                      value={formData.discount_type}
+                      onChange={handleChange}
+                      className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer">
+
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="fixed">Fixed Amount (₹)</option>
                     </select>
+
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                       <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </div>
@@ -289,7 +381,10 @@ const AdminCoupon = () => {
                   <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Value *</label>
                   <input
                     type="number"
-                    placeholder="0"
+                    name='discount_value'
+                    value={formData.discount_value}
+                    onChange={handleChange}
+                    placeholder="Discount Value"
                     className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                   />
                 </div>
@@ -302,6 +397,9 @@ const AdminCoupon = () => {
                   <div className="relative">
                     <input
                       type="date"
+                      name='valid_from'
+                      value={formData.valid_from}
+                      onChange={handleChange}
                       className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600 custom-date-input"
                     />
                   </div>
@@ -313,6 +411,9 @@ const AdminCoupon = () => {
                   <div className="relative">
                     <input
                       type="date"
+                      name='valid_till'
+                      value={formData.valid_till}
+                      onChange={handleChange}
                       className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600 custom-date-input"
                     />
                   </div>
@@ -325,8 +426,21 @@ const AdminCoupon = () => {
                   <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Max Uses</label>
                   <input
                     type="number"
-                    placeholder="100"
+                    name='max_uses'
+                    value={formData.max_uses}
+                    onChange={handleChange}
+                    placeholder="Max uses"
                     className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                  />
+                </div>
+
+                <div>
+                  <label>Max Uses Per User</label>
+                  <input
+                    type="number"
+                    name="max_uses_per_user"
+                    value={formData.max_uses_per_user}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -335,6 +449,9 @@ const AdminCoupon = () => {
                   <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Min Order Value (₹)</label>
                   <input
                     type="number"
+                    name='min_purchase_amount'
+                    value={formData.min_purchase_amount}
+                    onChange={handleChange}
                     placeholder="0"
                     className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                   />
@@ -345,7 +462,12 @@ const AdminCoupon = () => {
               <div className="flex items-center justify-between pt-2">
                 <label className="text-sm font-medium text-gray-300">Active</label>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" defaultChecked className="sr-only peer" />
+                  <input
+                    type="checkbox"
+                    name='is_active'
+                    checked={formData.is_active}
+                    onChange={handleChange}
+                    className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
               </div>
@@ -363,7 +485,7 @@ const AdminCoupon = () => {
                   type="submit"
                   className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
                 >
-                  Create Coupon
+                  {editingId ? "Update Coupon" : "Create Coupon"}
                 </button>
               </div>
 

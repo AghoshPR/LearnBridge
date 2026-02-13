@@ -43,7 +43,7 @@ const AdminDashboard = () => {
                 description: "Something went wrong. Please try again.",
             });
         } finally {
-            dispatch(logout()); // Redux clear
+            dispatch(logout()); 
             navigate("/admin/login", { replace: true });
         }
 

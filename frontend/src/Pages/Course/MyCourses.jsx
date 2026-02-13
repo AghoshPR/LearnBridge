@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Package, Calendar, User, Eye, Search, ShoppingCart, Bell, BookOpen, Heart, LogOut, Menu, X } from 'lucide-react';
+import { Package, Calendar, User, Eye, Search, ShoppingCart, Bell, BookOpen, Heart, LogOut, Menu, X, Ticket } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -101,7 +101,7 @@ const MyCourses = () => {
                       Profile
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
@@ -111,9 +111,9 @@ const MyCourses = () => {
                       Wishlist
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                      <Package className="w-4 h-4" />
-                      Orders
+                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <Ticket className="w-4 h-4" />
+                      Coupons
                     </button>
 
                     <hr className="my-1 border-gray-100" />
@@ -157,6 +157,25 @@ const MyCourses = () => {
               </div>
               <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
             </div>
+
+            {isAuthenticated && (
+              <div className="flex flex-col gap-3 mt-2">
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
@@ -230,9 +249,9 @@ const MyCourses = () => {
 
                 {/* Footer */}
                 <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
-                  <span className="text-xl font-bold text-blue-600">
+                  {/* <span className="text-xl font-bold text-blue-600">
                     ₹{course.price}
-                  </span>
+                  </span> */}
 
 
                 </div>

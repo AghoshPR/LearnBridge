@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createElement } from 'react';
 import {
   Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
-  Trash2, ArrowLeft, CreditCard
+  Trash2, ArrowLeft, CreditCard, Ticket
 } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
@@ -99,16 +99,16 @@ const StudentCart = () => {
 
 
   const subtotal = cartItems.reduce(
-    (sum,item)=>sum+Number(item.original_price || 0),0
+    (sum, item) => sum + Number(item.original_price || 0), 0
   )
-  
-  
-  const totalAfterDiscount  = cartItems.reduce(
-    (sum,item)=>sum + Number(item.final_price || 0),0
+
+
+  const totalAfterDiscount = cartItems.reduce(
+    (sum, item) => sum + Number(item.final_price || 0), 0
   )
 
   const discount = subtotal - totalAfterDiscount
-  
+
 
 
   return (
@@ -173,17 +173,17 @@ const StudentCart = () => {
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-                    <button onClick={() => navigate("/student/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
-                    <button onClick={() => navigate("/student/orders")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                      <Package className="w-4 h-4" />
-                      Orders
+                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <Ticket className="w-4 h-4" />
+                      Coupons
                     </button>
                     <hr className="my-1 border-gray-100" />
                     <button
@@ -207,10 +207,45 @@ const StudentCart = () => {
             </button>
           </div>
         </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
+            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
+            <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
+            <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+            <hr className="border-gray-100" />
+
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+              </div>
+              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
+            </div>
+
+            {isAuthenticated && (
+              <div className="flex flex-col gap-3 mt-2">
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
+      < main className="flex-1 container mx-auto px-4 md:px-6 py-8" >
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -232,41 +267,41 @@ const StudentCart = () => {
                     )}
                     <div className="flex items-center gap-3 md:hidden">
 
-                      {item.has_offer?(
-                        <>  
-                            <span className="text-gray-400 text-xs line-through">
-                              ₹{item.original_price}
-                            </span>
-                            <span className="text-lg font-bold text-blue-600">
-                              ₹{item.final_price}
-                            </span>
-                        </>
-                      ):(
-                           <span className="text-lg font-bold text-blue-600">
+                      {item.has_offer ? (
+                        <>
+                          <span className="text-gray-400 text-xs line-through">
                             ₹{item.original_price}
                           </span>
+                          <span className="text-lg font-bold text-blue-600">
+                            ₹{item.final_price}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-lg font-bold text-blue-600">
+                          ₹{item.original_price}
+                        </span>
                       )}
 
-                      
+
 
                     </div>
                   </div>
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
                     <div className="hidden md:flex flex-col items-end">
 
-                      
-                      {item.has_offer?(
+
+                      {item.has_offer ? (
                         <>
                           <span className="text-lg font-bold text-blue-600">
                             ₹{item.final_price}
                           </span>
                         </>
-                      ):(
+                      ) : (
                         <span className="text-lg font-bold text-blue-600">
                           ₹{item.original_price}
                         </span>
                       )}
-                      
+
                     </div>
                     <button
                       onClick={() => handleDeleteClick(item)}
@@ -315,9 +350,9 @@ const StudentCart = () => {
                 </div>
               </div>
 
-              
 
-              <button onClick={()=>navigate('/checkout')} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
+
+              <button onClick={() => navigate('/checkout')} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
                 Proceed to Checkout
               </button>
               <button
@@ -329,10 +364,10 @@ const StudentCart = () => {
             </div>
           </div>
         </div>
-      </main>
+      </main >
 
       {/* Footer (Copied from Home.jsx) */}
-      <footer className="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto">
+      < footer className="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto" >
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div>
@@ -377,40 +412,42 @@ const StudentCart = () => {
             © 2024 LearnBridge. All rights reserved.
           </div>
         </div>
-      </footer>
+      </footer >
 
       {/* Delete Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Remove from Cart?</h3>
-              <p className="text-gray-500 mb-6">
-                Are you sure you want to remove <span className="font-semibold text-gray-900">"{itemToDelete?.title}"</span> from your cart?
-              </p>
+      {
+        isDeleteModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="p-6 text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Remove from Cart?</h3>
+                <p className="text-gray-500 mb-6">
+                  Are you sure you want to remove <span className="font-semibold text-gray-900">"{itemToDelete?.title}"</span> from your cart?
+                </p>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
-                >
-                  Remove
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
 

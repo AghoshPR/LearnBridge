@@ -192,7 +192,7 @@ const Home = () => {
                                             Profile
                                         </button>
 
-                                        <button onClick={()=>navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <BookOpen className="w-4 h-4" />
                                             My Courses
                                         </button>
@@ -202,10 +202,10 @@ const Home = () => {
                                             Wishlist
                                         </button>
 
-                                        {/* <button onClick={() => navigate("/orders")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                                             <Package className="w-4 h-4" />
-                                            Orders
-                                        </button> */}
+                                            Coupons
+                                        </button>
 
                                         <hr className="my-1 border-gray-100" />
 

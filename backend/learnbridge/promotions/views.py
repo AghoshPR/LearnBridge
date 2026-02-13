@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from authapp.permissions import IsAdmin
 from .models import *
+from django.utils import timezone
 from .serializers import *
+from payments.serializers import *
 
 
 class AdminOfferListView(APIView):
@@ -72,3 +74,129 @@ class AdminOfferDeleteView(APIView):
         offer.save()
 
         return Response({"message":"offer deleted successfully"})
+
+# Admin Coupons
+
+
+class AdminCouponListView(APIView):
+
+    permission_classes = [IsAdmin]
+
+    def get(self,request):
+
+        coupons = Coupon.objects.all().order_by("-created_at")
+        serializer = CouponSerializer(coupons,many=True)
+        return Response(serializer.data)
+
+class AdminCouponCreateView(APIView):
+
+    permission_classes=[IsAdmin]
+
+    def post(self,request):
+
+        serializer = CouponSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data,status=201)
+        return Response(serializer.errors,status=400)
+
+class AdminCouponUpdateView(APIView):
+
+    permission_classes = [IsAdmin]
+
+    def put(self,request,pk):
+
+        coupon = Coupon.objects.get(pk=pk)
+        serializer = CouponSerializer(coupon,data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=400)
+    
+class AdminCouponsDeleteView(APIView):
+
+    permission_classes = [IsAdmin]
+
+    def delete(self,request,pk):
+
+        try:
+
+
+            coupon = Coupon.objects.get(pk=pk)
+        except Coupon.DoesNotExist:
+
+        
+            return Response({"error":"Coupon not found"},status=404)
+        
+        coupon.is_active=True
+        coupon.save()
+        return Response({"message":"Coupon deactivated"})
+
+class ApplyCouponView(APIView):
+
+    def post(self,request):
+
+        code = request.data.get("code")
+        user=request.user
+
+
+        if not code:
+            return Response({"error":"Coupon code required"},status=400)
+        try:
+
+            coupon = Coupon.objects.get(code__iexact=code,is_active=True)
+        
+        except Coupon.DoesNotExist:
+            return Response({"error":"Invalid coupon"},status=400)
+        
+        today = timezone.now().date()
+
+
+        if not (coupon.valid_from <= today <= coupon.valid_till):
+            return Response({"error":"Coupon expired"},status=400)
+        
+        if coupon.max_uses and coupon.used_count >=coupon.max_uses:
+            return Response({"error":"Coupon usage limit reacher"},status=400)
+        
+        # cart 
+
+
+        cart = request.user.cart
+
+        cart_serializer = CartSerializer(cart)
+        cart_total = Decimal(cart_serializer.data["total_amount"])
+
+
+        if cart_total < coupon.min_purchase_amount:
+
+            return Response({
+                "error":f"Minimum purchase amount ₹{coupon.min_purchase_amount} required"
+
+            },status=400)
+        
+
+        # Calculate discount
+
+        if coupon.discount_type == "percentage":
+            
+            discount = cart_total * Decimal(coupon.discount_value)/100
+        else:
+
+            discount = Decimal(coupon.discount_value)
+
+        discount = min(discount, cart_total)
+
+        final_total = cart_total - discount
+
+        return Response({
+            "original_total":cart_total,
+            "discount":discount,
+            "final_total":final_total,
+            "coupon_id":coupon.id
+        })
+
+
+
+
+    

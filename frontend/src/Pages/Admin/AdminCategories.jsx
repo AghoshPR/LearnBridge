@@ -37,7 +37,7 @@ const AdminCategories = () => {
   const [totalPages, setTotalPages] = useState(1)
   const PAGE_SIZE = 10
 
-  
+
   const [categories, setCategories] = useState([])
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -47,88 +47,88 @@ const AdminCategories = () => {
     description: ""
   })
 
-  const fetchCategories = async()=>{
+  const fetchCategories = async () => {
 
-    try{
-        const res = await Api.get('/courses/admin/categories/',{
+    try {
+      const res = await Api.get('/courses/admin/categories/', {
 
-          params: {
+        params: {
           page,
           search: searchQuery || undefined
         }
 
-        })
+      })
 
-        setCategories(res.data.results)
-        setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
+      setCategories(res.data.results)
+      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
 
-    }catch(err){
+    } catch (err) {
       toast.error("Failed to load categories")
     }
   }
 
 
-  const handleAddCategory = async()=>{
+  const handleAddCategory = async () => {
 
-      if (!newCategory.name.trim()) {
-        toast.error("Category name required")
-        return
-      }
+    if (!newCategory.name.trim()) {
+      toast.error("Category name required")
+      return
+    }
 
-      if (!newCategory.description.trim()) {
-        toast.error("Description required")
-        return
-      }
+    if (!newCategory.description.trim()) {
+      toast.error("Description required")
+      return
+    }
 
-      try{
+    try {
 
-        await Api.post("/courses/admin/categories/",newCategory)
+      await Api.post("/courses/admin/categories/", newCategory)
 
-        toast.success("Category added successfully")
-        setIsAddModalOpen(false)
-        setNewCategory({name:"",description:""})
-        fetchCategories()
+      toast.success("Category added successfully")
+      setIsAddModalOpen(false)
+      setNewCategory({ name: "", description: "" })
+      fetchCategories()
 
 
-      }catch(err){
-              const errorMsg =
-              err.response?.data?.name?.[0] ||
-              err.response?.data?.detail ||
-              "Failed to create category";
-      
-              toast.error(errorMsg);
-            }
-      
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.name?.[0] ||
+        err.response?.data?.detail ||
+        "Failed to create category";
+
+      toast.error(errorMsg);
+    }
+
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchCategories()
-  },[page, searchQuery])
+  }, [page, searchQuery])
 
   // block and unblock
 
-  const toggleCategoriesStatus = async(id)=>{
+  const toggleCategoriesStatus = async (id) => {
 
-      try{
-          await Api.post(`/courses/admin/categories/toggle/${id}/`)
-          toast.success('Category status updated')
-          fetchCategories()
-      }catch{
-          toast.error("Action Failed")
-      }
+    try {
+      await Api.post(`/courses/admin/categories/toggle/${id}/`)
+      toast.success('Category status updated')
+      fetchCategories()
+    } catch {
+      toast.error("Action Failed")
+    }
   }
 
-  const deleteCategory =async(id)=>{
+  const deleteCategory = async (id) => {
 
-      try{
-          await Api.delete(`/courses/admin/categories/${id}/`)
-          toast.success("Category deleted")
-          fetchCategories()
-      }catch{
-        toast.error("Delete failed")
-      }
+    try {
+      await Api.delete(`/courses/admin/categories/${id}/`)
+      toast.success("Category deleted")
+      fetchCategories()
+    } catch {
+      toast.error("Delete failed")
+    }
   }
-   
+
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -254,19 +254,19 @@ const AdminCategories = () => {
           <NavItem
             icon={Percent}
             label="Offers"
-          // onClick={() => navigate("/admin/offers")}
+            onClick={() => navigate("/admin/offers")}
           />
 
           <NavItem
             icon={Ticket}
             label="Coupons"
-          // onClick={() => navigate("/admin/coupons")}
+            onClick={() => navigate("/admin/coupons")}
           />
 
           <NavItem
             icon={Wallet}
             label="Wallet"
-          // onClick={() => navigate("/admin/wallet")}
+            onClick={() => navigate("/admin/wallet")}
           />
         </nav>
 
@@ -365,13 +365,13 @@ const AdminCategories = () => {
                           <Pencil size={16} />
                         </button>
                         <button
-                        onClick={()=>toggleCategoriesStatus(category.id)}
-                        className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+                          onClick={() => toggleCategoriesStatus(category.id)}
+                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
                           {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
                         </button>
-                        <button 
-                         onClick={() => deleteCategory(category.id)}
-                        className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                        <button
+                          onClick={() => deleteCategory(category.id)}
+                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                           <Trash2 size={16} />
                         </button>
                       </div>

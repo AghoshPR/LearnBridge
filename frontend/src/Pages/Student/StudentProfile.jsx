@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -19,7 +19,8 @@ import {
   Bell,
   Heart,
   Package,
-  Menu
+  Menu,
+  Ticket
 } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import Api from '../Services/Api';
@@ -36,7 +37,7 @@ const StudentProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
-  
+
 
   // Data
   const [profileData, setProfileData] = useState({
@@ -48,65 +49,65 @@ const StudentProfile = () => {
   });
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchProfile()
-  },[])
+  }, [])
 
-  
-  const fetchProfile=async()=>{
 
-        try{
+  const fetchProfile = async () => {
 
-            const res = await Api.get("/student/profile/")
-            setProfileData({
-                username:res.data.username,
-                email:res.data.email,
-                phone: res.data.phone || "",
-                address: res.data.address || "",
-                avatar: res.data.profile_image || null,
+    try {
 
-            })
+      const res = await Api.get("/student/profile/")
+      setProfileData({
+        username: res.data.username,
+        email: res.data.email,
+        phone: res.data.phone || "",
+        address: res.data.address || "",
+        avatar: res.data.profile_image || null,
 
-        }catch(err){    
+      })
 
-            toast.error("Failed to load profile")
+    } catch (err) {
 
-        }finally{
-            setLoading(false)
-        }
+      toast.error("Failed to load profile")
+
+    } finally {
+      setLoading(false)
+    }
   }
 
 
-//   Save Profile
+  //   Save Profile
 
-  const handleSave = async ()=>{
+  const handleSave = async () => {
 
-    try{
+    try {
 
-        const formData = new FormData()
+      const formData = new FormData()
 
-        formData.append("phone", profileData.phone);
-        formData.append("address", profileData.address);
+      formData.append("phone", profileData.phone);
+      formData.append("address", profileData.address);
 
-        if (selectedImage) {
-          formData.append("profile_image", selectedImage);
-        }
+      if (selectedImage) {
+        formData.append("profile_image", selectedImage);
+      }
 
-       await Api.patch("/student/profile/", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+      await Api.patch("/student/profile/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-        toast.success("Profile updated successfully");
-        setIsEditModalOpen(false);
-        setSelectedImage(null);
-        setPreviewImage(null);
+      toast.success("Profile updated successfully");
+      setIsEditModalOpen(false);
+      setSelectedImage(null);
+      setPreviewImage(null);
 
-        fetchProfile();
+      fetchProfile();
 
-    }catch(err){
-        toast.error("Update failed")
+    } catch (err) {
+      toast.error("Update failed")
     }
   }
 
@@ -131,7 +132,7 @@ const StudentProfile = () => {
     setProfileData(prev => ({ ...prev, [name]: value }));
   };
 
-  
+
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
@@ -207,24 +208,24 @@ const StudentProfile = () => {
 
                 {isAuthenticated && (
                   <>
-                    <button onClick={()=>navigate("student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
                       <User className="w-4 h-4 cursor-pointer" />
                       Profile
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                      <Package className="w-4 h-4" />
-                      Orders
+                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <Ticket className="w-4 h-4" />
+                      Coupons
                     </button>
 
                     <hr className="my-1 border-gray-100" />
@@ -269,6 +270,25 @@ const StudentProfile = () => {
               </div>
               <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
             </div>
+
+            {isAuthenticated && (
+              <div className="flex flex-col gap-3 mt-2">
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>

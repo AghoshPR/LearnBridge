@@ -16,7 +16,8 @@ import {
     User,
     LogOut,
     BookOpen,
-    Package
+    Package,
+    Ticket
 } from "lucide-react";
 import Api from '../Services/Api';
 
@@ -242,9 +243,9 @@ const Courses = () => {
                                             Wishlist
                                         </button>
 
-                                        <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                            <Package className="w-4 h-4" />
-                                            Orders
+                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                            <Ticket className="w-4 h-4" />
+                                            Coupons
                                         </button>
 
                                         <hr className="my-1 border-gray-100" />
@@ -305,9 +306,9 @@ const Courses = () => {
                                     <span className="text-sm font-medium">{username || "User"}</span>
                                 </div>
                                 <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                                <button className="text-gray-700 font-medium text-left">My Courses</button>
+                                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
                                 <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                                <button className="text-gray-700 font-medium text-left">Orders</button>
+                                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
                                 <button
                                     onClick={() => {
                                         dispatch(logout());
@@ -423,7 +424,7 @@ const Courses = () => {
                                         {course.category}
                                     </p>
                                     <p className="text-sm text-gray-500 mb-3">
-                                        
+
                                         {course.instructor}
                                     </p>
 
@@ -447,11 +448,11 @@ const Courses = () => {
                                 <div className="flex flex-col">
                                     {course.has_offer ? (
                                         <div className="flex flex-col items-start gap-1">
-                                           
+
                                             <span className="text-xl font-bold text-blue-600 tracking-tight">
-                                                ₹{course.final_price}
+                                                ₹{course.final_price.toFixed(2)}
                                             </span>
-                                             <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
+                                            <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
                                                 ₹{course.original_price}
                                             </span>
                                         </div>

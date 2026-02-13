@@ -40,6 +40,7 @@ import AdminWallet from './Pages/Admin/AdminWallet'
 import TeacherWallet from './Pages/Teacher/TeacherWallet'
 import AdminCoupon from './Pages/Admin/AdminCoupon'
 import AdminOffer from './Pages/Admin/AdminOffer'
+import StudentCoupons from './Pages/Student/StudentCoupons'
 
 
 
@@ -109,6 +110,7 @@ function App() {
         <Route path='/cart' element={<ProtectedRoute role="student"><StudentCart /></ProtectedRoute>} />
         <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout /></ProtectedRoute>} />
         <Route path='/mycourse' element={<MyCourses />} />
+        <Route path='/student/coupons' element={<ProtectedRoute role="student"><StudentCoupons /></ProtectedRoute>} />
 
         <Route path='/course/videos/:courseId' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
 

@@ -32,5 +32,27 @@ class OfferSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("End date must be after start date.")
         
         return data
-    
+
+
+class CouponSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Coupon
+        fields = "__all__"
+
+    def validate(self,data):
+
+        valid_from = data.get("valid_from")
+        valid_till = data.get("valid_till")
+        discount_type = data.get("discount_type")
+        discount_value = data.get("discount_value")
+
+        if valid_from > valid_till:
+            raise serializers.ValidationError("Valid till must be after valid from.")
         
+        if discount_type == "percentage" and discount_value >100:
+            raise serializers.ValidationError("Percentage cannot exceed 100.")
+        
+        return data
+    
+    
