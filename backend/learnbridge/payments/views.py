@@ -101,6 +101,7 @@ class CreateOrderView(APIView):
     def post(self,request):
 
         user = request.user
+        coupon_id = request.data.get("coupon_id")
 
         cart_items = CartItem.objects.filter(cart__user=user)
 
@@ -111,7 +112,29 @@ class CreateOrderView(APIView):
         total=0
 
         for item in cart_items:
-            total+= item.course.price
+            total += item.course.price
+
+        
+        discount_amount = Decimal("0")
+
+        if coupon_id:
+
+            try:
+
+                coupon = Coupon.objects.get(id=coupon_id,is_active=True)
+
+
+                if coupon.discount_type == "percentage":
+                    discount_amount = total* Decimal(coupon.discount_value)/100
+                else:
+                    discount_amount = Decimal(coupon.discount_value)
+
+                discount_amount = min(discount_amount,total)
+            
+            except Coupon.DoesNotExist:
+                pass
+
+        final_amount = total - discount_amount
 
 
         # create order 
@@ -119,8 +142,8 @@ class CreateOrderView(APIView):
         order = Order.objects.create(
             user=user,
             total_amount=total,
-            discount_amount = 0,
-            final_amount = total,
+            discount_amount = discount_amount,
+            final_amount = final_amount,
             payment_status="pending",
             payment_method="stripe"
 
@@ -139,7 +162,7 @@ class CreateOrderView(APIView):
             )
 
         intent = stripe.PaymentIntent.create(
-            amount=int(total * 100),
+            amount=int(final_amount * 100),
             currency="INR",
 
             metadata={
@@ -246,6 +269,8 @@ class CreateRazorpayOrderView(APIView):
 
         user = request.user
         cart_items = CartItem.objects.filter(cart__user=user)
+
+        
 
         if not cart_items.exists():
             return Response({"error":"Cart empty"},status=400)

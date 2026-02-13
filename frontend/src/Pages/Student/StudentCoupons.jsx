@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -16,6 +16,7 @@ import {
   Ticket
 } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
+import Api from '../Services/Api';
 
 const StudentCoupons = () => {
   const navigate = useNavigate();
@@ -23,13 +24,23 @@ const StudentCoupons = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Mock Data for Coupons
-  const coupons = [
-    { id: 1, name: 'WELCOME50', usage: 4 },
-    { id: 2, name: 'LEARN2024', usage: 10 },
-    { id: 3, name: 'SUMMER25', usage: 3 },
-    { id: 4, name: 'SPECIAL10', usage: 0 },
-  ];
+  const [coupons,setCoupons] = useState([])
+
+  useEffect(()=>{
+
+    fetchCoupons()
+  },[])
+
+  const fetchCoupons = async()=>{
+
+        try{
+            const res = await Api.get("/mycoupons/")
+            setCoupons(res.data)
+        }catch{
+            toast.error("Failed to load coupon")
+        }
+  }
+  
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
@@ -192,14 +203,16 @@ const StudentCoupons = () => {
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="px-6 py-4 font-semibold text-gray-700">Coupon Name</th>
+                  <th className="px-6 py-4 font-semibold text-gray-700">Coupon ends</th>
                   <th className="px-6 py-4 font-semibold text-gray-700">Usage</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {coupons.map((coupon) => (
                   <tr key={coupon.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-blue-600">{coupon.name}</td>
-                    <td className="px-6 py-4 text-gray-600">{coupon.usage}</td>
+                    <td className="px-6 py-4 font-medium text-blue-600">{coupon.code}</td>
+                    <td className="px-6 py-4 font-medium text-blue-600">{coupon.valid_till}</td>
+                    <td className="px-6 py-4 text-gray-600">{coupon.max_uses_per_user}</td>
                   </tr>
                 ))}
                 {coupons.length === 0 && (

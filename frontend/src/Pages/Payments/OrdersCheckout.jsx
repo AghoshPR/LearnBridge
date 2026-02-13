@@ -35,6 +35,12 @@ const OrdersCheckout = () => {
   const [loading, setLoading] = useState(true);
 
 
+  // coupons
+
+  const [availableCoupons,setAvailableCoupons] = useState([])
+  const [selectedCouponId,setSelectedCouponId] = useState("")
+  const [couponDiscount,setCouponDiscount] = useState(0)
+
   
 
   const subtotal = cartItems.reduce(
@@ -47,10 +53,14 @@ const OrdersCheckout = () => {
 
   const offerDiscount = subtotal - totalAfterDiscount
 
+  //  after coupon apply
+  const finalTotal = totalAfterDiscount - couponDiscount
+
 
 
   useEffect(() => {
     fetchCart()
+    fetchCoupons()
   }, [])
 
   const fetchCart = async () => {
@@ -65,6 +75,18 @@ const OrdersCheckout = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchCoupons = async()=>{
+
+    try{
+
+        const res = await Api.get("/mycoupons/")
+        setAvailableCoupons(res.data)
+    }catch{
+      toast.error("Failed to load coupons")
+    }
+
   }
 
 
@@ -88,7 +110,9 @@ const OrdersCheckout = () => {
 
 
     try {
-      const res = await Api.post("/createorder/")
+      const res = await Api.post("/createorder/",{
+        coupon_id: selectedCouponId || null
+      })
       const { client_secret, order_id } = res.data
 
 
@@ -124,7 +148,9 @@ const OrdersCheckout = () => {
   const payWithRazorpay = async () => {
 
     try {
-      const res = await Api.post("/razorpay/create/")
+      const res = await Api.post("/razorpay/create/",{
+        coupon_id: selectedCouponId || null
+      })
       const data = res.data
 
       const options = {
@@ -172,6 +198,33 @@ const OrdersCheckout = () => {
     } else {
       payWithRazorpay()
     }
+  }
+
+  const handleSelectCoupon = async(code)=>{
+
+      if(!code){
+        setCouponDiscount(0)
+        setSelectedCouponId("")
+        return
+      }
+
+      try{
+        const res = await Api.post("/applycoupon/",{
+          code: code
+        })
+        
+
+        setCouponDiscount(Number(res.data.discount))
+        setSelectedCouponId(code)
+        
+        toast.success(`${code} applied successfully 🎉`)
+       
+        
+      }catch{
+        setCouponDiscount(0)
+        setSelectedCouponId("")
+         toast.error(err.response?.data?.error || "Invalid Coupon")
+      }
   }
 
   
@@ -462,11 +515,22 @@ const OrdersCheckout = () => {
 
                 <div className="relative">
                   <p className="text-xs text-muted-foreground mb-2">Or select from available coupons:</p>
-                  <select className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
-                    <option>Select a coupon</option>
-                    <option>WELCOME50</option>
-                    <option>LEARN20</option>
+                  <select
+
+                    value={selectedCouponId || ""}
+                    onChange={(e)=>handleSelectCoupon(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
+
+                    <option value="">Select a coupon</option>
+                    
+                      {availableCoupons.map((coupon)=>(
+                        <option key={coupon.id} value={coupon.code}>
+                          {coupon.code}
+                        </option>
+                      ))}
+
                   </select>
+
                   <div className="absolute right-3 top-[2.2rem] pointer-events-none">
                     <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                   </div>
@@ -489,12 +553,12 @@ const OrdersCheckout = () => {
 
                    <div className="flex justify-between text-green-600 dark:text-green-500">
                     <span>% Coupon Discount</span>
-                    <span>-₹ 0</span>
+                    <span>-₹ {couponDiscount.toFixed(2)}</span>
                   </div>
 
                   <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-primary">₹{totalAfterDiscount.toFixed(2)}</span>
+                    <span className="text-primary">₹{finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
 

@@ -56,3 +56,30 @@ class CouponSerializer(serializers.ModelSerializer):
         return data
     
     
+class StudentCouponSerializer(serializers.ModelSerializer):
+
+    user_usage_count = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model=Coupon
+        fields=[
+            "id",
+            "code",
+            "dicount_type",
+            "discount_value",
+            "valid_from",
+            "valid_till",
+            "max_uses_per_user",
+            "user_usage_count"
+        ]
+
+    
+    def get_user_count(self,obj):
+
+        request = self.context.get("request")
+        
+        return CouponUsage.objects.filter(
+            coupon = obj,
+            user=request.user
+        ).count()

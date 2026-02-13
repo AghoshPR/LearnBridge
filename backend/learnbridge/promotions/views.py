@@ -5,6 +5,7 @@ from authapp.permissions import IsAdmin
 from .models import *
 from django.utils import timezone
 from .serializers import *
+from rest_framework.permissions import IsAuthenticated
 from payments.serializers import *
 
 
@@ -133,8 +134,46 @@ class AdminCouponsDeleteView(APIView):
         coupon.is_deleted=True
         coupon.save()
         return Response({"message":"Coupon deactivated"})
+    
+
+
+
+
+# student coupon List view
+
+class StudentCouponListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self,request):
+
+        today = timezone.now().date()
+
+        coupons = Coupon.objects.filter(
+            is_active = True,
+            is_deleted = False,
+            
+            
+        )
+
+        serializer = CouponSerializer(
+            coupons,
+            many=True,
+            context = {"request":request}
+        )
+
+        return Response(serializer.data)
+
+
+
+
+
+
+
 
 class ApplyCouponView(APIView):
+
+    permission_classes = [IsAuthenticated]
 
     def post(self,request):
 
@@ -154,8 +193,8 @@ class ApplyCouponView(APIView):
         today = timezone.now().date()
 
 
-        if not (coupon.valid_from <= today <= coupon.valid_till):
-            return Response({"error":"Coupon expired"},status=400)
+        # if not (coupon.valid_from <= today <= coupon.valid_till):
+        #     return Response({"error":"Coupon expired"},status=400)
         
         if coupon.max_uses and coupon.used_count >=coupon.max_uses:
             return Response({"error":"Coupon usage limit reacher"},status=400)

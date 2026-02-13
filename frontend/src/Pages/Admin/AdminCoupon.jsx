@@ -274,7 +274,7 @@ const AdminCoupon = () => {
                     <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Discount</th>
                     <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Min Order</th>
                     <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Period</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usage</th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">User Limit</th>
                     <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                     <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
                   </tr>
@@ -305,7 +305,7 @@ const AdminCoupon = () => {
                       </td>
                       <td className="p-4">
                         <div className="text-sm text-gray-400">
-                          {coupon.used_count}
+                          {coupon.max_uses_per_user}
                         </div>
                       </td>
                       <td className="p-4">
@@ -432,7 +432,7 @@ const AdminCoupon = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Max Uses */}
-                <div>
+                {/* <div>
                   <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Max Uses</label>
                   <input
                     type="number"
@@ -442,7 +442,7 @@ const AdminCoupon = () => {
                     placeholder="Max uses"
                     className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <label>Max Uses Per User</label>
