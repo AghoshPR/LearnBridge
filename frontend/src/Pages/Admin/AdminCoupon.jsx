@@ -34,6 +34,8 @@ import { logout } from '@/Store/authSlice';
 const AdminCoupon = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -120,13 +122,20 @@ const AdminCoupon = () => {
     setIsModalOpen(true)
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = (coupon) => {
+    setCouponToDelete(coupon);
+    setIsDeleteModalOpen(true);
+  }
+
+  const confirmDelete = async () => {
+    if (!couponToDelete) return;
 
     try {
-
-      await Api.delete(`/coupons/delete/${id}/`)
+      await Api.delete(`/coupons/delete/${couponToDelete.id}/`)
       toast.success("Coupon deactivated")
       fetchCoupons()
+      setIsDeleteModalOpen(false);
+      setCouponToDelete(null);
     } catch {
       toast.error("Delete failed")
     }
@@ -300,9 +309,10 @@ const AdminCoupon = () => {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${coupon.status === 'Active'
-                          ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                          : 'bg-red-500/10 text-red-400 border-red-500/20'
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                            coupon.is_active
+                              ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                              : 'bg-red-500/10 text-red-400 border-red-500/20'
                           }`}>
                           {coupon.is_active ? "Active" : "Inactive"}
                         </span>
@@ -312,7 +322,7 @@ const AdminCoupon = () => {
                           <button onClick={() => handleEdit(coupon)} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                             <Pencil size={16} />
                           </button>
-                          <button onClick={() => handleDelete(coupon.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                          <button onClick={() => handleDelete(coupon)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -490,6 +500,33 @@ const AdminCoupon = () => {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
+          <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-md shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold text-white mb-2">Delete Coupon</h3>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to delete <span className="text-white font-medium">{couponToDelete?.code}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+              >
+                Yes, Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

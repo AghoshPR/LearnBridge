@@ -32,6 +32,8 @@ import {
 const AdminOffer = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [offerToDelete, setOfferToDelete] = useState(null);
   const navigate = useNavigate();
 
   const [offers, setOffers] = useState([])
@@ -111,9 +113,9 @@ const AdminOffer = () => {
 
     try {
       const payload = { ...formData };
-      
 
-      
+
+
       if (payload.apply_type === "Category") {
         payload.course = null;
       } else if (payload.apply_type === "Course") {
@@ -133,18 +135,18 @@ const AdminOffer = () => {
       fetchOffers()
 
     } catch (err) {
-        if (err.response?.data) {
-            const errors = err.response.data;
+      if (err.response?.data) {
+        const errors = err.response.data;
 
-            Object.keys(errors).forEach((key) => {
-            errors[key].forEach((message) => {
-                toast.error(message);
-            });
-            });
-        } else {
-            toast.error("Something went wrong");
-        }
-}
+        Object.keys(errors).forEach((key) => {
+          errors[key].forEach((message) => {
+            toast.error(message);
+          });
+        });
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
 
   }
 
@@ -154,18 +156,25 @@ const AdminOffer = () => {
       ...offer,
       course: offer.course || "",
       category: offer.category || "",
-      
+
     })
     setIsModalOpen(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this offer?")) return;
+  const handleDelete = (offer) => {
+    setOfferToDelete(offer);
+    setIsDeleteModalOpen(true);
+  }
+
+  const confirmDelete = async () => {
+    if (!offerToDelete) return;
 
     try {
-      await Api.delete(`/offers/delete/${id}/`)
+      await Api.delete(`/offers/delete/${offerToDelete.id}/`)
       toast.success("Offer deleted")
       fetchOffers()
+      setIsDeleteModalOpen(false);
+      setOfferToDelete(null);
 
     } catch {
       toast.error("Delete Failed")
@@ -295,14 +304,14 @@ const AdminOffer = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {offers.map((offer) => {
-                      
-                        const categoryName = categories.find(
-                        (c) => Number(c.id) === Number(offer.category)
-                        )?.name;
 
-                        const courseTitle = courses.find(
-                            (c) => Number(c.id) === Number(offer.course)
-                        )?.title;
+                      const categoryName = categories.find(
+                        (c) => Number(c.id) === Number(offer.category)
+                      )?.name;
+
+                      const courseTitle = courses.find(
+                        (c) => Number(c.id) === Number(offer.course)
+                      )?.title;
 
                       return (
                         <tr
@@ -320,8 +329,8 @@ const AdminOffer = () => {
                           <td className="p-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs border ${offer.apply_type === "Category"
-                                  ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                  : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                : "bg-purple-500/10 text-purple-400 border-purple-500/20"
                                 }`}
                             >
                               {offer.apply_type === "Category"
@@ -341,8 +350,8 @@ const AdminOffer = () => {
                           <td className="p-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs border ${offer.is_active
-                                  ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                  : "bg-red-500/10 text-red-400 border-red-500/20"
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                : "bg-red-500/10 text-red-400 border-red-500/20"
                                 }`}
                             >
                               {offer.is_active ? "Active" : "Inactive"}
@@ -358,7 +367,7 @@ const AdminOffer = () => {
                                 <Pencil size={16} />
                               </button>
                               <button
-                                onClick={() => handleDelete(offer.id)}
+                                onClick={() => handleDelete(offer)}
                                 className="p-2 hover:bg-red-500/10 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
                               >
                                 <Trash2 size={16} />
@@ -584,6 +593,32 @@ const AdminOffer = () => {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
+          <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-md shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold text-white mb-2">Delete Offer</h3>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to delete <span className="text-white font-medium">{offerToDelete?.title}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

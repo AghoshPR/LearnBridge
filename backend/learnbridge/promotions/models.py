@@ -85,6 +85,7 @@ class Coupon(models.Model):
     used_count = models.PositiveIntegerField(default=0)
 
     is_active = models.BooleanField()
+    is_deleted=models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

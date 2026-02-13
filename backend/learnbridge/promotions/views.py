@@ -84,7 +84,7 @@ class AdminCouponListView(APIView):
 
     def get(self,request):
 
-        coupons = Coupon.objects.all().order_by("-created_at")
+        coupons = Coupon.objects.filter(is_deleted=False).order_by("-created_at")
         serializer = CouponSerializer(coupons,many=True)
         return Response(serializer.data)
 
@@ -129,7 +129,8 @@ class AdminCouponsDeleteView(APIView):
         
             return Response({"error":"Coupon not found"},status=404)
         
-        coupon.is_active=True
+        coupon.is_active=False
+        coupon.is_deleted=True
         coupon.save()
         return Response({"message":"Coupon deactivated"})
 
