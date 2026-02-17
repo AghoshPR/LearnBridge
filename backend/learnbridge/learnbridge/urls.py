@@ -14,7 +14,7 @@ urlpatterns = [
     path('api/wallet/',include('wallet.urls')),
     path('api/',include('payments.urls')),
     path('api/',include('promotions.urls')),
-    path('api/qna',include('qna.urls')),
+    path('api/qna/',include('qna.urls')),
     
 
 ]

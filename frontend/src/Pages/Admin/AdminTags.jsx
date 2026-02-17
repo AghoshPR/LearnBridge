@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '@/Store/authSlice';
 import { toast } from "sonner";
+import Api from '../Services/Api';
 
 import {
   LayoutDashboard,
@@ -23,27 +24,16 @@ import {
   Pencil,
   Trash
 } from 'lucide-react';
-import Api from '../Services/Api'; // Importing Api for consistency, though not used for backend logic yet
+
 
 const AdminTags = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Mock Data
-  const [tags, setTags] = useState([
-    { id: 1, name: 'javascript', createdDate: 'Dec 2, 2025' },
-    { id: 2, name: 'python', createdDate: 'Dec 5, 2025' },
-    { id: 3, name: 'react', createdDate: 'Dec 10, 2025' },
-    { id: 4, name: 'nodejs', createdDate: 'Dec 12, 2025' },
-    { id: 5, name: 'css', createdDate: 'Dec 15, 2025' },
-    { id: 6, name: 'html', createdDate: 'Dec 18, 2025' },
-    { id: 7, name: 'django', createdDate: 'Dec 20, 2025' },
-    { id: 8, name: 'flask', createdDate: 'Dec 22, 2025' },
-    { id: 9, name: 'sql', createdDate: 'Dec 25, 2025' },
-    { id: 10, name: 'mongodb', createdDate: 'Dec 28, 2025' },
-    { id: 11, name: 'aws', createdDate: 'Jan 2, 2026' },
-  ]);
+  
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,7 +54,8 @@ const AdminTags = () => {
 
   const handleLogout = async () => {
     try {
-      // await Api.post("/auth/logout/"); // Commented out backend call as requested "UI only" but keeping logic structure
+      
+      await Api.post("/auth/logout/"); 
       toast.success("Logged out successfully 👋", {
         description: "See you again, Admin!",
         duration: 2500,
@@ -77,6 +68,26 @@ const AdminTags = () => {
     }
   };
 
+
+
+  useEffect(()=>{
+    fetchTags()
+  },[])
+
+  const fetchTags = async()=>{
+      try{
+        setLoading(true)
+        const res = await Api.get("/qna/tags/")
+        setTags(res.data)
+
+      }catch(err){
+        toast.error("Failed to load tags")
+
+      }finally{
+        setLoading(false)
+      }
+  }
+
   // Handlers
   const handleAddClick = () => {
     setFormData({ name: '' });
@@ -85,7 +96,7 @@ const AdminTags = () => {
 
   const handleEditClick = (tag) => {
     setSelectedTag(tag);
-    setFormData({ name: tag.name });
+    setFormData({ name: tag.tag_name });
     setIsEditModalOpen(true);
   };
 
@@ -93,35 +104,69 @@ const AdminTags = () => {
     setItemToDelete(tag);
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async(e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
-    const newTag = {
-      id: tags.length + 1,
-      name: formData.name,
-      createdDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-    };
-    setTags([newTag, ...tags]);
-    setIsAddModalOpen(false);
-    toast.success("Tag created successfully");
+
+    try{
+
+        await Api.post("/qna/tags/create/",{
+          tag_name : formData.name
+        })
+        toast.success("Tag created successfully")
+        setIsAddModalOpen(false)
+        setFormData({name:""})
+        fetchTags()
+    
+      }catch(err){
+        toast.error(
+          err?.response?.data?.tag_name?.[0] || "Error creating tag"
+        )
+      }
+
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async(e) => {
     e.preventDefault();
     if (!formData.name.trim() || !selectedTag) return;
 
-    setTags(tags.map(t => t.id === selectedTag.id ? { ...t, name: formData.name } : t));
-    setIsEditModalOpen(false);
-    setSelectedTag(null);
-    toast.success("Tag updated successfully");
-  };
+    
+    try{
 
-  const confirmDelete = () => {
+      await Api.patch(`/qna/tags/${selectedTag.id}/update/`,{
+        tag_name:formData.name
+      })
+
+      toast.success("Tag updated successfully")
+      setIsEditModalOpen(false)
+      setSelectedTag(null)
+      fetchTags()
+
+    }catch(err){
+      toast.error("Error updating tag")
+    }
+
+
+  }
+
+  const confirmDelete = async() => {
     if (!itemToDelete) return;
-    setTags(tags.filter(t => t.id !== itemToDelete.id));
-    setItemToDelete(null);
-    toast.success("Tag deleted successfully");
+
+    try{
+
+        await Api.delete(`/qna/tags/${itemToDelete.id}/delete/`)
+        toast.success("Tag deleted successfully")
+        setItemToDelete(null)
+        fetchTags()
+
+    }catch(err){
+      toast.error("Error deleting tags")
+    }
+   
+
+
+
   };
 
   // Pagination Logic
@@ -290,8 +335,8 @@ const AdminTags = () => {
                 {currentTags.length > 0 ? (
                   currentTags.map((tag) => (
                     <tr key={tag.id} className="hover:bg-gray-800/20 transition-colors group">
-                      <td className="px-6 py-4 text-sm font-medium text-white">{tag.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400 text-center">{tag.createdDate}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-white">{tag.tag_name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-400 text-center">{new Date(tag.created_at).toLocaleDateString()}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button

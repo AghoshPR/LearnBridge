@@ -6,7 +6,7 @@ class AdminTagSerializer(serializers.ModelSerializer):
 
     class Meta:
 
-        model = Tag,
+        model = Tag
         fields = ['id','tag_name','slug','created_at']
         read_only_fields = ['slug','created_at']
 
