@@ -41,6 +41,7 @@ import TeacherWallet from './Pages/Teacher/TeacherWallet'
 import AdminCoupon from './Pages/Admin/AdminCoupon'
 import AdminOffer from './Pages/Admin/AdminOffer'
 import StudentCoupons from './Pages/Student/StudentCoupons'
+import AdminTags from './Pages/Admin/AdminTags'
 
 
 
@@ -160,7 +161,7 @@ function App() {
 
         <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
         <Route path="/admin/categories" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
-
+        <Route path='admin/tags' element={<ProtectedRoute role="admin"><AdminTags /></ProtectedRoute>} />
 
         <Route path="/admin/wallet" element={<ProtectedRoute role="admin"><AdminWallet /></ProtectedRoute>} />
 
