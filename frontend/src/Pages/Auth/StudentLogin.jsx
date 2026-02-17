@@ -17,7 +17,7 @@ const StudentLogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isAuthenticated,username } = useSelector((state) => state.auth)
+  const { isAuthenticated, username } = useSelector((state) => state.auth)
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -39,8 +39,8 @@ const StudentLogin = () => {
 
 
     if (!email.trim()) {
-    toast.error("Email is required");
-    return;
+      toast.error("Email is required");
+      return;
     }
 
     if (!isValidEmail(email)) {
@@ -53,12 +53,12 @@ const StudentLogin = () => {
       return;
     }
 
-    
 
-    
+
+
 
     dispatch(loginStart())
-    
+
 
     try {
       const res = await Api.post("/auth/login/", {
@@ -98,33 +98,33 @@ const StudentLogin = () => {
 
 
   const hangleGoogle = async (credentialResponse) => {
-            dispatch(loginStart());
-            toast("Login with google")
+    dispatch(loginStart());
+    toast("Login with google")
 
-            try {
-              const res = await Api.post(
-                "/auth/google-login/",
-                {
-                  token: credentialResponse.credential, 
-                  role: "student",
-                },
-                { withCredentials: true }
-              );
+    try {
+      const res = await Api.post(
+        "/auth/google-login/",
+        {
+          token: credentialResponse.credential,
+          role: "student",
+        },
+        { withCredentials: true }
+      );
 
-              dispatch(
-                loginSuccess({
-                  role: res.data.role,
-                  username: res.data.username,
-                })
-              );
+      dispatch(
+        loginSuccess({
+          role: res.data.role,
+          username: res.data.username,
+        })
+      );
 
-              navigate("/", { replace: true });
-            } catch (err) {
-              dispatch(loginFailure("Google login failed"));
-            }
-          }
+      navigate("/", { replace: true });
+    } catch (err) {
+      dispatch(loginFailure("Google login failed"));
+    }
+  }
 
-   
+
 
 
   return (
@@ -190,49 +190,50 @@ const StudentLogin = () => {
         </div>
 
         {/* Right Side - Login Form */}
-        <div className="w-full max-w-md mx-auto">
+        {/* Right Side - Login Form */}
+        <div className="w-full max-w-sm mx-auto">
           {/* Brand Logo - Centered and Bigger */}
-          <div className="flex flex-col items-center justify-center mb-10">
-            <div className="flex items-center gap-4 text-white">
+          <div className="flex flex-col items-center justify-center mb-6">
+            <div className="flex items-center gap-3 text-white">
               <img
                 src={logo}
                 alt="LearnBridge Logo"
-                className="w-12 h-12 md:w-20 md:h-20 brightness-0 invert"
+                className="w-10 h-10 md:w-14 md:h-14 brightness-0 invert"
               />
-              <span className="text-3xl md:text-5xl font-bold tracking-tight">LearnBridge</span>
+              <span className="text-2xl md:text-3xl font-bold tracking-tight">LearnBridge</span>
             </div>
           </div>
 
           {/* Glass Card */}
-          <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-3xl shadow-2xl">
-            <div className="text-center mb-8">
+          <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-8 rounded-3xl shadow-2xl">
+            <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
               <p className="text-gray-400 text-sm">Sign in to continue learning</p>
             </div>
 
-            <form onSubmit={handleSignIn} className="space-y-5">
+            <form onSubmit={handleSignIn} className="space-y-4">
               {/* Email Input */}
               <div className="space-y-1">
-                <label className="text-xs text-gray-300 ml-1">Email</label>
+                <label className="text-sm text-gray-300 ml-1">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+                  className="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all text-sm"
                 />
               </div>
 
               {/* Password Input */}
               <div className="space-y-1">
-                <label className="text-xs text-gray-300 ml-1">Password</label>
+                <label className="text-sm text-gray-300 ml-1">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all pr-12"
+                    className="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all pr-12 text-sm"
                   />
                   <button
                     type="button"
@@ -245,7 +246,7 @@ const StudentLogin = () => {
               </div>
 
               <div className="flex justify-end">
-                <button onClick={()=>navigate("/student/forgotpass")} type="button" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer hover:underline">
+                <button onClick={() => navigate("/student/forgotpass")} type="button" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer hover:underline">
                   Forgot Password?
                 </button>
               </div>
@@ -253,14 +254,14 @@ const StudentLogin = () => {
               {/* Sign In Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl text-white font-semibold text-lg shadow-lg hover:shadow-blue-500/25 hover:opacity-95 transition-all transform hover:-translate-y-0.5 active:translate-y-0 mt-2 cursor-pointer"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl text-white font-semibold text-base shadow-lg hover:shadow-blue-500/25 hover:opacity-95 transition-all transform hover:-translate-y-0.5 active:translate-y-0 mt-2 cursor-pointer"
               >
                 Sign In
               </button>
             </form>
 
-            <div className="mt-6 text-center space-y-6">
-              <p className="text-sm text-gray-400">
+            <div className="mt-6 text-center space-y-4">
+              <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
                 Don't have an account?
                 <button onClick={() => navigate("/student/register")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"> Sign up</button>
               </p>
@@ -273,19 +274,28 @@ const StudentLogin = () => {
               </div>
 
               {/* Google Sign In */}
-              <GoogleLogin
-              
-              onSuccess={hangleGoogle}
-              onError={() => {
-                dispatch(loginFailure("Google login cancelled"));
-              }}
-          useOneTap={false}
-          
-          />
+              <div className="scale-90 origin-center -my-1">
+                <GoogleLogin
+                  onSuccess={hangleGoogle}
+                  onError={() => {
+                    dispatch(loginFailure("Google login cancelled"));
+                  }}
+                  useOneTap={false}
+                />
+              </div>
 
-              
-
-              
+              {/* Teacher Login Link */}
+              <div className="pt-2">
+                <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
+                  Are you a teacher?
+                  <span
+                    onClick={() => navigate('/teacher/login')}
+                    className="text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer hover:underline"
+                  >
+                    Login here
+                  </span>
+                </p>
+              </div>
 
             </div>
           </div>

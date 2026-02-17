@@ -269,21 +269,45 @@ class CreateRazorpayOrderView(APIView):
 
         user = request.user
         cart_items = CartItem.objects.filter(cart__user=user)
-
+        coupon_code = request.data.get("coupon_id")
         
 
         if not cart_items.exists():
             return Response({"error":"Cart empty"},status=400)
         
-        total = sum(item.course.price for item in cart_items)
+        # total = sum(item.course.price for item in cart_items)
+
+        cart=Cart.objects.get(user=user)
+        cart_serilizer = CartSerializer(cart)
+        total = Decimal(cart_serilizer.data["total_amount"])
+
+        
+        discount_amount=Decimal("0.00")
+
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code__iexact=coupon_code, is_active=True)
+
+                if coupon.discount_type == "percentage":
+                    discount_amount = total * Decimal(coupon.discount_value) / 100
+                else:
+                    discount_amount = Decimal(coupon.discount_value)
+
+                discount_amount = min(discount_amount, total)
+
+            except Coupon.DoesNotExist:
+
+                discount_amount = Decimal("0.00")
+
+        final_amount = total - discount_amount
 
         # create oder
 
         order = Order.objects.create(
             user=user,
             total_amount = total,
-            discount_amount = 0,
-            final_amount = total,
+            discount_amount = discount_amount,
+            final_amount = final_amount,
             payment_status="pending",
             payment_method="razorpay"
         )
@@ -300,7 +324,7 @@ class CreateRazorpayOrderView(APIView):
         
         razorpay_order = razorpay_client.order.create({
 
-            "amount": int(total * 100),
+            "amount": int(final_amount  * 100),
             "currency": "INR",
             "receipt": f"order_{order.id}",
             "payment_capture": 1
