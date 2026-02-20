@@ -43,7 +43,7 @@ const AdminDashboard = () => {
                 description: "Something went wrong. Please try again.",
             });
         } finally {
-            dispatch(logout()); 
+            dispatch(logout());
             navigate("/admin/login", { replace: true });
         }
 
@@ -131,13 +131,13 @@ const AdminDashboard = () => {
                     <NavItem
                         icon={MessageSquare}
                         label="Q&A Moderation"
-                    // onClick={() => navigate("/admin/qna")}
+                        onClick={() => navigate("/admin/qna")}
                     />
 
                     <NavItem
                         icon={Tag}
                         label="Tags Management"
-                    // onClick={() => navigate("/admin/tags")}
+                        onClick={() => navigate("/admin/tags")}
                     />
 
                     <NavItem

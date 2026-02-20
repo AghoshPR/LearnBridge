@@ -217,8 +217,8 @@ const AdminCoupon = () => {
           <NavItem icon={Folder} label="Categories" onClick={() => navigate("/admin/categories")} />
           <NavItem icon={Users} label="Users" onClick={() => navigate("/admin/users")} />
           <NavItem icon={GraduationCap} label="Teachers" onClick={() => navigate("/admin/teachers")} />
-          <NavItem icon={MessageSquare} label="Q&A Moderation" />
-          <NavItem icon={Tag} label="Tags Management" />
+          <NavItem icon={MessageSquare} label="Q&A Moderation" onClick={() => navigate("/admin/qna")} />
+          <NavItem icon={Tag} label="Tags Management" onClick={() => navigate("/admin/tags")} />
           <NavItem icon={Percent} label="Offers" onClick={() => navigate("/admin/offers")} />
           <NavItem icon={Ticket} label="Coupons" active onClick={() => navigate("/admin/coupons")} />
           <NavItem icon={Wallet} label="Wallet" onClick={() => navigate("/admin/wallet")} />
@@ -309,10 +309,9 @@ const AdminCoupon = () => {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                            coupon.is_active
-                              ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                              : 'bg-red-500/10 text-red-400 border-red-500/20'
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${coupon.is_active
+                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                            : 'bg-red-500/10 text-red-400 border-red-500/20'
                           }`}>
                           {coupon.is_active ? "Active" : "Inactive"}
                         </span>

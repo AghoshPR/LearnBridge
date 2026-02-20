@@ -378,13 +378,13 @@ const AdminTeachers = () => {
                     <NavItem
                         icon={MessageSquare}
                         label="Q&A Moderation"
-                    // onClick={() => navigate("/admin/qna")}
+                        onClick={() => navigate("/admin/qna")}
                     />
 
                     <NavItem
                         icon={Tag}
                         label="Tags Management"
-                    // onClick={() => navigate("/admin/tags")}
+                        onClick={() => navigate("/admin/tags")}
                     />
 
                     <NavItem

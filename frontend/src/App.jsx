@@ -38,10 +38,13 @@ import OrdersCheckout from './Pages/Payments/OrdersCheckout'
 import MyCourses from './Pages/Course/MyCourses'
 import AdminWallet from './Pages/Admin/AdminWallet'
 import TeacherWallet from './Pages/Teacher/TeacherWallet'
+import TeacherQACommunity from './Pages/Teacher/TeacherQACommunity'
 import AdminCoupon from './Pages/Admin/AdminCoupon'
 import AdminOffer from './Pages/Admin/AdminOffer'
 import StudentCoupons from './Pages/Student/StudentCoupons'
 import AdminTags from './Pages/Admin/AdminTags'
+import AdminQA_Community from './Pages/Admin/AdminQA_Community'
+import QACommunityAnswers from './Pages/Public/QACommunityAnswers'
 
 
 
@@ -116,6 +119,7 @@ function App() {
         <Route path='/course/videos/:courseId' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
 
         <Route path='/question-community' element={<QuestionCommunity />} />
+        <Route path='/question-community/:id' element={<QACommunityAnswers />} />
 
 
 
@@ -146,6 +150,7 @@ function App() {
         <Route path='/teacher/coursecategory' element={<ProtectedRoute role="teacher"><TeacherCourseCategory /></ProtectedRoute>} />
 
         <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet /></ProtectedRoute>} />
+        <Route path="/teacher/qa" element={<ProtectedRoute role="teacher"><TeacherQACommunity /></ProtectedRoute>} />
 
 
 
@@ -162,6 +167,8 @@ function App() {
         <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
         <Route path="/admin/categories" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
         <Route path='admin/tags' element={<ProtectedRoute role="admin"><AdminTags /></ProtectedRoute>} />
+
+        <Route path="/admin/qna" element={<ProtectedRoute role="admin"><AdminQA_Community /></ProtectedRoute>} />
 
         <Route path="/admin/wallet" element={<ProtectedRoute role="admin"><AdminWallet /></ProtectedRoute>} />
 

@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf import settings
+from authapp.models import *
 from courses.models import Course
 from django.utils.text import slugify
 
@@ -28,7 +28,7 @@ class Question(models.Model):
         ('reported', 'Reported')
     )
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course,on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     body = models.TextField()
@@ -47,8 +47,20 @@ class QuestionTag(models.Model):
 class Answer(models.Model):
 
     question = models.ForeignKey(Question,on_delete=models.CASCADE,related_name="answers")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    body = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Answer to {self.question.title}"
+    
+class Reply(models.Model):
+
+
+    answer = models.ForeignKey(Answer,on_delete=models.CASCADE,related_name="replies")
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reply to Answer {self.answer.id}"

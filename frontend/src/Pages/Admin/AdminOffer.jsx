@@ -234,12 +234,12 @@ const AdminOffer = () => {
           <NavItem icon={Folder} label="Categories" onClick={() => navigate("/admin/categories")} />
           <NavItem icon={Users} label="Users" onClick={() => navigate("/admin/users")} />
           <NavItem icon={GraduationCap} label="Teachers" onClick={() => navigate("/admin/teachers")} />
-          <NavItem icon={MessageSquare} label="Q&A Moderation" />
-          <NavItem icon={Tag} label="Tags Management" />
+          <NavItem icon={MessageSquare} label="Q&A Moderation" onClick={() => navigate("/admin/qna")} />
+          <NavItem icon={Tag} label="Tags Management" onClick={() => navigate("/admin/tags")} />
           <NavItem icon={Percent} label="Offers" active onClick={() => navigate("/admin/offers")} />
           <NavItem icon={Ticket} label="Coupons" onClick={() => navigate("/admin/coupons")} />
           <NavItem icon={Wallet} label="Wallet" onClick={() => navigate("/admin/wallet")} />
-          <NavItem icon={Settings} label="Settings" />
+
         </nav>
 
         {/* Sidebar Footer */}

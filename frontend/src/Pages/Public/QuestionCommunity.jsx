@@ -1,80 +1,148 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect  } from 'react';
 import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Plus, Eye } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
+import Api from '../Services/Api';
 
 const QuestionCommunity = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Recent');
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newQuestionTitle, setNewQuestionTitle] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState('');
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
+
+
+
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const popularTags = [
-    'react', 'javascript', 'python', 'typescript', 'node.js', 'css', 'html', 'database', 'api', 'backend'
-  ];
 
-  const questions = [
-    {
-      id: 1,
-      title: 'How to implement authentication with JWT in React?',
-      tags: ['react', 'jwt', 'authentication'],
-      author: 'Alex Johnson',
-      time: '2 hours ago',
-      votes: 12,
-      answers: 5,
-      views: 234,
-      authorColor: 'bg-blue-600'
-    },
-    {
-      id: 2,
-      title: 'Best practices for state management in large React applications',
-      tags: ['react', 'state-management', 'redux'],
-      author: 'Maria Garcia',
-      time: '5 hours ago',
-      votes: 24,
-      answers: 8,
-      views: 456,
-      authorColor: 'bg-blue-500'
-    },
-    {
-      id: 3,
-      title: 'Understanding async/await vs Promises in JavaScript',
-      tags: ['javascript', 'async', 'promises'],
-      author: 'David Lee',
-      time: '1 day ago',
-      votes: 45,
-      answers: 12,
-      views: 789,
-      authorColor: 'bg-blue-600'
-    },
-    {
-      id: 4,
-      title: 'How to optimize database queries in PostgreSQL?',
-      tags: ['database', 'postgresql', 'optimization'],
-      author: 'Sarah Thompson',
-      time: '2 days ago',
-      votes: 31,
-      answers: 7,
-      views: 567,
-      authorColor: 'bg-blue-600'
-    },
-    {
-      id: 5,
-      title: 'CSS Grid vs Flexbox: When to use which?',
-      tags: ['css', 'layout', 'design'],
-      author: 'Michael Brown',
-      time: '3 days ago',
-      votes: 58,
-      answers: 15,
-      views: 892,
-      authorColor: 'bg-blue-500'
+    const [questions, setQuestions] = useState([]);
+    const [courses, setCourses] = useState([]);
+    const [availableTags, setAvailableTags] = useState([]);
+
+
+
+
+
+  useEffect(() => {
+    fetchQuestions();
+    fetchTags();
+    fetchCourses();
+  }, [])
+
+  const fetchQuestions = async()=>{
+      try{
+        const res = await Api.get("/qna/questions/")
+        setQuestions(res.data)
+      
+      }catch(err){
+        toast.error("Failed to load ")
+      }
+  }
+
+
+  const fetchTags = async()=>{
+
+      try{
+        const res = await Api.get("/qna/public-tags/")
+        setAvailableTags(res.data)
+
+      }catch(err){
+        toast.err("failed to load tags")
+      }
+  }
+
+  const fetchCourses = async()=>{
+
+    try {
+      const res = await Api.get("/courses/public/")
+      setCourses(res.data.results || res.data);
+
+    } catch (err) {
+      toast.error("Failed to load courses");
     }
-  ];
+
+  }
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 5) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handlePostQuestion = async() => {
+
+
+    if (!isAuthenticated) {
+      toast.error("Login required");
+      navigate("/student/login");
+      return;
+    }
+
+    if (!newQuestionTitle.trim()) {
+    toast.error("Question title is required");
+    return;
+    }
+
+    if (!selectedCourse) {
+      toast.error("Please select a course");
+      return;
+    }
+
+
+    
+    try{
+
+      const tagIds = tags
+      .map(tagName => {
+        const found = availableTags.find(t => t.tag_name === tagName);
+        return found ? found.id : null;
+      })
+      .filter(Boolean);
+
+      await Api.post("/qna/questions/create/",{
+        title:newQuestionTitle,
+        body:newQuestionTitle,
+        course:selectedCourse,
+        tag_ids: tagIds
+      })
+
+      toast.success("Question posted successfully!");
+
+      setModalOpen(false);
+      setNewQuestionTitle('');
+      setSelectedCourse('');
+      setTags([]);
+      fetchQuestions();
+      
+
+    }catch(err){
+      toast.error("Error posting question")
+    }
+
+    
+  };
+
+  const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleString(); // shows date + time
+};
+
+
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
@@ -203,7 +271,10 @@ const QuestionCommunity = () => {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Q&A Community</h1>
             <p className="text-gray-500">Get help from our community of learners and experts</p>
           </div>
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm text-sm">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm text-sm"
+          >
             <Plus size={18} />
             Ask Question
           </button>
@@ -222,12 +293,17 @@ const QuestionCommunity = () => {
         <div className="mb-8">
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Popular Tags</h3>
           <div className="flex flex-wrap gap-2">
-            {popularTags.map((tag) => (
+            {availableTags.map((tag) => (
               <button
-                key={tag}
+                key={tag.id}
+                onClick={() => {
+                if (!tags.includes(tag.tag_name) && tags.length < 5) {
+                  setTags([...tags, tag.tag_name]);
+                }
+              }}
                 className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full text-xs font-bold text-gray-600 transition-colors"
               >
-                {tag}
+                {tag.tag_name}
               </button>
             ))}
           </div>
@@ -255,7 +331,11 @@ const QuestionCommunity = () => {
         {/* Questions Grid */}
         <div className="space-y-4">
           {questions.map((question) => (
-            <div key={question.id} className="bg-white p-6 rounded-xl border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex gap-6">
+            <div
+              key={question.id}
+              className="bg-white p-6 rounded-xl border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex items-start gap-6"
+              onClick={() => navigate(`/question-community/${question.id}`)}
+            >
               {/* Stats */}
               <div className="hidden sm:flex flex-col gap-2 min-w-[3rem] text-gray-400">
                 <div className="flex items-center gap-1.5" title="Votes">
@@ -280,38 +360,157 @@ const QuestionCommunity = () => {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {question.tags.map((tag) => (
-                    <span key={tag} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">
-                      {tag}
+                    <span key={tag.id} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">
+                      {tag.tag_name}
                     </span>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className={`w-6 h-6 ${question.authorColor} rounded-full flex items-center justify-center text-white text-[10px] font-bold`}>
-                    {question.author.charAt(0)}
+                    {question.user_name.charAt(0)}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                    <span className="text-gray-700">{question.author}</span>
+                     <User size={14} />
+                     <span className="text-gray-700">{question.user_name}</span>
                     <span>•</span>
-                    <span>{question.time}</span>
+                    <span>{formatDateTime(question.created_at)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Mobile Stats (only visible on extra small screens if needed, otherwise hidden) */}
-              <div className="sm:hidden flex flex-col justify-between items-end text-xs text-gray-500 font-medium">
+              <div className="sm:hidden flex flex-col gap-3 min-w-[3rem] items-end text-xs text-gray-500 font-medium">
                 <div className="flex items-center gap-1">
                   <ThumbsUp size={14} /> {question.votes}
                 </div>
                 <div className="flex items-center gap-1">
-                  <MessageSquare size={14} /> {question.answers}
+                  <MessageSquare size={14} /> {question.answers_count}
                 </div>
               </div>
             </div>
           ))}
         </div>
-      </main>
-    </div>
+      </main >
+
+      {/* Ask Question Modal */}
+      {
+        modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Ask a Question</h2>
+                <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Question Title */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Question Title</label>
+                  <textarea
+                    value={newQuestionTitle}
+                    onChange={(e) => setNewQuestionTitle(e.target.value)}
+                    placeholder="e.g. why python uses cpython?"
+                    className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[100px] resize-none text-gray-800"
+                  />
+                </div>
+
+                {/* Select Course */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Select Course</label>
+                  <div className="relative">
+                    <select
+                      value={selectedCourse}
+                      onChange={(e) => setSelectedCourse(e.target.value)}
+                      className="w-full p-3 pr-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white text-gray-800 cursor-pointer"
+                    >
+                      <option value="">Select Course</option>
+                      {courses.map(course => (
+                        <option key={course.id} value={course.id}>{course.title}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      <ChevronRight className="rotate-90 w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+
+                
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Select Tags (max 5)
+                  </label>
+
+                  {/* Selected Tags */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 bg-blue-100 text-blue-700 font-medium rounded-full text-sm flex items-center gap-1 border border-blue-200"
+                      >
+                        {tag}
+                        <button
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Available Admin Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {availableTags.map(tag => (
+                      <button
+                        key={tag.id}
+                        onClick={() => {
+                          if (!tags.includes(tag.tag_name) && tags.length < 5) {
+                            setTags([...tags, tag.tag_name]);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors
+                          ${tags.includes(tag.tag_name)
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
+                          }`}
+                      >
+                        {tag.tag_name}
+                      </button>
+                    ))}
+                  </div>
+
+                    {tags.length === 0 && (
+                      <p className="text-xs text-red-500 mt-2">
+                        Please select at least one tag
+                      </p>
+                    )}
+                </div>
+
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="px-6 py-2.5 rounded-xl text-gray-600 font-bold hover:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePostQuestion}
+                    className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                  >
+                    Post Question
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

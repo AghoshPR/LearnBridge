@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logout } from '@/Store/authSlice';
@@ -31,7 +31,7 @@ const AdminTags = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  
+
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -54,8 +54,8 @@ const AdminTags = () => {
 
   const handleLogout = async () => {
     try {
-      
-      await Api.post("/auth/logout/"); 
+
+      await Api.post("/auth/logout/");
       toast.success("Logged out successfully 👋", {
         description: "See you again, Admin!",
         duration: 2500,
@@ -70,22 +70,22 @@ const AdminTags = () => {
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchTags()
-  },[])
+  }, [])
 
-  const fetchTags = async()=>{
-      try{
-        setLoading(true)
-        const res = await Api.get("/qna/tags/")
-        setTags(res.data)
+  const fetchTags = async () => {
+    try {
+      setLoading(true)
+      const res = await Api.get("/qna/tags/")
+      setTags(res.data)
 
-      }catch(err){
-        toast.error("Failed to load tags")
+    } catch (err) {
+      toast.error("Failed to load tags")
 
-      }finally{
-        setLoading(false)
-      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Handlers
@@ -104,38 +104,38 @@ const AdminTags = () => {
     setItemToDelete(tag);
   };
 
-  const handleAddSubmit = async(e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
 
 
-    try{
+    try {
 
-        await Api.post("/qna/tags/create/",{
-          tag_name : formData.name
-        })
-        toast.success("Tag created successfully")
-        setIsAddModalOpen(false)
-        setFormData({name:""})
-        fetchTags()
-    
-      }catch(err){
-        toast.error(
-          err?.response?.data?.tag_name?.[0] || "Error creating tag"
-        )
-      }
+      await Api.post("/qna/tags/create/", {
+        tag_name: formData.name
+      })
+      toast.success("Tag created successfully")
+      setIsAddModalOpen(false)
+      setFormData({ name: "" })
+      fetchTags()
+
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.tag_name?.[0] || "Error creating tag"
+      )
+    }
 
   };
 
-  const handleEditSubmit = async(e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !selectedTag) return;
 
-    
-    try{
 
-      await Api.patch(`/qna/tags/${selectedTag.id}/update/`,{
-        tag_name:formData.name
+    try {
+
+      await Api.patch(`/qna/tags/${selectedTag.id}/update/`, {
+        tag_name: formData.name
       })
 
       toast.success("Tag updated successfully")
@@ -143,27 +143,27 @@ const AdminTags = () => {
       setSelectedTag(null)
       fetchTags()
 
-    }catch(err){
+    } catch (err) {
       toast.error("Error updating tag")
     }
 
 
   }
 
-  const confirmDelete = async() => {
+  const confirmDelete = async () => {
     if (!itemToDelete) return;
 
-    try{
+    try {
 
-        await Api.delete(`/qna/tags/${itemToDelete.id}/delete/`)
-        toast.success("Tag deleted successfully")
-        setItemToDelete(null)
-        fetchTags()
+      await Api.delete(`/qna/tags/${itemToDelete.id}/delete/`)
+      toast.success("Tag deleted successfully")
+      setItemToDelete(null)
+      fetchTags()
 
-    }catch(err){
+    } catch (err) {
       toast.error("Error deleting tags")
     }
-   
+
 
 
 
@@ -250,7 +250,7 @@ const AdminTags = () => {
           <NavItem
             icon={MessageSquare}
             label="Q&A Moderation"
-          // onClick={() => navigate("/admin/qna")}
+            onClick={() => navigate("/admin/qna")}
           />
           <NavItem
             icon={Tag}
