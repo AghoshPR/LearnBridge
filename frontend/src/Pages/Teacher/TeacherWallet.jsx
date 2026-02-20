@@ -202,6 +202,7 @@ const TeacherWallet = () => {
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-900/50">
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
+                    {/* <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Purchaser</th> */}
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Description</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Source</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Amount</th>
@@ -211,6 +212,11 @@ const TeacherWallet = () => {
                 <tbody className="divide-y divide-slate-800/50">
                   {transactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-slate-800/30 transition-colors group">
+
+                      {/* <td className="px-6 py-4 text-sm text-slate-400 font-medium">
+                        {transaction.date}
+                      </td> */}
+
                       <td className="px-6 py-4 text-sm text-slate-400 font-medium">
                         {transaction.date}
                       </td>

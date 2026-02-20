@@ -311,7 +311,7 @@ const QuestionCommunity = () => {
 
         {/* Tabs */}
         <div className="flex gap-6 border-b border-gray-200 mb-8 overflow-x-auto">
-          {['Recent', 'Popular', 'Unanswered', 'Trending'].map((tab) => (
+          {['Recent'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}

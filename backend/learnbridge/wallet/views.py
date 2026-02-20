@@ -85,7 +85,7 @@ class AdminTransferToTeacherView(APIView):
             Decimal("1"), rounding=ROUND_HALF_UP
         )
 
-        # =========================
+        
         # ADMIN WALLET UPDATE
         # =========================
         admin_wallet = admin_tx.admin_wallet
@@ -98,7 +98,7 @@ class AdminTransferToTeacherView(APIView):
         admin_tx.status = "transferred"
         admin_tx.save()
 
-        # =========================
+        
         # TEACHER WALLET UPDATE
         # =========================
         teacher_wallet, _ = TeacherWallet.objects.get_or_create(

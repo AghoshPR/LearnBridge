@@ -297,7 +297,7 @@ const AdminOffer = () => {
                       <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Discount</th>
                       <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Apply To</th>
                       <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Period</th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usage</th>
+                      {/* <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usage</th> */}
                       <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                       <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
                     </tr>
@@ -343,9 +343,9 @@ const AdminOffer = () => {
                             {offer.start_date} → {offer.end_date}
                           </td>
 
-                          <td className="p-4 text-gray-400">
+                          {/* <td className="p-4 text-gray-400">
                             {offer.used_count} / {offer.max_uses}
-                          </td>
+                          </td> */}
 
                           <td className="p-4">
                             <span
