@@ -45,6 +45,8 @@ import StudentCoupons from './Pages/Student/StudentCoupons'
 import AdminTags from './Pages/Admin/AdminTags'
 import AdminQA_Community from './Pages/Admin/AdminQA_Community'
 import QACommunityAnswers from './Pages/Public/QACommunityAnswers'
+import TeacherLiveClass from './Pages/Teacher/TeacherLiveClass'
+import StudentNotification from './Pages/Student/StudentNotification'
 
 
 
@@ -121,6 +123,8 @@ function App() {
         <Route path='/question-community' element={<QuestionCommunity />} />
         <Route path='/question-community/:id' element={<QACommunityAnswers />} />
 
+        <Route path="/student/notifications" element={<ProtectedRoute role="student"><StudentNotification /></ProtectedRoute>} />
+
 
 
         {/* Teacher */}
@@ -151,6 +155,7 @@ function App() {
 
         <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet /></ProtectedRoute>} />
         <Route path="/teacher/qa" element={<ProtectedRoute role="teacher"><TeacherQACommunity /></ProtectedRoute>} />
+        <Route path="/teacher/liveclass" element={<ProtectedRoute role="teacher"><TeacherLiveClass /></ProtectedRoute>} />
 
 
 

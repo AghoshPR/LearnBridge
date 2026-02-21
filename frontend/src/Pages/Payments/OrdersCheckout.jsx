@@ -37,18 +37,18 @@ const OrdersCheckout = () => {
 
   // coupons
 
-  const [availableCoupons,setAvailableCoupons] = useState([])
-  const [selectedCouponId,setSelectedCouponId] = useState("")
-  const [couponDiscount,setCouponDiscount] = useState(0)
+  const [availableCoupons, setAvailableCoupons] = useState([])
+  const [selectedCouponId, setSelectedCouponId] = useState("")
+  const [couponDiscount, setCouponDiscount] = useState(0)
 
-  
+
 
   const subtotal = cartItems.reduce(
-    (sum,item)=>sum+Number(item.original_price),0
+    (sum, item) => sum + Number(item.original_price), 0
   )
 
   const totalAfterDiscount = cartItems.reduce(
-    (sum,item)=>sum+Number(item.final_price),0
+    (sum, item) => sum + Number(item.final_price), 0
   )
 
   const offerDiscount = subtotal - totalAfterDiscount
@@ -77,13 +77,13 @@ const OrdersCheckout = () => {
     }
   }
 
-  const fetchCoupons = async()=>{
+  const fetchCoupons = async () => {
 
-    try{
+    try {
 
-        const res = await Api.get("/mycoupons/")
-        setAvailableCoupons(res.data)
-    }catch{
+      const res = await Api.get("/mycoupons/")
+      setAvailableCoupons(res.data)
+    } catch {
       toast.error("Failed to load coupons")
     }
 
@@ -110,7 +110,7 @@ const OrdersCheckout = () => {
 
 
     try {
-      const res = await Api.post("/createorder/",{
+      const res = await Api.post("/createorder/", {
         coupon_id: selectedCouponId || null
       })
       const { client_secret, order_id } = res.data
@@ -133,7 +133,7 @@ const OrdersCheckout = () => {
             payment_intent_id: result.paymentIntent.id,
           })
 
-          
+
           setOrderId(order_id || result.paymentIntent.id);
           setShowSuccessModal(true);
 
@@ -148,7 +148,7 @@ const OrdersCheckout = () => {
   const payWithRazorpay = async () => {
 
     try {
-      const res = await Api.post("/razorpay/create/",{
+      const res = await Api.post("/razorpay/create/", {
         coupon_id: selectedCouponId || null
       })
       const data = res.data
@@ -169,7 +169,7 @@ const OrdersCheckout = () => {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
           })
-         
+
           setOrderId(data.order_id);
           setShowSuccessModal(true);
         },
@@ -200,34 +200,34 @@ const OrdersCheckout = () => {
     }
   }
 
-  const handleSelectCoupon = async(code)=>{
+  const handleSelectCoupon = async (code) => {
 
-      if(!code){
-        setCouponDiscount(0)
-        setSelectedCouponId("")
-        return
-      }
+    if (!code) {
+      setCouponDiscount(0)
+      setSelectedCouponId("")
+      return
+    }
 
-      try{
-        const res = await Api.post("/applycoupon/",{
-          code: code
-        })
-        
+    try {
+      const res = await Api.post("/applycoupon/", {
+        code: code
+      })
 
-        setCouponDiscount(Number(res.data.discount))
-        setSelectedCouponId(code)
-        
-        toast.success(`${code} applied successfully 🎉`)
-       
-        
-      }catch{
-        setCouponDiscount(0)
-        setSelectedCouponId("")
-         toast.error(err.response?.data?.error || "Invalid Coupon")
-      }
+
+      setCouponDiscount(Number(res.data.discount))
+      setSelectedCouponId(code)
+
+      toast.success(`${code} applied successfully 🎉`)
+
+
+    } catch {
+      setCouponDiscount(0)
+      setSelectedCouponId("")
+      toast.error(err.response?.data?.error || "Invalid Coupon")
+    }
   }
 
-  
+
   // const [addresses, setAddresses] = useState([
   //   {
   //     id: 1,
@@ -277,7 +277,7 @@ const OrdersCheckout = () => {
             <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
               <ShoppingCart className="w-5 h-5  cursor-pointer" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <Bell className="w-5 h-5" />
             </button>
             <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
@@ -459,22 +459,22 @@ const OrdersCheckout = () => {
                             <p className="text-sm text-muted-foreground mt-1">Instructor: {item.instructor}</p>
                           </div>
                           <div className="text-right">
-                              {item.has_offer ? (
-                                <>
-                                  <div className="text-xs text-gray-400 line-through">
-                                    ₹{Number(item.original_price).toFixed(2)}
-                                  </div>
-                                  <div className="font-bold text-primary">
-                                    ₹{Number(item.final_price).toFixed(2)}
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="font-bold text-primary">
+                            {item.has_offer ? (
+                              <>
+                                <div className="text-xs text-gray-400 line-through">
                                   ₹{Number(item.original_price).toFixed(2)}
                                 </div>
-                              )}
+                                <div className="font-bold text-primary">
+                                  ₹{Number(item.final_price).toFixed(2)}
+                                </div>
+                              </>
+                            ) : (
+                              <div className="font-bold text-primary">
+                                ₹{Number(item.original_price).toFixed(2)}
+                              </div>
+                            )}
                           </div>
-                            
+
                         </div>
                         {item.tag && (
                           <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground border border-border w-fit px-2 py-1 rounded">
@@ -518,16 +518,16 @@ const OrdersCheckout = () => {
                   <select
 
                     value={selectedCouponId || ""}
-                    onChange={(e)=>handleSelectCoupon(e.target.value)}
+                    onChange={(e) => handleSelectCoupon(e.target.value)}
                     className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
 
                     <option value="">Select a coupon</option>
-                    
-                      {availableCoupons.map((coupon)=>(
-                        <option key={coupon.id} value={coupon.code}>
-                          {coupon.code}
-                        </option>
-                      ))}
+
+                    {availableCoupons.map((coupon) => (
+                      <option key={coupon.id} value={coupon.code}>
+                        {coupon.code}
+                      </option>
+                    ))}
 
                   </select>
 
@@ -551,7 +551,7 @@ const OrdersCheckout = () => {
                     <span>-₹ {offerDiscount.toFixed(2)}</span>
                   </div>
 
-                   <div className="flex justify-between text-green-600 dark:text-green-500">
+                  <div className="flex justify-between text-green-600 dark:text-green-500">
                     <span>% Coupon Discount</span>
                     <span>-₹ {couponDiscount.toFixed(2)}</span>
                   </div>

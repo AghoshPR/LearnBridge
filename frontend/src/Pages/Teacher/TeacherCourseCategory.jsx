@@ -35,7 +35,7 @@ const TeacherCourseCategory = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const [categories, setCategories] = useState([])
-  
+
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
@@ -67,44 +67,44 @@ const TeacherCourseCategory = () => {
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
     { icon: Folder, label: 'Categories', path: '/teacher/categories', active: true },
-    { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+    { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },
-    { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+    // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
 
-  const fetchCategories =async()=>{
+  const fetchCategories = async () => {
 
-      try{
-        setLoading(true)
-        const res = await Api.get('/courses/categories/')
-        setCategories(res.data)
-      }catch{
-        toast.error('Failed to load categories')
-      }finally{
-        setLoading(false)
-      }   
+    try {
+      setLoading(true)
+      const res = await Api.get('/courses/categories/')
+      setCategories(res.data)
+    } catch {
+      toast.error('Failed to load categories')
+    } finally {
+      setLoading(false)
+    }
 
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchCategories()
-  },[])
+  }, [])
 
   const filteredCategories = categories.filter((category) =>
-  category.name.toLowerCase().includes(searchTerm.toLowerCase())
-)
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
 
-  
-  
-  const handleCreateCategory  = async()=>{
+
+
+  const handleCreateCategory = async () => {
 
     if (!name.trim()) {
-    toast.error("Category name is required");
-    return;
+      toast.error("Category name is required");
+      return;
     }
 
     if (name.trim().length < 3) {
@@ -117,42 +117,42 @@ const TeacherCourseCategory = () => {
       return;
     }
 
-      try{
-        await Api.post('/courses/categories/',{
-          name,
-          description,
-        })
-        toast.success('Category Created')
-        setIsAddModalOpen(false)
-        setName('')
-        setDescription('')
-        fetchCategories()
+    try {
+      await Api.post('/courses/categories/', {
+        name,
+        description,
+      })
+      toast.success('Category Created')
+      setIsAddModalOpen(false)
+      setName('')
+      setDescription('')
+      fetchCategories()
 
-      }
-      catch(err){
-        const errorMsg =
+    }
+    catch (err) {
+      const errorMsg =
         err.response?.data?.name?.[0] ||
         err.response?.data?.detail ||
         "Failed to create category";
 
-        toast.error(errorMsg);
-      }
+      toast.error(errorMsg);
+    }
 
 
   }
 
   const handleEdit = (category) => {
-  setSelectedCategory(category)
-  setName(category.name)
-  setDescription(category.description)
-  setIsEditModalOpen(true)
-}
+    setSelectedCategory(category)
+    setName(category.name)
+    setDescription(category.description)
+    setIsEditModalOpen(true)
+  }
 
-  const handleUpdateCategory  = async() => {
+  const handleUpdateCategory = async () => {
 
     if (!name.trim()) {
-    toast.error("Category name is required");
-    return;
+      toast.error("Category name is required");
+      return;
     }
 
     if (name.trim().length < 3) {
@@ -164,24 +164,24 @@ const TeacherCourseCategory = () => {
       toast.error("Category name cannot exceed 50 characters");
       return;
     }
-    
-      try{
-        await Api.patch(`/courses/categories/${selectedCategory.id}/`,{
-          name,
-          description
-        })
-        toast.success('Category Updated')
-        setIsEditModalOpen(false)
-        fetchCategories()
-        
-      }catch(err){
-          const errorMsg =
-          err.response?.data?.name?.[0] ||
-          err.response?.data?.detail ||
-          "Failed to create category";
-  
-          toast.error(errorMsg);
-        }
+
+    try {
+      await Api.patch(`/courses/categories/${selectedCategory.id}/`, {
+        name,
+        description
+      })
+      toast.success('Category Updated')
+      setIsEditModalOpen(false)
+      fetchCategories()
+
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.name?.[0] ||
+        err.response?.data?.detail ||
+        "Failed to create category";
+
+      toast.error(errorMsg);
+    }
 
   };
 
@@ -189,57 +189,57 @@ const TeacherCourseCategory = () => {
   // Category block/unblock
 
   const blockCategory = async (id) => {
-      try {
-        await Api.post(`/courses/categories/block/${id}/`);
+    try {
+      await Api.post(`/courses/categories/block/${id}/`);
 
-        setCategories(prev =>
-          prev.map(cat =>
-            cat.id === id ? { ...cat, status: 'blocked' } : cat
-          )
-        );
+      setCategories(prev =>
+        prev.map(cat =>
+          cat.id === id ? { ...cat, status: 'blocked' } : cat
+        )
+      );
 
-        toast.success("Category blocked successfully");
-      } catch (err) {
-        toast.error(err.response?.data?.error || "Block failed");
-      }
-    };
+      toast.success("Category blocked successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Block failed");
+    }
+  };
 
   const unblockCategory = async (id) => {
-      try {
-        await Api.post(`/courses/categories/unblock/${id}/`);
+    try {
+      await Api.post(`/courses/categories/unblock/${id}/`);
 
-        setCategories(prev =>
-          prev.map(cat =>
-            cat.id === id ? { ...cat, status: 'active' } : cat
-          )
-        );
+      setCategories(prev =>
+        prev.map(cat =>
+          cat.id === id ? { ...cat, status: 'active' } : cat
+        )
+      );
 
-        toast.success("Category unblocked successfully");
-      } catch (err) {
-        toast.error(err.response?.data?.error || "Unblock failed");
-      }
-    };
+      toast.success("Category unblocked successfully");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Unblock failed");
+    }
+  };
 
-    
 
-  const handleDelete=(category)=>{
+
+  const handleDelete = (category) => {
     setSelectedCategory(category)
     setIsDeleteModalOpen(true)
   }
 
 
 
-  const handleDeleteCategory  = async() => {
+  const handleDeleteCategory = async () => {
 
-      try{
-        await Api.delete(`/courses/categories/${selectedCategory.id}/`)
-        toast.success('Category Deleted')
-        setIsDeleteModalOpen(false)
-        fetchCategories()
+    try {
+      await Api.delete(`/courses/categories/${selectedCategory.id}/`)
+      toast.success('Category Deleted')
+      setIsDeleteModalOpen(false)
+      fetchCategories()
 
-      }catch{
-        toast.error('Cannot delete category with courses')
-      }
+    } catch {
+      toast.error('Cannot delete category with courses')
+    }
 
 
   };
@@ -274,7 +274,7 @@ const TeacherCourseCategory = () => {
     setIsBlockModalOpen(true);
   };
 
-  
+
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -407,11 +407,10 @@ const TeacherCourseCategory = () => {
                               setSelectedCategory(category);
                               setIsBlockModalOpen(true);
                             }}
-                            className={`p-1.5 rounded-lg ${
-                              category.status === 'blocked'
+                            className={`p-1.5 rounded-lg ${category.status === 'blocked'
                                 ? 'text-red-400 hover:bg-red-500/10'
                                 : 'text-green-400 hover:bg-green-500/10'
-                            }`}
+                              }`}
                           >
                             {category.status === 'blocked'
                               ? <Lock size={16} />
@@ -444,7 +443,7 @@ const TeacherCourseCategory = () => {
 
             <div className="flex items-center justify-between p-5 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white">Add Category</h3>
-              <button onClick={() => setIsAddModalOpen(false)}  className="text-slate-400 hover:text-white transition-colors">
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -559,19 +558,19 @@ const TeacherCourseCategory = () => {
                 Are you sure you want to delete <span className="text-white font-medium">{selectedCategory.name}</span>? This action cannot be undone.
               </p>
               <div className="flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => setIsDeleteModalOpen(false)}
-                    className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors text-sm"
-                  >
-                    Cancel
-                  </button>
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg font-medium hover:bg-slate-700 transition-colors text-sm"
+                >
+                  Cancel
+                </button>
 
-                  <button
-                    onClick={handleDeleteCategory}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors text-sm shadow-lg shadow-red-900/20"
-                  >
-                    Delete
-                  </button>
+                <button
+                  onClick={handleDeleteCategory}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors text-sm shadow-lg shadow-red-900/20"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>
@@ -607,11 +606,10 @@ const TeacherCourseCategory = () => {
 
                 <button
                   onClick={handleConfirmBlockToggle}
-                  className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${
-                    selectedCategory.status === 'blocked'
+                  className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${selectedCategory.status === 'blocked'
                       ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
                       : 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
-                  }`}
+                    }`}
                 >
                   {selectedCategory.status === 'blocked' ? 'Unblock' : 'Block'}
                 </button>

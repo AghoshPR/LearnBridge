@@ -1,52 +1,89 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { toast } from "sonner";
+import Logo from '../../assets/learnbridge-logo.png';
 import {
-  User,
-  BookOpen,
-  LogOut,
   ShoppingCart,
   Bell,
-  Heart,
-  Package,
-  Menu,
+  CheckCircle,
+  Info,
+  AlertTriangle,
+  MessageSquare,
   X,
+  User,
+  Heart,
+  BookOpen,
+  Package,
+  LogOut,
+  Menu,
   Ticket
 } from 'lucide-react';
-import Logo from '../../assets/learnbridge-logo.png';
-import Api from '../Services/Api';
 
-const StudentCoupons = () => {
+const StudentNotification = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [coupons, setCoupons] = useState([])
-
-  useEffect(() => {
-
-    fetchCoupons()
-  }, [])
-
-  const fetchCoupons = async () => {
-
-    try {
-      const res = await Api.get("/mycoupons/")
-      setCoupons(res.data)
-    } catch {
-      toast.error("Failed to load coupon")
+  const notifications = [
+    {
+      id: 1,
+      type: 'success',
+      title: 'Order Confirmed',
+      message: 'Your order #12345 has been confirmed and is being processed.',
+      time: '2 minutes ago',
+      isNew: true,
+      icon: CheckCircle,
+      color: 'text-green-500',
+    },
+    {
+      id: 2,
+      type: 'info',
+      title: 'New Course Available',
+      message: 'Check out our new React Advanced course now available.',
+      time: '1 hour ago',
+      isNew: true,
+      icon: Info,
+      color: 'text-blue-500',
+    },
+    {
+      id: 3,
+      type: 'success',
+      title: 'Payment Successful',
+      message: 'Your payment of $99.00 was successful for Web Development Bootcamp.',
+      time: '3 hours ago',
+      isNew: false,
+      icon: CheckCircle,
+      color: 'text-green-500',
+    },
+    {
+      id: 4,
+      type: 'warning',
+      title: 'Course Expiring Soon',
+      message: 'Your access to JavaScript Basics will expire in 7 days.',
+      time: '1 day ago',
+      isNew: false,
+      icon: AlertTriangle,
+      color: 'text-orange-500',
+    },
+    {
+      id: 5,
+      type: 'message',
+      title: 'New Reply to Your Comment',
+      message: 'Someone replied to your comment on "Introduction to TypeScript".',
+      time: '2 days ago',
+      isNew: false,
+      icon: MessageSquare,
+      color: 'text-blue-500',
     }
-  }
-
+  ];
 
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-800">
-
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Navbar */}
-      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
+      <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100/50">
         <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
@@ -61,28 +98,31 @@ const StudentCoupons = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button
+              onClick={() => navigate('/cart')}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <ShoppingCart className="w-5 h-5" />
             </button>
-            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate('/student/notifications')}
+              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-800 relative"
+            >
               <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-gray-100"></span>
             </button>
-
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
                 <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
 
                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+                  {isAuthenticated && username ? username.charAt(0).toUpperCase() : "U"}
                 </div>
               </button>
 
               {/* Profile Dropdown */}
               <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
-
-
-                {/* Not Logged In */}
                 {!isAuthenticated && (
                   <>
                     <button
@@ -92,7 +132,6 @@ const StudentCoupons = () => {
                       <User className='w-4 h-4' />
                       Login
                     </button>
-
                     <button
                       onClick={() => navigate("/student/register")}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
@@ -103,40 +142,30 @@ const StudentCoupons = () => {
                   </>
                 )}
 
-
-                {/*  LOGGED IN */}
                 {isAuthenticated && (
                   <>
                     <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
-                      <User className="w-4 h-4 cursor-pointer" />
+                      <User className="w-4 h-4" />
                       Profile
                     </button>
-
                     <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-
                     <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
-
                     <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Ticket className="w-4 h-4" />
                       Coupons
                     </button>
-
                     <hr className="my-1 border-gray-100" />
-
                     <button
                       onClick={() => {
                         dispatch(logout());
                         navigate("/student/login", { replace: true });
-                        toast.success("Logged out successfully 👋", {
-                          description: "See you again!",
-                          duration: 2500,
-                        });
+                        toast.success("Logged out successfully 👋");
                       }}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
                     >
@@ -145,27 +174,26 @@ const StudentCoupons = () => {
                     </button>
                   </>
                 )}
-
               </div>
             </div>
-
 
             <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-            <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
-            <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
+            <a href="#" className="text-gray-700 font-medium text-left">Q&A Community</a>
+            <a href="#" className="text-gray-700 font-medium text-left">Live Classes</a>
             <hr className="border-gray-100" />
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+                {isAuthenticated && username ? username.charAt(0).toUpperCase() : "U"}
               </div>
               <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
             </div>
@@ -188,47 +216,76 @@ const StudentCoupons = () => {
                 </button>
               </div>
             )}
+
+            {!isAuthenticated && (
+              <div className="flex flex-col gap-3 mt-2">
+                <button onClick={() => navigate("/student/login")} className="text-gray-700 font-medium text-left">Login</button>
+                <button onClick={() => navigate("/student/register")} className="text-gray-700 font-medium text-left">Sign Up</button>
+              </div>
+            )}
           </div>
         )}
       </nav>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 md:px-6 py-8 md:py-12 max-w-6xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Coupons</h1>
-        <p className="text-gray-500 mb-8">View your available coupons and usage details</p>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-6 py-4 font-semibold text-gray-700">Coupon Name</th>
-                  <th className="px-6 py-4 font-semibold text-gray-700">Coupon ends</th>
-                  <th className="px-6 py-4 font-semibold text-gray-700">Usage</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {coupons.map((coupon) => (
-                  <tr key={coupon.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-blue-600">{coupon.code}</td>
-                    <td className="px-6 py-4 font-medium text-blue-600">{coupon.valid_till}</td>
-                    <td className="px-6 py-4 text-gray-600">{coupon.max_uses_per_user}</td>
-                  </tr>
-                ))}
-                {coupons.length === 0 && (
-                  <tr>
-                    <td colSpan="2" className="px-6 py-8 text-center text-gray-500">
-                      No coupons found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      {/* Purple Banner */}
+      <div className="bg-purple-500 text-white px-4 md:px-8 py-6 flex flex-col md:flex-row items-center justify-between">
+        <div className="flex items-center gap-3 max-w-4xl mx-auto w-full">
+          <div className="flex items-center gap-3 flex-1">
+            <Bell className="w-6 h-6 text-white/90" />
+            <div>
+              <h1 className="text-xl font-bold">Notifications</h1>
+              <p className="text-purple-100 text-sm">Stay updated with your activities</p>
+            </div>
           </div>
+          <div>
+            <span className="bg-white text-purple-600 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+              {(notifications.filter(n => n.isNew).length)} Unread
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Notifications Content */}
+      <main className="flex-1 bg-white p-4 md:p-6 max-w-4xl mx-auto w-full">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-sm font-bold text-gray-800">All Notifications</h2>
+          <button className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors">
+            Mark all as read
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`p-4 rounded-xl border flex gap-4 transition-all ${notification.isNew ? 'bg-blue-50/50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+            >
+              <div className="mt-1">
+                <notification.icon className={`w-5 h-5 ${notification.color}`} />
+              </div>
+
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-900">{notification.title}</h3>
+                    {notification.isNew && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <X size={14} className="cursor-pointer hover:text-gray-600" />
+                    <span className="opacity-50 text-xs hidden sm:inline-block">{'>'}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500 mt-1 mb-2 leading-relaxed max-w-2xl">{notification.message}</p>
+                <span className="text-xs font-medium text-gray-400">{notification.time}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default StudentCoupons
+export default StudentNotification;

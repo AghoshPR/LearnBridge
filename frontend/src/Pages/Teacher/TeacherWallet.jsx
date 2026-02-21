@@ -33,10 +33,10 @@ const TeacherWallet = () => {
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
     // { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
-    { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+    { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },
-    { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+    // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: true },
   ];
 
@@ -53,35 +53,35 @@ const TeacherWallet = () => {
   };
 
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchWallet()
-  },[])
+  }, [])
 
   const [walletSummary, setWalletSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
 
 
   const formatDate = (dateStr) => {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric"
-  });
-};
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
 
-  const fetchWallet = async()=>{
-    try{
+  const fetchWallet = async () => {
+    try {
 
-        const [summaryRes,txRes] = await Promise.all([
-          Api.get("wallet/summarydetails/"),
-          Api.get("wallet/transactionsdetails/")
-        ])
+      const [summaryRes, txRes] = await Promise.all([
+        Api.get("wallet/summarydetails/"),
+        Api.get("wallet/transactionsdetails/")
+      ])
 
-        setWalletSummary(summaryRes.data)
-        setTransactions(txRes.data)
+      setWalletSummary(summaryRes.data)
+      setTransactions(txRes.data)
 
-    }catch(err){
+    } catch (err) {
       toast.error("failed to load wallet")
     }
 
@@ -228,7 +228,7 @@ const TeacherWallet = () => {
                         {transaction.transaction_id || "—"}
                       </td>
 
-                       <td className="px-6 py-4 text-sm text-slate-400 font-medium">
+                      <td className="px-6 py-4 text-sm text-slate-400 font-medium">
                         {formatDate(transaction.date)}
                       </td>
 
@@ -240,23 +240,22 @@ const TeacherWallet = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                            transaction.source === "course_sale"
+                          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${transaction.source === "course_sale"
                               ? "bg-blue-500/10 text-blue-400"
                               : transaction.source === "live_class"
-                              ? "bg-purple-500/10 text-purple-400"
-                              : transaction.source === "withdrawal"
-                              ? "bg-red-500/10 text-red-400"
-                              : "bg-gray-500/10 text-gray-400"
-                          }`}
+                                ? "bg-purple-500/10 text-purple-400"
+                                : transaction.source === "withdrawal"
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-gray-500/10 text-gray-400"
+                            }`}
                         >
                           {transaction.source === "course_sale"
                             ? "Course Sale"
                             : transaction.source === "live_class"
-                            ? "Live Class"
-                            : transaction.source === "withdrawal"
-                            ? "Withdrawal"
-                            : "Other"}
+                              ? "Live Class"
+                              : transaction.source === "withdrawal"
+                                ? "Withdrawal"
+                                : "Other"}
                         </span>
                       </td>
                       <td className={`px-6 py-4 text-sm font-bold text-right ${transaction.type === 'credit' ? 'text-emerald-400' : 'text-white-400'
@@ -264,17 +263,16 @@ const TeacherWallet = () => {
                         ₹ {transaction.amount}
                       </td>
                       <td className="px-6 py-4 text-right">
-                         <span
-                            className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              transaction.status === "payment_completed"
-                                ? "bg-emerald-500/10 text-emerald-400"
-                                : "bg-amber-500/10 text-amber-400"
+                        <span
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.status === "payment_completed"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-amber-500/10 text-amber-400"
                             }`}
-                          >
-                            {transaction.status === "payment_completed"
-                              ? "Completed"
-                              : "Pending"}
-                          </span>
+                        >
+                          {transaction.status === "payment_completed"
+                            ? "Completed"
+                            : "Pending"}
+                        </span>
                       </td>
                     </tr>
                   ))}

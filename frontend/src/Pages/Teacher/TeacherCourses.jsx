@@ -77,10 +77,10 @@ const TeacherCourses = () => {
         { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
         { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
         // { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
-        { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+        { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
         { icon: Users, label: 'Students', path: '/teacher/students', active: false },
-        { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+        // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
         { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
     ];
 
@@ -152,8 +152,8 @@ const TeacherCourses = () => {
         }
 
         if (Number(price) > 999999) {
-        toast.error("Price cannot exceed 999,999");
-        return;
+            toast.error("Price cannot exceed 999,999");
+            return;
         }
 
         if (isNaN(price) || Number(price) <= 0) {
@@ -190,12 +190,12 @@ const TeacherCourses = () => {
             fetchCourses()
         } catch (err) {
             const errorMsg =
-                    err.response?.data?.title?.[0] ||
-                    err.response?.data?.category?.[0] ||
-                    err.response?.data?.detail ||
-                    "Failed to create course";
-            
-                  toast.error(errorMsg);
+                err.response?.data?.title?.[0] ||
+                err.response?.data?.category?.[0] ||
+                err.response?.data?.detail ||
+                "Failed to create course";
+
+            toast.error(errorMsg);
         }
     }
 
@@ -309,12 +309,12 @@ const TeacherCourses = () => {
                         <div key={course.id} className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-300 group">
                             {/* Course Image Placeholder */}
                             <div className="h-48 relative overflow-hidden">
-                                
+
                                 {course.thumbnail_url ? (
-                                <img
-                                src={course.thumbnail_url}
-                                alt={course.title}
-                                className="w-full h-full object-cover"
+                                    <img
+                                        src={course.thumbnail_url}
+                                        alt={course.title}
+                                        className="w-full h-full object-cover"
                                     />
                                 ) : (
                                     <div className="h-full bg-gradient-to-br from-purple-600 to-blue-600" />
@@ -338,14 +338,14 @@ const TeacherCourses = () => {
                                         <div className="flex justify-center mb-1 text-blue-400">
                                             <Users size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.students_count  || 0}</p>
+                                        <p className="text-white font-bold">{course.students_count || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Students</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                                         <div className="flex justify-center mb-1 text-yellow-400">
                                             <Star size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.average_rating  || 0}</p>
+                                        <p className="text-white font-bold">{course.average_rating || 0}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Rating</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
@@ -500,7 +500,7 @@ const TeacherCourses = () => {
                                         <input
                                             type="number"
                                             value={price}
-                                            
+
                                             onChange={(e) => setPrice(e.target.value)}
                                             placeholder="1249.99"
                                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"

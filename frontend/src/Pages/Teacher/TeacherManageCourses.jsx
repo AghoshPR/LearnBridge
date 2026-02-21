@@ -69,10 +69,10 @@ const TeacherManageCourses = () => {
     { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: true },
     { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
-    { icon: Video, label: 'Live Classes', path: '/teacher/live-classes', active: false },
+    { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
     { icon: Users, label: 'Students', path: '/teacher/students', active: false },
-    { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
+    // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 

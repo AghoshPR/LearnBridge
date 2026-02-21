@@ -363,7 +363,7 @@ const CourseVideos = () => {
             <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <ShoppingCart className="w-5 h-5 cursor-pointer" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <Bell className="w-5 h-5" />
             </button>
             <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
