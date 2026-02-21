@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import *
 from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
+from django.utils import timezone
 from  .payout_service import *
 
 class AdminWalletSummaryView(APIView):
@@ -117,6 +118,14 @@ class AdminTransferToTeacherView(APIView):
 
         if teacher_tx:
             teacher_tx.status = "payment_completed"
+
+            teacher_tx.transaction_id = (
+                admin_tx.razorpay_payout_id
+
+                if admin_tx.razorpay_payout_id
+                else f"TRX-{admin_tx.id}-{int(timezone.now().timestamp())}"
+            )
+
             teacher_tx.save()
 
         return Response({
@@ -161,9 +170,13 @@ class TeacherWalletTrasactionsView(APIView):
             data.append({
                 "id":t.id,
                 "date":t.created_at,
+                "transaction_id": t.transaction_id,
                 "description":t.description,
                 "amount":int(t.amount),
                 "status":t.status,
+                "source": t.source,
+                "purchaser": t.course.enrollments.first().user.username if t.course else None
+
             })
         
         return Response(data)

@@ -60,6 +60,16 @@ const TeacherWallet = () => {
   const [walletSummary, setWalletSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
 
+
+  const formatDate = (dateStr) => {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
+};
+
   const fetchWallet = async()=>{
     try{
 
@@ -201,8 +211,9 @@ const TeacherWallet = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-900/50">
+                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Transaction ID</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
-                    {/* <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Purchaser</th> */}
+                    <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Purchaser</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Description</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Source</th>
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Amount</th>
@@ -213,35 +224,57 @@ const TeacherWallet = () => {
                   {transactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-slate-800/30 transition-colors group">
 
-                      {/* <td className="px-6 py-4 text-sm text-slate-400 font-medium">
-                        {transaction.date}
-                      </td> */}
+                      <td className="px-6 py-4 text-sm text-slate-400 font-medium">
+                        {transaction.transaction_id || "—"}
+                      </td>
+
+                       <td className="px-6 py-4 text-sm text-slate-400 font-medium">
+                        {formatDate(transaction.date)}
+                      </td>
 
                       <td className="px-6 py-4 text-sm text-slate-400 font-medium">
-                        {transaction.date}
+                        {transaction.purchaser || "—"}
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm font-medium text-white">{transaction.description}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-xs font-medium px-2.5 py-0.5 rounded border ${transaction.source === 'Course Sale' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                          transaction.source === 'Live Class' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                            'bg-red-500/10 text-red-400 border-red-500/20'
-                          }`}>
-                          {transaction.source}
+                        <span
+                          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                            transaction.source === "course_sale"
+                              ? "bg-blue-500/10 text-blue-400"
+                              : transaction.source === "live_class"
+                              ? "bg-purple-500/10 text-purple-400"
+                              : transaction.source === "withdrawal"
+                              ? "bg-red-500/10 text-red-400"
+                              : "bg-gray-500/10 text-gray-400"
+                          }`}
+                        >
+                          {transaction.source === "course_sale"
+                            ? "Course Sale"
+                            : transaction.source === "live_class"
+                            ? "Live Class"
+                            : transaction.source === "withdrawal"
+                            ? "Withdrawal"
+                            : "Other"}
                         </span>
                       </td>
-                      <td className={`px-6 py-4 text-sm font-bold text-right ${transaction.type === 'credit' ? 'text-emerald-400' : 'text-red-400'
+                      <td className={`px-6 py-4 text-sm font-bold text-right ${transaction.type === 'credit' ? 'text-emerald-400' : 'text-white-400'
                         }`}>
-                        {transaction.amount}
+                        ₹ {transaction.amount}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${transaction.status === 'Completed'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          }`}>
-                          {transaction.status}
-                        </span>
+                         <span
+                            className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              transaction.status === "payment_completed"
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : "bg-amber-500/10 text-amber-400"
+                            }`}
+                          >
+                            {transaction.status === "payment_completed"
+                              ? "Completed"
+                              : "Pending"}
+                          </span>
                       </td>
                     </tr>
                   ))}

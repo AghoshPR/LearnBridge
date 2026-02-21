@@ -88,6 +88,12 @@ class TeacherTransaction(models.Model):
         ("payment_completed", "Payment Completed"),
     ]
 
+    SOURCE_CHOICES = [
+        ("course_sale", "Course Sale"),
+        ("live_class", "Live Class"),
+        ("withdrawal", "Withdrawal"),
+    ]
+
     teacher_wallet = models.ForeignKey(
         TeacherWallet,
         on_delete=models.CASCADE,
@@ -99,6 +105,18 @@ class TeacherTransaction(models.Model):
     course = models.ForeignKey(
         Course,
         on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    source = models.CharField(   
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default="course_sale"
+    )
+
+    transaction_id = models.CharField( 
+        max_length=120,
         null=True,
         blank=True
     )

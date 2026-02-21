@@ -448,7 +448,7 @@ const CourseDetail = () => {
                                     </div>
                                 </div>
 
-                                {course.is_enrolled ? (
+                                {isAuthenticated && course?.is_enrolled === true ? (
 
                                     <button
                                         onClick={() => navigate("/mycourse")}

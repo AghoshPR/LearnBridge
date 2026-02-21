@@ -292,15 +292,22 @@ const AdminWallet = () => {
                                                 ₹{transaction.teacherShare || 0}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${transaction.status === 'Completed'
-                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                    : transaction.status === 'Processing'
-                                                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20' // Pending
-                                                    }`}>
-                                                    {transaction.status}
+                                                <span
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                                                    transaction.status === "transfer_pending"
+                                                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                                        : transaction.status === "transferred"
+                                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                                        : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                                                    }`}
+                                                >
+                                                    {transaction.status === "transfer_pending"
+                                                    ? "Pending Transfer"
+                                                    : transaction.status === "transferred"
+                                                    ? "Transferred"
+                                                    : transaction.status}
                                                 </span>
-                                            </td>
+                                                </td>
                                             <td className="px-6 py-4 text-right">
                                                 {transaction.status === 'transfer_pending' ? (
                                                     <button
@@ -311,7 +318,7 @@ const AdminWallet = () => {
                                                     </button>
                                                 ) : (
                                                     <span className="text-xs text-white-600 flex items-center justify-end gap-1">
-                                                        <CheckCircle2 size={14} /> Transferred
+                                                        <CheckCircle2 size={14} /> Completed
                                                     </span>
                                                 )}
                                             </td>
