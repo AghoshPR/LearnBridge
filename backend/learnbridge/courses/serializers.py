@@ -196,6 +196,8 @@ class PublicCourseSerializer(serializers.ModelSerializer):
     final_price = serializers.SerializerMethodField()
     original_price = serializers.DecimalField(source="price",max_digits=10,decimal_places=2)
     has_offer = serializers.SerializerMethodField()
+
+    
     
 
 
@@ -221,6 +223,7 @@ class PublicCourseSerializer(serializers.ModelSerializer):
             "students_count",
             "average_rating",
             "total_duration",
+            
     
         ]
 
@@ -302,7 +305,10 @@ class PublicCourseSerializer(serializers.ModelSerializer):
         ).filter(
             Q(course=obj) | Q(category=obj.category)
         ).exists()
-        
+    
+
+    
+    
 
 class PublicCategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -326,6 +332,8 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
     final_price = serializers.SerializerMethodField()
     original_price = serializers.DecimalField(source="price",max_digits=10,decimal_places=2)
     has_offer = serializers.SerializerMethodField()
+
+    is_enrolled = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -351,6 +359,7 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
             "reviews_count",
             "total_duration",
             "total_lessons",
+            "is_enrolled"
         ]
 
     def get_thumbnail(self,obj):
@@ -433,6 +442,24 @@ class PublicCourseDetailSerializer(serializers.ModelSerializer):
         ).filter(
             Q(course=obj) | Q(category=obj.category)
         ).exists()
+    
+
+    def get_is_enrolled(self,obj):
+
+        request = self.context.get("request")
+
+        if not request or not request.user.is_authenticated:
+            return False
+        
+
+        from studentapp.models import Enrollment
+
+        return Enrollment.objects.filter(
+            user=request.user,
+            course = obj
+        ).exists()
+
+
 
 class LessonCommentSerializer(serializers.ModelSerializer):
     

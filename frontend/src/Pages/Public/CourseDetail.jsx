@@ -448,12 +448,33 @@ const CourseDetail = () => {
                                     </div>
                                 </div>
 
-                                <button onClick={handleAddToCart} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm">
-                                    Add to Cart
-                                </button>
-                                <button className="w-full cursor-pointer bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors">
-                                    Buy Now
-                                </button>
+                                {course.is_enrolled ? (
+
+                                    <button
+                                        onClick={() => navigate("/mycourse")}
+                                        className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm"
+                                    >
+                                        Go to My Course
+                                    </button>
+
+                                ) : (
+
+                                    <>
+                                        <button
+                                            onClick={handleAddToCart}
+                                            className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg mb-3 transition-colors shadow-sm"
+                                        >
+                                            Add to Cart
+                                        </button>
+
+                                        {/* <button
+                                            onClick={() => navigate("/checkout", { state: { courseId: id } })}
+                                            className="w-full cursor-pointer bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors"
+                                        >
+                                            Buy Now
+                                        </button> */}
+                                    </>
+                                )}
 
                                 <div className="space-y-3 text-sm text-gray-600">
                                     <div className="flex justify-between">
