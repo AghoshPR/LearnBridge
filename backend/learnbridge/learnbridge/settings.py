@@ -66,6 +66,10 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
 
+    # socket
+
+    "channels",
+
 
 
 
@@ -252,3 +256,16 @@ STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
 
 RAZORPAY_KEY_ID = config("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
+
+
+# sockets
+
+
+ASGI_APPLICATION = "LearnBridge.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+       
+    },
+}

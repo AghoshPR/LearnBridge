@@ -13,6 +13,9 @@ from .pagination import CoursePagination
 from authapp.authentication import *
 from adminapp.pagination import *
 from studentapp.models import *
+from notifications.models import Notification
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 # Create your views here.
 
 
@@ -519,6 +522,46 @@ class TeacherLessonCreateView(APIView):
             position=last_position + 1,
         )
 
+        # nottification
+
+        
+
+        channel_layer = get_channel_layer()
+
+        enrollments = Enrollment.objects.filter(course_id=course_id)
+        course = Course.objects.get(id=course_id)
+
+        try:
+            for enrollment in enrollments:
+
+                student = enrollment.user
+
+
+                notification = Notification.objects.create(
+                    user=student,
+                    title="Course Updated",
+                    message=f"New lesson added to '{course.title}'",
+                    notification_type = "general"
+                )
+
+                async_to_sync(channel_layer.group_send)(
+
+                    f"user_{student.id}",
+                    {
+                        "type":"send_notification",
+                        "notification":{
+                            "id":notification.id,
+                            "title":notification.title,
+                            "message":notification.message,
+                            "is_read":notification.is_read,
+                            "created_at":str(notification.created_at),
+                        }
+                    }
+                )
+        except Exception as e:
+            print("Socket error:", e)
+
+
         return Response(
             {"message":"Lesson uploaded successfully"},
             status=status.HTTP_201_CREATED
@@ -557,6 +600,35 @@ class TeacherLessonDetailView(APIView):
             delete_video_from_s3(old_key)
         
         lesson.save()
+
+        channel_layer = get_channel_layer()
+        enrollments = Enrollment.objects.filter(course=lesson.course)
+
+        for enrollment in enrollments:
+            student = enrollment.user
+
+            notification = Notification.objects.create(
+                user = student,
+                title="Lesson Updated",
+                message=f"Lesson '{lesson.title}' has been updated",
+                notification_type= "general"
+            )
+
+            async_to_sync(channel_layer.group_send)(
+                f"user_{student.id}",
+                {
+                    "type": "send_notification",
+                    "notification": {
+                        "id": notification.id,
+                        "title": notification.title,
+                        "message": notification.message,
+                        "is_read": notification.is_read,
+                        "created_at": str(notification.created_at),
+                    }
+                }
+            )
+
+
 
         return Response(
             {"message":"Lesson updated successfully"},

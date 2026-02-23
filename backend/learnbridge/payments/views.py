@@ -10,6 +10,14 @@ from .utils import stripe,razorpay_client
 from wallet.services import credit_admin_wallet
 import hmac
 import hashlib
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from notifications.models import *
+
+channel_layer = get_channel_layer()
+
+
+
 
 class CartDetailView(APIView):
 
@@ -256,6 +264,31 @@ class StripePaymentSuccessView(APIView):
                 course=item.course
             )
 
+        
+
+        notification = Notification.objects.create(
+            user=order.user,
+            title="Payment Successful",
+            message=f"Your payment of ₹{order.final_amount} was successful."
+        )
+
+        try:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{order.user.id}",
+                {
+                    "type": "send_notification",
+                    "notification": {
+                        "id": notification.id,
+                        "title": notification.title,
+                        "message": notification.message,
+                        "is_read": notification.is_read,
+                        "created_at": str(notification.created_at),
+                    }
+                }
+            )
+        except Exception as e:
+            print("WebSocket send failed:", e)
+
         return Response({"detail":"Payment processed & enrolled"})
 
 
@@ -394,12 +427,40 @@ class RazorpayPaymentVerifyView(APIView):
         credit_admin_wallet(
             amount=order.final_amount,
             course=first_item.course,
-            description=f"Course purchase – Order #{order.id}"
+            description=f"Course purchase - Order #{order.id}"
         )
 
         # Clear Cart
 
         CartItem.objects.filter(cart__user=request.user).delete()
 
+        # notification
+
+        notification = Notification.objects.create(
+            user=order.user,
+            title="Payment Successful",
+            message=f"Your payment of ₹{order.final_amount} was successful."
+        )
+
+        try:
+
+            async_to_sync(channel_layer.group_send)(
+                f"user_{order.user.id}",
+                {
+                    "type": "send_notification",
+                    "notification": {
+                        "id": notification.id,
+                        "title": notification.title,
+                        "message": notification.message,
+                        "is_read": notification.is_read,
+                        "created_at": str(notification.created_at),
+                    }
+                }
+            )
+            
+        except Exception as e:
+            print("WebSocket send failed:", e)
+
         return Response({"detail":"Payment successful & enrolled"})
+
 

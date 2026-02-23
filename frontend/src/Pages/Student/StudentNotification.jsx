@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { toast } from "sonner";
 import Logo from '../../assets/learnbridge-logo.png';
+
 import {
   ShoppingCart,
   Bell,
@@ -20,6 +21,7 @@ import {
   Menu,
   Ticket
 } from 'lucide-react';
+import Api from '../Services/Api';
 
 const StudentNotification = () => {
   const navigate = useNavigate();
@@ -27,58 +29,85 @@ const StudentNotification = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const notifications = [
-    {
-      id: 1,
-      type: 'success',
-      title: 'Order Confirmed',
-      message: 'Your order #12345 has been confirmed and is being processed.',
-      time: '2 minutes ago',
-      isNew: true,
-      icon: CheckCircle,
-      color: 'text-green-500',
-    },
-    {
-      id: 2,
-      type: 'info',
-      title: 'New Course Available',
-      message: 'Check out our new React Advanced course now available.',
-      time: '1 hour ago',
-      isNew: true,
-      icon: Info,
-      color: 'text-blue-500',
-    },
-    {
-      id: 3,
-      type: 'success',
-      title: 'Payment Successful',
-      message: 'Your payment of $99.00 was successful for Web Development Bootcamp.',
-      time: '3 hours ago',
-      isNew: false,
-      icon: CheckCircle,
-      color: 'text-green-500',
-    },
-    {
-      id: 4,
-      type: 'warning',
-      title: 'Course Expiring Soon',
-      message: 'Your access to JavaScript Basics will expire in 7 days.',
-      time: '1 day ago',
-      isNew: false,
-      icon: AlertTriangle,
-      color: 'text-orange-500',
-    },
-    {
-      id: 5,
-      type: 'message',
-      title: 'New Reply to Your Comment',
-      message: 'Someone replied to your comment on "Introduction to TypeScript".',
-      time: '2 days ago',
-      isNew: false,
-      icon: MessageSquare,
-      color: 'text-blue-500',
+  const [notifications, setNotifications] = useState([]);
+
+
+
+  useEffect(() => {
+
+    fetchNotifications();
+    }, []);
+
+
+    useEffect(()=>{
+
+        const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
+
+        socket.onmessage = (event)=>{
+            const data = JSON.parse(event.data)
+
+            setNotifications(prev=>[
+                data.notification,
+                ...prev
+            ])
+        }
+        return ()=>socket.close()
+
+    },[])
+
+   const fetchNotifications = async () =>{
+
+        try{
+            const res = await Api.get("/notification/")
+            setNotifications(res.data)
+
+        }catch(error){
+            toast.error(error.response?.data?.error || error.message || "Something went wrong")
+        }
+        
     }
-  ];
+
+
+    const markAsRead = async (id)=>{
+
+        try{
+            await Api.post(`/notification/mark-read/${id}/`)
+
+            setNotifications(prev=>
+                prev.map(n=>
+                    n.id === id ? {...n,is_read:true}:n
+                )
+            )
+        }catch(error){
+            toast.error(error.response?.data?.error || error.message || "Something went wrong")
+        }
+    }
+
+    const markAllAsRead = async ()=>{
+        try{
+            await Api.post("/notification/mark-all-read/")
+
+            setNotifications(prev=>
+                prev.map(n=>({...n,is_read:true}))
+            )
+        }catch(error){
+            toast.error(error.response?.data?.error || error.message || "Something went wrong")
+        }
+    }
+
+    const deleteNotification = async (id)=>{
+
+        try{
+            await Api.delete(`/notification/delete/${id}/`)
+
+            setNotifications(prev=>
+                prev.filter(n=>n.id !== id)
+            )
+        }catch(error){
+            toast.error(error.response?.data?.error || error.message || "Something went wrong")
+        }
+    }
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -239,7 +268,7 @@ const StudentNotification = () => {
           </div>
           <div>
             <span className="bg-white text-purple-600 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-              {(notifications.filter(n => n.isNew).length)} Unread
+              {notifications.filter(n => !n.is_read).length} Unread
             </span>
           </div>
         </div>
@@ -249,7 +278,9 @@ const StudentNotification = () => {
       <main className="flex-1 bg-white p-4 md:p-6 max-w-4xl mx-auto w-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm font-bold text-gray-800">All Notifications</h2>
-          <button className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors">
+          <button
+          onClick={markAllAsRead}
+          className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
             Mark all as read
           </button>
         </div>
@@ -258,10 +289,10 @@ const StudentNotification = () => {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 rounded-xl border flex gap-4 transition-all ${notification.isNew ? 'bg-blue-50/50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+              className={`p-4 rounded-xl border flex gap-4 transition-all ${notification.is_read ? 'bg-blue-50/50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
             >
               <div className="mt-1">
-                <notification.icon className={`w-5 h-5 ${notification.color}`} />
+                <Bell className="w-5 h-5 text-blue-500" />
               </div>
 
               <div className="flex-1">
@@ -273,12 +304,15 @@ const StudentNotification = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <X size={14} className="cursor-pointer hover:text-gray-600" />
-                    <span className="opacity-50 text-xs hidden sm:inline-block">{'>'}</span>
+                    <X
+
+                     onClick={() => deleteNotification(notification.id)}
+                     size={14} className="cursor-pointer hover:text-gray-600" />
+                    <span className="opacity-50 text-xs hidden sm:inline-block"></span>
                   </div>
                 </div>
                 <p className="text-sm text-gray-500 mt-1 mb-2 leading-relaxed max-w-2xl">{notification.message}</p>
-                <span className="text-xs font-medium text-gray-400">{notification.time}</span>
+                <span className="text-xs font-medium text-gray-400">{new Date(notification.created_at).toLocaleString()}</span>
               </div>
             </div>
           ))}
