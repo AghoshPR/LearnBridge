@@ -16,6 +16,8 @@ urlpatterns = [
     path('api/',include('promotions.urls')),
     path('api/qna/',include('qna.urls')),
     path('api/',include('notifications.urls')),
+    path('api/',include('liveclass.urls')),
+    
 
     
 

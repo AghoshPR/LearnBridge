@@ -32,12 +32,12 @@ const QACommunityAnswers = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null); 
+  const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
 
   const [question, setQuestion] = useState(null);
-  const [answers, setAnswers] = useState([]); 
+  const [answers, setAnswers] = useState([]);
 
 
 
@@ -46,35 +46,35 @@ const QACommunityAnswers = () => {
     fetchAnswers();
   }, [id]);
 
-  const fetchQuestionDetail = async()=>{
+  const fetchQuestionDetail = async () => {
 
-      try{
-        const res = await Api.get(`/qna/questions/${id}/`)
-        setQuestion(res.data)
-      
-      }catch(err){
-        toast.error("Failed to load questions")
-      }
+    try {
+      const res = await Api.get(`/qna/questions/${id}/`)
+      setQuestion(res.data)
+
+    } catch (err) {
+      toast.error("Failed to load questions")
+    }
   }
 
-  const fetchAnswers = async()=>{
+  const fetchAnswers = async () => {
 
-      try{
-        const res = await Api.get(`/qna/questions/answers/${id}/`)
-        setAnswers(res.data)
-      }catch(err){
-        toast.error("failed to load answers")
-      }
+    try {
+      const res = await Api.get(`/qna/questions/answers/${id}/`)
+      setAnswers(res.data)
+    } catch (err) {
+      toast.error("failed to load answers")
+    }
   }
 
   const formatDateTime = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleString(); // shows date + time
-};
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleString(); // shows date + time
+  };
 
 
-  const handlePostAnswer = async() => {
+  const handlePostAnswer = async () => {
 
 
     if (!isAuthenticated) {
@@ -86,10 +86,10 @@ const QACommunityAnswers = () => {
     if (!newAnswer.trim()) return;
 
 
-    try{
+    try {
 
       await Api.post(`/qna/questions/answers/create/${id}/`, {
-        body:newAnswer
+        body: newAnswer
       })
 
       toast.success("Answer posted successfully")
@@ -97,35 +97,35 @@ const QACommunityAnswers = () => {
 
       fetchAnswers()
 
-    }catch(err){
+    } catch (err) {
       toast.error("Failed to post answer")
     }
 
   };
 
-  const handlePostReply = async(answerId) => {
+  const handlePostReply = async (answerId) => {
 
     if (!replyText.trim()) return;
 
 
-    try{
-      
+    try {
+
       await Api.post(`/qna/answers/reply/${answerId}/`, {
-        body:replyText,
+        body: replyText,
       })
 
       toast.success("Reply posted successfully!");
       setReplyText("");
       setReplyingTo(null);
       fetchAnswers();
-      
 
-    }catch(err){
+
+    } catch (err) {
       toast.error("failed to Post reply")
     }
-    
 
-    
+
+
   };
 
   return (
@@ -141,7 +141,7 @@ const QACommunityAnswers = () => {
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
               <Link to="/question-community" className="text-blue-600 font-semibold transition-colors">Q&A Community</Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
             </div>
           </div>
 
@@ -227,7 +227,7 @@ const QACommunityAnswers = () => {
               </div>
               <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
                 <Eye size={20} className="text-gray-400" />
-                <span className="text-sm font-bold text-gray-700">{question?.views|| 0}</span>
+                <span className="text-sm font-bold text-gray-700">{question?.views || 0}</span>
                 <span className="text-[10px] uppercase hidden sm:block">views</span>
               </div>
             </div>
@@ -302,7 +302,7 @@ const QACommunityAnswers = () => {
 
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold">
-                        {answer.user_name .charAt(0).toUpperCase()}
+                        {answer.user_name.charAt(0).toUpperCase()}
                       </div>
                       <div className="text-xs text-gray-500">
                         <span className="font-semibold text-gray-700">{answer?.user_name}</span>
@@ -360,7 +360,7 @@ const QACommunityAnswers = () => {
                                 <User className="w-4 h-4" />
                               </div>
                               <div className="text-xs text-gray-500">
-                                
+
                                 <span className="font-semibold text-gray-700">{reply.user_name}</span>
                                 <span className="ml-1">replied {formatDateTime(reply.created_at)}</span>
                               </div>

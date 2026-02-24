@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -36,77 +36,77 @@ const StudentNotification = () => {
   useEffect(() => {
 
     fetchNotifications();
-    }, []);
+  }, []);
 
 
-    useEffect(()=>{
+  useEffect(() => {
 
-        const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
+    const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
 
-        socket.onmessage = (event)=>{
-            const data = JSON.parse(event.data)
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data)
 
-            setNotifications(prev=>[
-                data.notification,
-                ...prev
-            ])
-        }
-        return ()=>socket.close()
+      setNotifications(prev => [
+        data.notification,
+        ...prev
+      ])
+    }
+    return () => socket.close()
 
-    },[])
+  }, [])
 
-   const fetchNotifications = async () =>{
+  const fetchNotifications = async () => {
 
-        try{
-            const res = await Api.get("/notification/")
-            setNotifications(res.data)
+    try {
+      const res = await Api.get("/notification/")
+      setNotifications(res.data)
 
-        }catch(error){
-            toast.error(error.response?.data?.error || error.message || "Something went wrong")
-        }
-        
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message || "Something went wrong")
     }
 
+  }
 
-    const markAsRead = async (id)=>{
 
-        try{
-            await Api.post(`/notification/mark-read/${id}/`)
+  const markAsRead = async (id) => {
 
-            setNotifications(prev=>
-                prev.map(n=>
-                    n.id === id ? {...n,is_read:true}:n
-                )
-            )
-        }catch(error){
-            toast.error(error.response?.data?.error || error.message || "Something went wrong")
-        }
+    try {
+      await Api.post(`/notification/mark-read/${id}/`)
+
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === id ? { ...n, is_read: true } : n
+        )
+      )
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message || "Something went wrong")
     }
+  }
 
-    const markAllAsRead = async ()=>{
-        try{
-            await Api.post("/notification/mark-all-read/")
+  const markAllAsRead = async () => {
+    try {
+      await Api.post("/notification/mark-all-read/")
 
-            setNotifications(prev=>
-                prev.map(n=>({...n,is_read:true}))
-            )
-        }catch(error){
-            toast.error(error.response?.data?.error || error.message || "Something went wrong")
-        }
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, is_read: true }))
+      )
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message || "Something went wrong")
     }
+  }
 
-    const deleteNotification = async (id)=>{
+  const deleteNotification = async (id) => {
 
-        try{
-            await Api.delete(`/notification/delete/${id}/`)
+    try {
+      await Api.delete(`/notification/delete/${id}/`)
 
-            setNotifications(prev=>
-                prev.filter(n=>n.id !== id)
-            )
-        }catch(error){
-            toast.error(error.response?.data?.error || error.message || "Something went wrong")
-        }
+      setNotifications(prev =>
+        prev.filter(n => n.id !== id)
+      )
+    } catch (error) {
+      toast.error(error.response?.data?.error || error.message || "Something went wrong")
     }
+  }
 
 
   return (
@@ -122,7 +122,7 @@ const StudentNotification = () => {
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
               <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-              <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
             </div>
           </div>
 
@@ -217,7 +217,7 @@ const StudentNotification = () => {
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
             <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
             <a href="#" className="text-gray-700 font-medium text-left">Q&A Community</a>
-            <a href="#" className="text-gray-700 font-medium text-left">Live Classes</a>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium text-left">Live Classes</Link>
             <hr className="border-gray-100" />
 
             <div className="flex items-center gap-3">
@@ -279,8 +279,8 @@ const StudentNotification = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm font-bold text-gray-800">All Notifications</h2>
           <button
-          onClick={markAllAsRead}
-          className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
+            onClick={markAllAsRead}
+            className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
             Mark all as read
           </button>
         </div>
@@ -306,8 +306,8 @@ const StudentNotification = () => {
                   <div className="flex items-center gap-2 text-gray-400">
                     <X
 
-                     onClick={() => deleteNotification(notification.id)}
-                     size={14} className="cursor-pointer hover:text-gray-600" />
+                      onClick={() => deleteNotification(notification.id)}
+                      size={14} className="cursor-pointer hover:text-gray-600" />
                     <span className="opacity-50 text-xs hidden sm:inline-block"></span>
                   </div>
                 </div>

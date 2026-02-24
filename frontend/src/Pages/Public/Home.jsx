@@ -122,7 +122,7 @@ const Home = () => {
                             <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
 
                             <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
-                            <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+                            <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
                         </div>
                     </div>
 
@@ -246,7 +246,7 @@ const Home = () => {
                     <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
                         <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
                         <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-                        <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+                        <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
                         <hr className="border-gray-100" />
 
                         <div className="flex items-center gap-3">
@@ -442,7 +442,7 @@ const Home = () => {
                             <h4 className="font-bold text-gray-900 mb-4">Platform</h4>
                             <ul className="space-y-3 text-sm text-gray-500">
                                 <li><a href="#" className="hover:text-blue-600">Browse Courses</a></li>
-                                <li><a href="#" className="hover:text-blue-600">Live Classes</a></li>
+                                <li><Link to="/student/liveclass" className="hover:text-blue-600">Live Classes</Link></li>
                                 <li><a href="#" className="hover:text-blue-600">Q&A Community</a></li>
                             </ul>
                         </div>

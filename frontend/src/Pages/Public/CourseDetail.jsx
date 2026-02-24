@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package, Ticket } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
-import { useParams } from "react-router-dom";
 import Api from "../Services/Api";
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -112,7 +111,7 @@ const CourseDetail = () => {
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                             <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
                             <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-                            <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+                            <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
                         </div>
                     </div>
 
@@ -221,7 +220,7 @@ const CourseDetail = () => {
                     <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full z-50">
                         <a href="#" className="text-gray-700 font-medium">Explore</a>
                         <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
-                        <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+                        <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
                         <hr className="border-gray-100" />
 
                         {!isAuthenticated ? (

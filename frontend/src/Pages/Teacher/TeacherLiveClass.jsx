@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -22,6 +24,37 @@ import { useNavigate } from 'react-router-dom';
 import Api from '../Services/Api';
 import { logout } from '../../Store/authSlice';
 
+async function getCroppedImg(imageElement, crop) {
+  const canvas = document.createElement("canvas");
+  const scaleX = imageElement.naturalWidth / imageElement.width;
+  const scaleY = imageElement.naturalHeight / imageElement.height;
+
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) return null;
+
+  ctx.drawImage(
+    imageElement,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob);
+    }, "image/jpeg");
+  });
+}
+
 const TeacherLiveClass = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -29,55 +62,61 @@ const TeacherLiveClass = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modal state
+  const [classes, setClasses] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [classToDelete, setClassToDelete] = useState(null);
+
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const imgRef = useRef(null);
 
   // Form state
   const [formData, setFormData] = useState({
+    id: null,
     title: '',
-    course: '',
+    subject: '',
     date: '',
     time: '',
-    duration: '',
+    durationHr: '',
+    durationMin: '',
     link: '',
+    fee: '',
+    status: 'scheduled',
     description: ''
   });
 
-  const upcomingClasses = [
-    {
-      id: 1,
-      title: "React Hooks Deep Dive",
-      course: "Advanced React Patterns",
-      date: "2025-12-01",
-      time: "3:00 PM",
-      registered: 45
-    },
-    {
-      id: 2,
-      title: "TypeScript Best Practices",
-      course: "TypeScript Essentials",
-      date: "2025-12-02",
-      time: "10:00 AM",
-      registered: 38
-    }
-  ];
+  useEffect(() => {
+    fetchClasses()
+  }, [])
 
-  const pastClasses = [
-    {
-      id: 3,
-      title: "Introduction to Node.js",
-      course: "Node.js Masterclass",
-      datetime: "2025-11-25 at 2:00 PM",
-      attended: 52
-    },
-    {
-      id: 4,
-      title: "Building REST APIs",
-      course: "Full Stack Development",
-      datetime: "2025-11-20 at 11:00 AM",
-      attended: 48
+  const fetchClasses = async () => {
+
+    try {
+
+      const res = await Api.get("/teacher/liveclass/")
+      setClasses(res.data)
+
+    } catch {
+      toast.error("failed to fetch classes")
     }
-  ];
+
+
+
+  }
+
+  const now = new Date();
+
+  const upcomingClasses = classes.filter(
+    cls => new Date(cls.start_time) >= now
+  );
+
+  const pastClasses = classes.filter(
+    cls => new Date(cls.start_time) < now
+  );
 
   const handleLogout = async () => {
     try {
@@ -97,29 +136,61 @@ const TeacherLiveClass = () => {
   };
 
   const openModal = (mode, cls = null) => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    setCompletedCrop(null);
+    setCrop();
+
     if (mode === 'edit' && cls) {
+
+      const start = new Date(cls.start_time);
+      const totalMinutes = cls.duration_minutes || 0;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+
       setIsEditMode(true);
+
       setFormData({
-        title: cls.title || '',
-        course: cls.course || '',
-        date: cls.date || '',
-        time: cls.time || '',
-        duration: '90 min',
-        link: 'https://meet.google.com/...',
-        description: ''
+        id: cls.class_id,
+        title: cls.title,
+        subject: cls.subject || '',
+        date: start.toISOString().split("T")[0],
+        time: start.toTimeString().slice(0, 5),
+        durationHr: hours.toString(),
+        durationMin: minutes.toString(),
+        link: cls.meeting_link,
+        fee: cls.registration_fee,
+        status: cls.status,
+        description: cls.description
       });
+
+      if (cls.thumbnail) {
+        setThumbnailPreview(
+          cls.thumbnail.startsWith("http")
+            ? cls.thumbnail
+            : `http://localhost:8000${cls.thumbnail}`
+        );
+      }
+
     } else {
       setIsEditMode(false);
       setFormData({
+        id: null,
         title: '',
-        course: '',
+        subject: '',
         date: '',
         time: '',
-        duration: '',
+        durationHr: '',
+        durationMin: '',
         link: '',
+        fee: '',
+        status: 'scheduled',
         description: ''
       });
+
     }
+
     setIsModalOpen(true);
   };
 
@@ -127,10 +198,142 @@ const TeacherLiveClass = () => {
     setIsModalOpen(false);
   };
 
-  const handleSave = () => {
-    toast.success(isEditMode ? "Class updated successfully!" : "New class scheduled!");
-    closeModal();
+  const handleSave = async () => {
+
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
+    if (!formData.date || !formData.time) {
+      toast.error("Date and time are required");
+      return;
+    }
+
+    const startDateTime = new Date(`${formData.date}T${formData.time}`);
+
+    if (startDateTime < new Date()) {
+      toast.error("Cannot schedule class in the past");
+      return;
+    }
+
+
+
+    const durationMinutes =
+      (parseInt(formData.durationHr || 0) * 60) +
+      parseInt(formData.durationMin || 0)
+
+    if (durationMinutes <= 0) {
+      toast.error("Duration must be greater than 0");
+      return;
+    }
+
+    const endDateTime = new Date(
+      startDateTime.getTime() + durationMinutes * 60000
+    )
+
+
+    const payload = new FormData();
+    payload.append("title", formData.title);
+    payload.append("subject", formData.subject);
+    payload.append("description", formData.description);
+    payload.append("meeting_link", formData.link);
+    payload.append("registration_fee", formData.fee || 0);
+    payload.append("start_time", startDateTime.toISOString());
+    payload.append("end_time", endDateTime.toISOString());
+    payload.append("duration_minutes", durationMinutes);
+    payload.append("status", formData.status);
+
+    if (imgRef.current && completedCrop?.width && completedCrop?.height) {
+      try {
+        const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
+        if (croppedBlob) {
+          payload.append("thumbnail", croppedBlob, "thumbnail.jpg");
+        }
+      } catch (err) {
+        toast.error("Error processing image.");
+        return;
+      }
+    }
+
+    try {
+
+      if (isEditMode) {
+        await Api.put(
+          `/teacher/liveclass/${formData.id}/`, payload, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          }
+        }
+        )
+        toast.success("Class updated successfully")
+      } else {
+        await Api.post("/teacher/liveclass/", payload, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          }
+        })
+        toast.success("Class scheduled successfully!")
+      }
+
+      fetchClasses()
+      closeModal()
+
+    } catch (err) {
+      console.error("API Error Response:", err.response?.data);
+      const data = err.response?.data;
+      let errMsg = "Something went wrong";
+      if (data) {
+        if (data.non_field_errors) {
+          errMsg = data.non_field_errors[0];
+        } else if (typeof data === "object") {
+          const firstKey = Object.keys(data)[0];
+          if (firstKey && Array.isArray(data[firstKey])) {
+            errMsg = `${firstKey}: ${data[firstKey][0]}`;
+          } else if (firstKey) {
+            errMsg = `${firstKey}: ${data[firstKey]}`;
+          }
+        }
+      }
+
+      toast.error(errMsg);
+    }
+
+
+
+
+
+
   };
+
+
+
+  const handleDelete = (id) => {
+    setClassToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!classToDelete) return;
+
+    try {
+      await Api.delete(`/teacher/liveclass/${classToDelete}/`);
+      toast.success("Deleted successfully");
+      fetchClasses();
+    } catch {
+      toast.error("Delete failed");
+    } finally {
+      setIsDeleteModalOpen(false);
+      setClassToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setClassToDelete(null);
+  };
+
+
 
   const sidebarItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
@@ -244,29 +447,49 @@ const TeacherLiveClass = () => {
 
             <div className="space-y-4">
               {upcomingClasses.map((cls) => (
-                <div key={cls.id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-5 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-5 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-bold text-white">{cls.title}</h3>
-                      <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-xs font-bold border border-purple-500/20">
-                        Scheduled
+                      <h3 className="text-lg font-bold text-white">{cls.title} - {cls.subject && (
+                        <span className="text-slate-400 text-sm mb-2">
+                          {cls.subject}
+                        </span>
+                      )}</h3>
+
+                      <span className="px-5 py-1  bg-purple-500/10 text-purple-400 rounded-full text-xs font-bold border border-purple-500/20">
+                        {cls.status}
                       </span>
+
+
                     </div>
-                    <p className="text-slate-400 text-sm mb-4">{cls.course}</p>
+
+
+
 
                     <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-300">
                       <div className="flex items-center gap-1.5">
                         <Calendar size={14} className="text-purple-400" />
-                        {cls.date}
+                        {new Date(cls.start_time).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock size={14} className="text-purple-400" />
-                        {cls.time}
+                        {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Users size={14} className="text-green-400" />
-                        {cls.registered}registered
+                        {cls.registered_count} Registered
                       </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={14} className="text-yellow-400" />
+                        {cls.duration_minutes >= 60
+                          ? `${Math.floor(cls.duration_minutes / 60)}h ${cls.duration_minutes % 60
+                          }m`
+                          : `${cls.duration_minutes}m`}
+                      </div>
+
+
+
                     </div>
                   </div>
 
@@ -282,7 +505,9 @@ const TeacherLiveClass = () => {
                       <Edit2 size={16} className="text-slate-500" />
                       Edit
                     </button>
-                    <button className="p-2 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors shadow-sm">
+                    <button
+                      onClick={() => handleDelete(cls.class_id)}
+                      className="p-2 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors shadow-sm">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -296,23 +521,28 @@ const TeacherLiveClass = () => {
             <h2 className="text-xl font-bold text-white mb-6">Past Classes</h2>
 
             <div className="space-y-4">
+              {pastClasses.length === 0 && (
+                <p className="text-slate-400 text-sm">No past classes.</p>
+              )}
+
               {pastClasses.map((cls) => (
-                <div key={cls.id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-4 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-4 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 flex-shrink-0">
                       <Video size={20} className="text-purple-400" />
                     </div>
                     <div>
                       <h3 className="text-base font-bold text-white mb-1">{cls.title}</h3>
-                      <p className="text-slate-400 text-sm">{cls.course}</p>
+                      <p className="text-slate-400 text-sm">{cls.subject}</p>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 md:gap-8">
-                    <div className="text-sm font-medium text-slate-400">{cls.datetime}</div>
-                    <div className="text-sm font-medium text-purple-400">{cls.attended} attended</div>
-                    <span className="px-4 py-1.5 bg-transparent text-slate-500 rounded-full text-xs font-bold border border-slate-700">
-                      Completed
+                    <div className="text-sm font-medium text-slate-400">{new Date(cls.start_time).toLocaleString()}</div>
+
+                    <div className="text-sm font-medium text-purple-400">{cls.registered_count} attended</div>
+                    <span className="px-4 py-1.5 bg-transparent text-white-500 rounded-full text-xs font-bold border border-slate-700">
+                      {cls.status}
                     </span>
                   </div>
                 </div>
@@ -324,10 +554,10 @@ const TeacherLiveClass = () => {
 
       {/* Schedule/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 my-8">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-in fade-in zoom-in duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-gray-100 shrink-0">
               <h2 className="text-xl font-bold text-gray-900">
                 {isEditMode ? 'Edit Live Class' : 'Schedule New Class'}
               </h2>
@@ -340,7 +570,7 @@ const TeacherLiveClass = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
+            <div className="p-5 sm:p-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Class Title *</label>
@@ -356,8 +586,8 @@ const TeacherLiveClass = () => {
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Subject/Course *</label>
                   <input
                     type="text"
-                    value={formData.course}
-                    onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                     placeholder=""
                   />
@@ -368,37 +598,48 @@ const TeacherLiveClass = () => {
                 <div className="relative">
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Date *</label>
                   <input
-                    type="text"
+                    type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 pr-10"
-                    placeholder="12/01/2025"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                   />
-                  <Calendar size={18} className="absolute right-3 top-[34px] text-gray-400" />
                 </div>
                 <div className="relative">
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Time *</label>
                   <input
-                    type="text"
+                    type="time"
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 pr-10"
-                    placeholder="--:-- --"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                   />
-                  <Clock size={18} className="absolute right-3 top-[34px] text-gray-400" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Duration</label>
-                  <input
-                    type="text"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
-                    placeholder="90 min"
-                  />
+                  <div className="flex gap-2">
+                    <select
+                      value={formData.durationHr}
+                      onChange={(e) => setFormData({ ...formData, durationHr: e.target.value })}
+                      className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
+                    >
+                      <option value="" disabled>Hr</option>
+                      {[...Array(13).keys()].map(h => (
+                        <option key={`hr-${h}`} value={h}>{h} hr</option>
+                      ))}
+                    </select>
+                    <select
+                      value={formData.durationMin}
+                      onChange={(e) => setFormData({ ...formData, durationMin: e.target.value })}
+                      className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
+                    >
+                      <option value="" disabled>Min</option>
+                      {Array.from({ length: 60 }, (_, i) => i).map(m => (
+                        <option key={`min-${m}`} value={m}>{m} min</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Meeting Link</label>
@@ -410,6 +651,70 @@ const TeacherLiveClass = () => {
                     placeholder="https://meet.google.com/..."
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Registration Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.fee}
+                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
+                    placeholder="e.g. 200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
+                  >
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                  Thumbnail Image
+                </label>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      const file = e.target.files[0];
+                      setThumbnailFile(file);
+                      setThumbnailPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  className="w-full text-black file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"
+                />
+
+                {thumbnailPreview && (
+                  <div className="mt-4 flex justify-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                    <ReactCrop
+                      crop={crop}
+                      onChange={(_, percentCrop) => setCrop(percentCrop)}
+                      onComplete={(c) => setCompletedCrop(c)}
+                      aspect={16 / 9}
+                    >
+                      <img
+                        ref={imgRef}
+                        alt="Crop preview"
+                        src={thumbnailPreview}
+                        crossOrigin="anonymous"
+                        style={{ maxHeight: "300px", width: "auto", objectFit: "contain" }}
+                      />
+                    </ReactCrop>
+                  </div>
+                )}
               </div>
 
               <div className="mb-6">
@@ -440,8 +745,32 @@ const TeacherLiveClass = () => {
           </div>
         </div>
       )}
-    </div>
-  )
-}
 
-export default TeacherLiveClass
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 relative">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Confirm Delete</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this class? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white font-bold hover:bg-red-700 rounded-lg transition-colors text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TeacherLiveClass;

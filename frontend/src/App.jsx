@@ -18,7 +18,6 @@ import Courses from './Pages/Public/Courses'
 import CourseDetail from './Pages/Public/CourseDetail'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
-import StudentDashboard from './Pages/Student/StudentDashboard'
 import StudentProfile from './Pages/Student/StudentProfile'
 import TeacherDashBoard from './Pages/Teacher/TeacherDashBoard'
 import TeacherProfile from './Pages/Teacher/TeacherProfile'
@@ -47,6 +46,8 @@ import AdminQA_Community from './Pages/Admin/AdminQA_Community'
 import QACommunityAnswers from './Pages/Public/QACommunityAnswers'
 import TeacherLiveClass from './Pages/Teacher/TeacherLiveClass'
 import StudentNotification from './Pages/Student/StudentNotification'
+import LiveClass from './Pages/LiveClasses/LiveClass'
+import VideoChat from './Pages/LiveClasses/VideoChat'
 
 
 
@@ -124,6 +125,8 @@ function App() {
         <Route path='/question-community/:id' element={<QACommunityAnswers />} />
 
         <Route path="/student/notifications" element={<ProtectedRoute role="student"><StudentNotification /></ProtectedRoute>} />
+        <Route path="/student/liveclass" element={<ProtectedRoute role="student"><LiveClass /></ProtectedRoute>} />
+        <Route path="/student/videochat" element={<ProtectedRoute role="student"><VideoChat /></ProtectedRoute>} />
 
 
 

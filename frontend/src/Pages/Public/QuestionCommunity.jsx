@@ -1,4 +1,4 @@
-import React, { useState,useEffect  } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Plus, Eye } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
@@ -24,9 +24,9 @@ const QuestionCommunity = () => {
   const navigate = useNavigate();
 
 
-    const [questions, setQuestions] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [availableTags, setAvailableTags] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [availableTags, setAvailableTags] = useState([]);
 
 
 
@@ -38,29 +38,29 @@ const QuestionCommunity = () => {
     fetchCourses();
   }, [])
 
-  const fetchQuestions = async()=>{
-      try{
-        const res = await Api.get("/qna/questions/")
-        setQuestions(res.data)
-      
-      }catch(err){
-        toast.error("Failed to load ")
-      }
+  const fetchQuestions = async () => {
+    try {
+      const res = await Api.get("/qna/questions/")
+      setQuestions(res.data)
+
+    } catch (err) {
+      toast.error("Failed to load ")
+    }
   }
 
 
-  const fetchTags = async()=>{
+  const fetchTags = async () => {
 
-      try{
-        const res = await Api.get("/qna/public-tags/")
-        setAvailableTags(res.data)
+    try {
+      const res = await Api.get("/qna/public-tags/")
+      setAvailableTags(res.data)
 
-      }catch(err){
-        toast.err("failed to load tags")
-      }
+    } catch (err) {
+      toast.err("failed to load tags")
+    }
   }
 
-  const fetchCourses = async()=>{
+  const fetchCourses = async () => {
 
     try {
       const res = await Api.get("/courses/public/")
@@ -83,7 +83,7 @@ const QuestionCommunity = () => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handlePostQuestion = async() => {
+  const handlePostQuestion = async () => {
 
 
     if (!isAuthenticated) {
@@ -93,8 +93,8 @@ const QuestionCommunity = () => {
     }
 
     if (!newQuestionTitle.trim()) {
-    toast.error("Question title is required");
-    return;
+      toast.error("Question title is required");
+      return;
     }
 
     if (!selectedCourse) {
@@ -103,20 +103,20 @@ const QuestionCommunity = () => {
     }
 
 
-    
-    try{
+
+    try {
 
       const tagIds = tags
-      .map(tagName => {
-        const found = availableTags.find(t => t.tag_name === tagName);
-        return found ? found.id : null;
-      })
-      .filter(Boolean);
+        .map(tagName => {
+          const found = availableTags.find(t => t.tag_name === tagName);
+          return found ? found.id : null;
+        })
+        .filter(Boolean);
 
-      await Api.post("/qna/questions/create/",{
-        title:newQuestionTitle,
-        body:newQuestionTitle,
-        course:selectedCourse,
+      await Api.post("/qna/questions/create/", {
+        title: newQuestionTitle,
+        body: newQuestionTitle,
+        course: selectedCourse,
         tag_ids: tagIds
       })
 
@@ -127,20 +127,20 @@ const QuestionCommunity = () => {
       setSelectedCourse('');
       setTags([]);
       fetchQuestions();
-      
 
-    }catch(err){
+
+    } catch (err) {
       toast.error("Error posting question")
     }
 
-    
+
   };
 
   const formatDateTime = (dateStr) => {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleString(); // shows date + time
-};
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleString(); // shows date + time
+  };
 
 
 
@@ -157,7 +157,7 @@ const QuestionCommunity = () => {
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
               <Link to="/question-community" className="text-blue-600 font-semibold transition-colors">Q&A Community</Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">Live Classes</a>
+              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
             </div>
           </div>
 
@@ -251,7 +251,7 @@ const QuestionCommunity = () => {
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
             <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
             <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-            <a href="#" className="text-gray-700 font-medium">Live Classes</a>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
             <hr className="border-gray-100" />
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
@@ -297,10 +297,10 @@ const QuestionCommunity = () => {
               <button
                 key={tag.id}
                 onClick={() => {
-                if (!tags.includes(tag.tag_name) && tags.length < 5) {
-                  setTags([...tags, tag.tag_name]);
-                }
-              }}
+                  if (!tags.includes(tag.tag_name) && tags.length < 5) {
+                    setTags([...tags, tag.tag_name]);
+                  }
+                }}
                 className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full text-xs font-bold text-gray-600 transition-colors"
               >
                 {tag.tag_name}
@@ -371,8 +371,8 @@ const QuestionCommunity = () => {
                     {question.user_name.charAt(0)}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
-                     <User size={14} />
-                     <span className="text-gray-700">{question.user_name}</span>
+                    <User size={14} />
+                    <span className="text-gray-700">{question.user_name}</span>
                     <span>•</span>
                     <span>{formatDateTime(question.created_at)}</span>
                   </div>
@@ -437,7 +437,7 @@ const QuestionCommunity = () => {
                   </div>
                 </div>
 
-                
+
                 {/* Tags */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -483,11 +483,11 @@ const QuestionCommunity = () => {
                     ))}
                   </div>
 
-                    {tags.length === 0 && (
-                      <p className="text-xs text-red-500 mt-2">
-                        Please select at least one tag
-                      </p>
-                    )}
+                  {tags.length === 0 && (
+                    <p className="text-xs text-red-500 mt-2">
+                      Please select at least one tag
+                    </p>
+                  )}
                 </div>
 
 

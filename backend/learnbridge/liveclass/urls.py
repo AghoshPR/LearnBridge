@@ -1,0 +1,11 @@
+
+from django.contrib import admin
+from django.urls import path,include
+from .views import *
+
+
+urlpatterns = [
+    path("teacher/liveclass/", TeacherLiveClassListView.as_view()),
+    path("teacher/liveclass/<int:pk>/", TeacherLiveClassDetailView.as_view()),
+    path("student/liveclass/upcoming/", StudentUpCommingLiveClassesView.as_view()),
+]
