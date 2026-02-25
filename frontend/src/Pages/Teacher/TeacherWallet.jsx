@@ -193,7 +193,7 @@ const TeacherWallet = () => {
             <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-purple-500/20"></div>
             <div className="relative z-10">
               <p className="text-sm font-medium text-slate-400 mb-1">Live Class Revenue</p>
-              <h2 className="text-3xl font-bold text-purple-400">₹400</h2>
+              <h2 className="text-3xl font-bold text-purple-400">₹ {walletSummary?.live_class_revenue ?? 0}</h2>
               <Video className="absolute bottom-6 right-6 text-purple-500/50 w-6 h-6" />
             </div>
           </div>

@@ -6,6 +6,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
 from django.utils import timezone
 from  .payout_service import *
+from authapp.permissions import *
 
 class AdminWalletSummaryView(APIView):
 
@@ -24,14 +25,16 @@ class AdminWalletSummaryView(APIView):
     
 class AdminWalletTransactionsView(APIView):
 
+    permission_classes = [IsAdmin]
+
     def get(self,request):
 
-        permission_classes = [IsAdmin]
+        
 
         wallet,_ = AdminWallet.objects.get_or_create(id=1)
 
         transactions = AdminTransaction.objects.select_related(
-            "course","course__teacher"
+            "course","course__teacher", "live_class","live_class__teacher__user"
         ).filter(admin_wallet=wallet).order_by("-created_at")
 
         data=[]
@@ -48,11 +51,23 @@ class AdminWalletTransactionsView(APIView):
                 (t.amount * Decimal("0.80")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             )
 
+            if t.source == "course_fee" and t.course:
+                course_name = t.course.title
+                tutor_name = t.course.teacher.username   # 🔥 teacher is already User
+
+            elif t.source == "live_class" and t.live_class:
+                course_name = t.live_class.title
+                tutor_name = t.live_class.teacher.user.username  # 🔥 teacher is TeacherProfile
+
+            else:
+                course_name = None
+                tutor_name = None
+
             data.append({
                 "id": t.id,
                 "date": t.created_at,
-                "courseName": t.course.title if t.course else None,
-                "tutorName": t.course.teacher.username if t.course else None,
+                "courseName": course_name,
+                "tutorName": tutor_name,
                 "fullAmount": full_amount,
                 "adminShare": admin_share,
                 "teacherShare": teacher_share,
@@ -73,13 +88,22 @@ class AdminTransferToTeacherView(APIView):
     def post(self, request, transaction_id):
 
         admin_tx = AdminTransaction.objects.select_related(
-            "admin_wallet", "course__teacher"
+            "admin_wallet", "course__teacher","live_class__teacher__user",
         ).get(id=transaction_id)
 
         if admin_tx.status != "transfer_pending":
             return Response({"error": "Already transferred"}, status=400)
 
-        teacher = admin_tx.course.teacher
+        if admin_tx.source == "course_sale":
+            teacher = admin_tx.course.teacher.user
+
+        elif admin_tx.source == "live_class":
+            teacher = admin_tx.live_class.teacher.user
+
+        else:
+            return Response({"error": "Invalid transaction type"}, status=400)
+        
+
         amount = admin_tx.amount
 
         teacher_share = (amount * Decimal("0.80")).quantize(
@@ -110,11 +134,22 @@ class AdminTransferToTeacherView(APIView):
         teacher_wallet.available_balance += teacher_share
         teacher_wallet.save()
 
-        teacher_tx = TeacherTransaction.objects.filter(
-            teacher_wallet=teacher_wallet,
-            course=admin_tx.course,
-            status="payment_pending"
-        ).first()
+        if admin_tx.source == "course_fee":
+            teacher_tx = TeacherTransaction.objects.filter(
+                teacher_wallet=teacher_wallet,
+                course=admin_tx.course,
+                status="payment_pending"
+            ).first()
+
+        elif admin_tx.source == "live_class":
+            teacher_tx = TeacherTransaction.objects.filter(
+                teacher_wallet=teacher_wallet,
+                live_class=admin_tx.live_class,
+                status="payment_pending"
+            ).first()
+
+        else:
+            teacher_tx = None
 
         if teacher_tx:
             teacher_tx.status = "payment_completed"
@@ -144,11 +179,18 @@ class TeacherWalletSummaryView(APIView):
             teacher=request.user
         )
 
+        live_class_total = wallet.transactions.filter(
+            source="live_class"
+        ).aggregate(
+            total=models.Sum("amount")
+        )["total"] or 0
+
         return Response({
             "total_earnings": wallet.total_earnings,
             "available_balance": wallet.available_balance,
             "pending_balance": wallet.pending_balance,
-            "withdrawn_amount" : wallet.withdrawn_amount
+            "withdrawn_amount" : wallet.withdrawn_amount,
+            "live_class_revenue": live_class_total
         })
     
 class TeacherWalletTrasactionsView(APIView):

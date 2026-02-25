@@ -3,6 +3,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 import notifications.routing
+import liveclass.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "LearnBridge.settings")
 
@@ -10,7 +11,9 @@ application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            notifications.routing.websocket_urlpatterns
+            notifications.routing.websocket_urlpatterns +
+            liveclass.routing.websocket_urlpatterns
+
         )
     ),
 })

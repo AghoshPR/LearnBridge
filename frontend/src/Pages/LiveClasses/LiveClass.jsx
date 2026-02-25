@@ -21,6 +21,8 @@ const LiveClass = () => {
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [liveNowClasses, setLiveNowClasses] = useState([]);
 
+  const [isPaying, setIsPaying] = useState(false);
+
 
 
 
@@ -54,7 +56,98 @@ const LiveClass = () => {
     }
   }
 
+  const payForLiveClass = async () => {
+        if (isPaying) return;
+
+        try {
+            setIsPaying(true);
+
+            const res = await Api.post(
+            "/student/liveclass/razorpay/create/",
+            { class_id: selectedClass.class_id }
+            );
+
+            const data = res.data;
+
+            const options = {
+            key: data.key,
+            amount: data.amount,
+            currency: "INR",
+            name: "LearnBridge",
+            description: selectedClass.title,
+            order_id: data.razorpay_order_id,
+
+            handler: async function (response) {
+                try {
+                await Api.post(
+                    "/student/liveclass/razorpay/verify/",
+                    {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    class_id: data.class_id,
+                    }
+                );
+
+                toast.success("Registration Successful ✅");
+
+                
+                setIsRegisterModalOpen(false);
+                setSelectedClass(null);
+
+                
+                await fetchUpcomingClasses();
+
+                } catch (err) {
+                toast.error("Verification failed");
+                } finally {
+                setIsPaying(false);
+                }
+            },
+
+            modal: {
+                ondismiss: function () {
+                setIsPaying(false);
+                }
+            },
+
+            prefill: {
+                name: username
+            },
+
+            theme: {
+                color: "#2563eb"
+            }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+
+        } catch (err) {
+            toast.error("Payment failed");
+            setIsPaying(false);
+        }
+        };
+
+  const handleJoinLive = async(cls)=>{
+        try{
+            const res = await Api.get(
+                `/student/liveclass/join/${cls.class_id}/`
+            )
+            window.open(res.data.meeting_link, "_blank")
+        }catch{
+            toast.error("You are not registered")
+        }
+  }
+
   const handleRegisterClick = (cls) => {
+
+    if (!isAuthenticated) {
+        toast.error("Please login to register");
+        navigate("/student/login");
+        return;
+    }
+
     setSelectedClass(cls);
     setIsRegisterModalOpen(true);
   };
@@ -221,12 +314,24 @@ const LiveClass = () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleRegisterClick(cls)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 cursor-pointer"
-                  >
-                    <Video className="w-4 h-4" /> Register
-                  </button>
+                  
+                    {cls.is_registered ? (
+                        <button
+                            disabled
+                            className="w-full bg-green-600 text-white py-2 rounded-lg font-medium cursor-not-allowed"
+                        >
+                            Registered ✓
+                        </button>
+                        ) : (
+                        <button
+                            onClick={() => handleRegisterClick(cls)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+                        >
+                            Register
+                        </button>
+                        )}
+
+
                 </div>
               </div>
             ))}
@@ -263,11 +368,25 @@ const LiveClass = () => {
                     <Clock className="w-4 h-4 mr-2" /> {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
 
-                  <button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 cursor-pointer"
-                  >
-                    <Video className="w-4 h-4" /> Join Now
-                  </button>
+                    {/* handle join             */}
+
+                    {cls.is_registered ? (
+                        <button
+                            onClick={() => handleJoinLive(cls)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+                        >
+                            Join Now
+                        </button>
+                        ) : (
+                        <button
+                            disabled
+                            className="w-full bg-gray-400 text-white py-2 rounded-lg font-medium cursor-not-allowed"
+                        >
+                            Not Registered
+                        </button>
+                        )}
+
+
                 </div>
               </div>
             ))}
@@ -297,7 +416,7 @@ const LiveClass = () => {
 
             <div className="p-5 overflow-y-auto">
               <div className="space-y-4">
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                   <input type="text" placeholder="Enter your name" className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
                 </div>
@@ -308,7 +427,7 @@ const LiveClass = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                   <input type="tel" placeholder="Enter your phone number" className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
                   <input type="text" value={selectedClass?.title || ''} readOnly className="w-full border border-gray-200 bg-gray-50 text-gray-500 rounded-lg px-4 py-2" />
@@ -319,7 +438,7 @@ const LiveClass = () => {
 
                   <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
                     <span className="text-sm text-gray-600">Registration Fee:</span>
-                    <span className="text-lg font-bold text-blue-600">₹{selectedClass?.fee || 200}</span>
+                    <span className="text-lg font-bold text-blue-600">₹ {selectedClass?.registration_fee}</span>
                   </div>
 
                   <div className="space-y-3">
@@ -352,12 +471,10 @@ const LiveClass = () => {
               </button>
               <button
                 className="px-6 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 font-medium transition-colors"
-                onClick={() => {
-                  setIsRegisterModalOpen(false);
-                  toast.success("Registration Successful!");
-                }}
+                onClick={payForLiveClass}
+                disabled={isPaying}
               >
-                Complete Registration
+                {isPaying ? "Processing..." : "Complete Registration"}
               </button>
             </div>
           </div>

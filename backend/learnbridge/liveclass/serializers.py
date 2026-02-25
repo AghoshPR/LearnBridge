@@ -11,6 +11,8 @@ class LiveClassSerializer(serializers.ModelSerializer):
     course_name = serializers.CharField(source="course.title",read_only=True)
     teacher_name = serializers.CharField(source="teacher.user.username", read_only=True)
     thumbnail = serializers.ImageField(required=False)
+    is_registered = serializers.SerializerMethodField()
+
 
 
     class Meta:
@@ -44,6 +46,17 @@ class LiveClassSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("Title cannot be empty.")
         return value
+    
+    def get_is_registered(self, obj):
+
+        user = self.context["request"].user
+        
+        if user.is_authenticated:
+            return LiveClassRegistration.objects.filter(
+                live_class=obj,
+                user=user
+            ).exists()
+        return False
     
     
 

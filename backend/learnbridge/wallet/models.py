@@ -1,7 +1,7 @@
 from django.db import models
 from courses.models import *
 from django.conf import settings
-
+from liveclass.models import *
 # admin wallet and admin Transactions
 
 class AdminWallet(models.Model):
@@ -19,6 +19,7 @@ class AdminTransaction(models.Model):
 
     SOURCE_CHOICES = [
         ("course_fee", "Course Fee"),
+        ("live_class", "Live Class"),
         ("teacher_withdrawal", "Teacher Withdrawal"),
         ("other", "Other"),
     ]
@@ -43,6 +44,14 @@ class AdminTransaction(models.Model):
         max_length=100,
         null=True,
         blank=True
+    )
+
+    live_class = models.ForeignKey(
+        LiveClass,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="admin_trasactions"
     )
 
 
@@ -119,6 +128,22 @@ class TeacherTransaction(models.Model):
         max_length=120,
         null=True,
         blank=True
+    )
+
+    live_class = models.ForeignKey(
+        LiveClass,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="teacher_transactions"
+    )
+
+    student = models.ForeignKey( 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="teacher_transactions"
     )
 
     amount = models.DecimalField(max_digits=10,decimal_places=2)

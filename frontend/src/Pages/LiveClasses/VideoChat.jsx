@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Mic, MicOff, Video, VideoOff, PhoneOff, Send, MessageSquare, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 
 const VideoChat = () => {
   const navigate = useNavigate();
@@ -40,6 +41,84 @@ const VideoChat = () => {
     }]);
     setNewMessage("");
   };
+
+  const ws = useRef(null)
+  const peerConnection = useRef(null)
+
+
+  useEffect(()=>{
+
+    ws.current = new WebSocket(
+        `ws://localhost:8000/ws/liveclass/${classId}/`
+    )
+
+    ws.current.onmessage = async (event) =>{
+
+        const data = JSON.parse(event.data)
+
+        if(data.type === "offer"){
+
+            await peerConnection.current.setRemoteDescription(data.offer);
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+
+
+            // Send the Answer Back
+
+            ws.current.send(JSON.stringify({
+                type: "answer",
+                answer: answer
+            }));
+
+        }
+
+        if (data.type === "answer") {
+            await peerConnection.current.setRemoteDescription(data.answer);
+        }
+
+        if (data.type === "candidate") {
+            await peerConnection.current.addIceCandidate(data.candidate);
+        }
+
+    }
+
+    return () => ws.current.close()
+
+  },[])
+
+//   WebRTC Setup
+
+  const startCall = async ()=>{
+
+    peerConnection.current = new RTCPeerConnection();
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    });
+
+    stream.getTracks().forEach(track=>{
+        peerConnection.current.addTrack(track,stream)
+    })
+
+    peerConnection.current.onicecandidate = (event) => {
+        if (event.candidate) {
+        ws.current.send(JSON.stringify({
+            type: "candidate",
+            candidate: event.candidate
+        }));
+        }
+    };
+
+    const offer = await peerConnection.current.createOffer()
+    await peerConnection.current.setLocalDescription(offer)
+
+    ws.current.send(JSON.stringify({
+        type: "offer",
+        offer: offer
+    }))
+
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
