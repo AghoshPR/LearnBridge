@@ -94,8 +94,8 @@ class AdminTransferToTeacherView(APIView):
         if admin_tx.status != "transfer_pending":
             return Response({"error": "Already transferred"}, status=400)
 
-        if admin_tx.source == "course_sale":
-            teacher = admin_tx.course.teacher.user
+        if admin_tx.source == "course_fee":
+            teacher = admin_tx.course.teacher 
 
         elif admin_tx.source == "live_class":
             teacher = admin_tx.live_class.teacher.user
@@ -203,11 +203,28 @@ class TeacherWalletTrasactionsView(APIView):
             teacher = request.user
         )
 
+        
+        
+
         transactions = wallet.transactions.order_by("-created_at")
+
+
 
         data = []
 
         for t in transactions:
+
+
+            if t.source == "course_sale" and t.course:
+                enrollment = t.course.enrollments.order_by("-id").first()
+                purchaser = enrollment.user.username if enrollment else None
+
+            elif t.source == "live_class" and t.live_class:
+                registration = t.live_class.registrations.order_by("-registration_id").first()
+                purchaser = registration.user.username if registration else None
+
+            else:
+                purchaser = None
 
             data.append({
                 "id":t.id,
@@ -217,7 +234,7 @@ class TeacherWalletTrasactionsView(APIView):
                 "amount":int(t.amount),
                 "status":t.status,
                 "source": t.source,
-                "purchaser": t.course.enrollments.first().user.username if t.course else None
+                "purchaser": purchaser
 
             })
         
