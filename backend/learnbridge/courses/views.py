@@ -527,6 +527,7 @@ class TeacherLessonCreateView(APIView):
         
 
         channel_layer = get_channel_layer()
+        print("Channel Layer:", channel_layer)
 
         enrollments = Enrollment.objects.filter(course_id=course_id)
         course = Course.objects.get(id=course_id)
@@ -544,6 +545,7 @@ class TeacherLessonCreateView(APIView):
                     notification_type = "general"
                 )
 
+                print("Sending to group:", f"user_{student.id}")
                 async_to_sync(channel_layer.group_send)(
 
                     f"user_{student.id}",

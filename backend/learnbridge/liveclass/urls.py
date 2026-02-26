@@ -12,4 +12,7 @@ urlpatterns = [
 
     path("student/liveclass/razorpay/create/", CreateLiveClassRegistrationPayment.as_view()),
     path("student/liveclass/razorpay/verify/", VerifyLiveClassPaymentView.as_view()),
+
+    path("student/liveclass/room/<int:class_id>/", LiveClassRoomAccessView.as_view())
+    
 ]

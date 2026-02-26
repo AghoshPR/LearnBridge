@@ -42,11 +42,7 @@ const LiveClass = () => {
         cls => new Date(cls.start_time) > now
       )
 
-      const liveNow = res.data.filter(cls => {
-        const start = new Date(cls.start_time)
-        const end = new Date(cls.end_time)
-        return now >= start && now <= end
-      })
+      const liveNow = res.data.filter(cls => cls.is_registered === true)
 
       setUpcomingClasses(upcoming)
       setLiveNowClasses(liveNow)
@@ -129,16 +125,20 @@ const LiveClass = () => {
         }
         };
 
-  const handleJoinLive = async(cls)=>{
-        try{
+    const handleJoinLive = async (cls) => {
+        try {
             const res = await Api.get(
-                `/student/liveclass/join/${cls.class_id}/`
-            )
-            window.open(res.data.meeting_link, "_blank")
-        }catch{
-            toast.error("You are not registered")
+                `/student/liveclass/room/${cls.class_id}/`
+            );
+
+            if (res.data.allowed) {
+                navigate(`/liveclass/room/${cls.class_id}`);
+            }
+
+        } catch (error) {
+            toast.error("You are not registered");
         }
-  }
+    };
 
   const handleRegisterClick = (cls) => {
 
@@ -272,7 +272,9 @@ const LiveClass = () => {
             onClick={() => setActiveTab('live')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${activeTab === 'live' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
           >
-            Live Now <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shrink-0">1</span>
+            Live Now <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shrink-0">
+  {liveNowClasses.length}
+</span>
           </button>
           <button
             onClick={() => setActiveTab('past')}

@@ -15,6 +15,7 @@ from payments.utils import razorpay_client
 import hmac
 import hashlib
 from wallet.services import credit_live_class_wallet
+from django.utils import timezone
 
 class TeacherLiveClassListView(APIView):
 
@@ -92,11 +93,14 @@ class TeacherLiveClassDetailView(APIView):
 
 class StudentUpCommingLiveClassesView(APIView):
 
-    def get(self,request):
+    def get(self,request): 
+
+        now = timezone.now()
 
         classes = LiveClass.objects.filter(
             status="scheduled",
-            start_time__gte=timezone.now()
+            end_time__gte=now,
+            
         ).order_by("start_time")
 
         serializer = LiveClassSerializer(classes,many=True, context={'request': request})
@@ -105,30 +109,33 @@ class StudentUpCommingLiveClassesView(APIView):
 
 
 
-class JoinLiveClassView(APIView):
+class LiveClassRoomAccessView(APIView):
 
     permission_classes = [IsAuthenticated]
 
     def get(self,request,class_id):
 
         try:
-
             live_class = LiveClass.objects.get(class_id=class_id)
-
-            if live_class.teacher.user == request.user or \
-               LiveClassRegistration.objects.filter(
-                   live_class=live_class,
-                   user=request.user
-               ).exists():
-
-                return Response({
-                    "meeting_link":live_class.meeting_link
-                })
-            
-            return Response({"error":"Not allowed"},status=403)
-
         except LiveClass.DoesNotExist:
-            return Response({"error":"Not found"},status=404)
+            return Response({"error": "Class not found"}, status=404)
+
+        # Teacher access
+        if hasattr(request.user, "teacherprofile"):
+            if live_class.teacher.user_id == request.user.id:
+                return Response({"allowed": True})
+
+        # Student registration check
+        is_registered = LiveClassRegistration.objects.filter(
+            live_class_id=class_id,
+            user_id=request.user.id
+        ).exists()
+
+        if is_registered:
+            return Response({"allowed": True})
+        
+        return Response({"error":"Not allowed"},status=403)
+
 
 
 class CreateLiveClassRegistrationPayment(APIView):

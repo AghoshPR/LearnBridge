@@ -30,7 +30,11 @@ class LiveClassSerializer(serializers.ModelSerializer):
     def validate(self, data):
         start = data.get("start_time")
         end = data.get("end_time")
+        fee = data.get("registration_fee", 0)
 
+
+        if not start or not end:
+            raise serializers.ValidationError("Start and end time are required.")
         
         if start and end:
             if start >= end:
@@ -39,8 +43,20 @@ class LiveClassSerializer(serializers.ModelSerializer):
         if start < timezone.now():
             raise serializers.ValidationError("Cannot schedule class in the past.")
 
+        if fee < 0:
+            raise serializers.ValidationError("Registration fee cannot be negative.")
+
 
         return data
+    
+    def validate_thumbnail(self, value):
+        if value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Thumbnail must be less than 2MB.")
+
+        if not value.content_type.startswith("image"):
+            raise serializers.ValidationError("Only image files are allowed.")
+
+        return value
 
     def validate_title(self, value):
         if not value.strip():
@@ -50,7 +66,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
     def get_is_registered(self, obj):
 
         user = self.context["request"].user
-        
+
         if user.is_authenticated:
             return LiveClassRegistration.objects.filter(
                 live_class=obj,

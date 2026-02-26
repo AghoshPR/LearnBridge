@@ -41,10 +41,15 @@ const StudentNotification = () => {
 
   useEffect(() => {
 
-    const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
+    const socket = new WebSocket("ws://localhost:8001/ws/notifications/");
+    socket.onopen = ()=>console.log('haiiiiiiiiiiiii')
+    socket.onerror = (err) => console.log("Error: ", err) 
+    socket.onclose = ()=>console.log('stop')
 
     socket.onmessage = (event) => {
+
       const data = JSON.parse(event.data)
+      console.log(data)
 
       setNotifications(prev => [
         data.notification,

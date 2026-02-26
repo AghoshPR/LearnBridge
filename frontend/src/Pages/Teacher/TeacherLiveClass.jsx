@@ -205,8 +205,19 @@ const TeacherLiveClass = () => {
       return;
     }
 
+    if (!formData.subject.trim()) {
+      toast.error("Subject is required");
+      return;
+    }
+
     if (!formData.date || !formData.time) {
       toast.error("Date and time are required");
+      return;
+    }
+
+
+    if (formData.fee && parseFloat(formData.fee) < 0) {
+      toast.error("Registration fee cannot be negative");
       return;
     }
 
@@ -214,6 +225,22 @@ const TeacherLiveClass = () => {
 
     if (startDateTime < new Date()) {
       toast.error("Cannot schedule class in the past");
+      return;
+    }
+
+    if (durationMinutes > 480) {
+      toast.error("Class duration cannot exceed 8 hours");
+      return;
+    }
+
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Thumbnail must be less than 2MB");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
       return;
     }
 
@@ -494,7 +521,10 @@ const TeacherLiveClass = () => {
                   </div>
 
                   <div className="flex items-center gap-3 mt-4 md:mt-0">
-                    <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+                    <button
+                    onClick={()=>navigate(`/liveclass/room/${cls.class_id}`)}
+
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
                       <Video size={16} />
                       Start Class
                     </button>
@@ -641,7 +671,7 @@ const TeacherLiveClass = () => {
                     </select>
                   </div>
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Meeting Link</label>
                   <input
                     type="text"
@@ -650,7 +680,7 @@ const TeacherLiveClass = () => {
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                     placeholder="https://meet.google.com/..."
                   />
-                </div>
+                </div> */}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

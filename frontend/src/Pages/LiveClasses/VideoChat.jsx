@@ -1,20 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Mic, MicOff, Video, VideoOff, PhoneOff, Send, MessageSquare, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from "react-router-dom";
+
+
 
 
 const VideoChat = () => {
   const navigate = useNavigate();
-  const [isChatOpen, setIsChatOpen] = useState(false); // Default closed on mobile, auto-open handled by CSS
+  const [isChatOpen, setIsChatOpen] = useState(false); 
   const [isMicOn, setIsMicOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
+
+
+  const { classId } = useParams();
 
   // Mock data
   const mainSpeaker = {
     name: "Michael Chang",
     role: "Instructor",
     initials: "MC",
-    // Appoximated gradient background
+    
     bgColor: "from-blue-50 via-gray-100 to-orange-50"
   };
 
@@ -25,66 +31,102 @@ const VideoChat = () => {
     { id: 4, name: "Alex Kumar", initials: "AK", bgColor: "bg-green-100/60" },
   ];
 
-  const [messages, setMessages] = useState([
-    { id: 1, sender: "Instructor", time: "06:14 PM", text: "Welcome to the live class! Feel free to ask questions." }
-  ]);
-  const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState("")
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
-    setMessages([...messages, {
-      id: messages.length + 1,
-      sender: "You",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      text: newMessage
-    }]);
-    setNewMessage("");
-  };
+  
 
   const ws = useRef(null)
   const peerConnection = useRef(null)
 
 
-  useEffect(()=>{
 
+
+    // 🔵 CONNECT WEBSOCKET
+    useEffect(() => {
+    const loadMessages = async () => {
+        try {
+        const res = await fetch(
+            `http://localhost:8000/api/student/liveclass/messages/${classId}/`,
+            { credentials: "include" }
+        );
+
+        const data = await res.json();
+
+        const formatted = data.map(msg => ({
+            id: msg.id,
+            sender: msg.user,
+            time: new Date(msg.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+            }),
+            text: msg.message
+        }));
+
+        setMessages(formatted);
+        } catch (err) {
+        console.error("Failed to load messages");
+        }
+    };
+
+    loadMessages();
+    }, [classId]);
+
+
+    useEffect(() => {
     ws.current = new WebSocket(
-        `ws://localhost:8000/ws/liveclass/${classId}/`
-    )
+        `ws://localhost:8001/ws/chat/${classId}/`
+    );
 
-    ws.current.onmessage = async (event) =>{
+    ws.current.onopen = () => {
+        console.log("WebSocket Connected");
+    };
 
-        const data = JSON.parse(event.data)
+    ws.current.onmessage = (event) => {
+        const data = JSON.parse(event.data);
 
-        if(data.type === "offer"){
-
-            await peerConnection.current.setRemoteDescription(data.offer);
-            const answer = await peerConnection.current.createAnswer();
-            await peerConnection.current.setLocalDescription(answer);
-
-
-            // Send the Answer Back
-
-            ws.current.send(JSON.stringify({
-                type: "answer",
-                answer: answer
-            }));
-
+        setMessages(prev => [
+        ...prev,
+        {
+            id: Date.now(),
+            sender: data.user,
+            time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+            }),
+            text: data.message
         }
+        ]);
+    };
 
-        if (data.type === "answer") {
-            await peerConnection.current.setRemoteDescription(data.answer);
-        }
+    ws.current.onerror = (err) => {
+        console.error("WebSocket error:", err);
+    };
 
-        if (data.type === "candidate") {
-            await peerConnection.current.addIceCandidate(data.candidate);
-        }
+    ws.current.onclose = () => {
+        console.log("WebSocket Disconnected");
+    };
 
-    }
+    return () => {
+        if (ws.current) ws.current.close();
+    };
+    }, [classId]);
 
-    return () => ws.current.close()
 
-  },[])
+    // 🔵 SEND MESSAGE
+    const handleSendMessage = (e) => {
+        e.preventDefault();
+
+        if (!newMessage.trim()) return;
+        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
+
+        ws.current.send(JSON.stringify({
+        message: newMessage
+        }));
+
+        setNewMessage("");
+    };
+
 
 //   WebRTC Setup
 
@@ -119,6 +161,29 @@ const VideoChat = () => {
     }))
 
   }
+
+
+  const handleEndCall = () => {
+
+  
+  if (peerConnection.current) {
+    peerConnection.current.getSenders().forEach(sender => {
+      if (sender.track) sender.track.stop();
+    });
+
+    peerConnection.current.close();
+    peerConnection.current = null;
+  }
+
+  // Close websocket
+  if (ws.current) {
+    ws.current.close();
+    ws.current = null;
+  }
+
+  
+  navigate(-1);
+};
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
@@ -205,7 +270,9 @@ const VideoChat = () => {
             >
               {!isVideoOn ? <VideoOff className="w-5 h-5 md:w-6 md:h-6" /> : <Video className="w-5 h-5 md:w-6 md:h-6" />}
             </button>
-            <button className="p-3.5 md:p-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+            <button
+            onClick={handleEndCall}
+            className="p-3.5 md:p-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
               <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>

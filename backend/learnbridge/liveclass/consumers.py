@@ -35,7 +35,7 @@ class LiveClassConsumer(AsyncWebsocketConsumer):
 
     
     @database_sync_to_async
-    def is_user_allowef(self,user):
+    def is_user_allowed(self,user):
 
         try:
 
@@ -51,7 +51,7 @@ class LiveClassConsumer(AsyncWebsocketConsumer):
             return LiveClassRegistration.objects.filter(
                 live_class = live_class,
                 user = user
-            )
+            ).exists()
         
         except LiveClass.DoesNotExist:
             return False

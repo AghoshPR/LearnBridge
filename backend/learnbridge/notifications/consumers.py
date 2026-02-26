@@ -6,6 +6,9 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
 
+        print("WS USER:", user)
+        print("IS AUTH:", user.is_authenticated)
+
         if user.is_anonymous:
 
             await self.close()
@@ -13,6 +16,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         else:
 
             self.group_name = f"user_{user.id}"
+            print("Joining group:", self.group_name)
 
             await self.channel_layer.group_add(
                 self.group_name,

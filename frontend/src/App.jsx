@@ -64,6 +64,9 @@ function App() {
         <Route path="/courses" element={<Courses />} />
         <Route path="/courseview/:id" element={<CourseDetail />} />
 
+        {/* VideoChat */}
+        <Route path="/liveclass/room/:classId" element={<VideoChat />} />
+
 
 
         {/* Auth */}
