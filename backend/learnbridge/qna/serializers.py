@@ -43,30 +43,34 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         
 
 class QuestionListSerializer(serializers.ModelSerializer):
-
-    user_name = serializers.CharField(source="user.username",read_only=True)
-    tags = AdminTagSerializer(many=True,read_only=True)
-    answers_count = serializers.IntegerField(source="answer.count",read_only=True)
-
+    user_name = serializers.CharField(source="user.username", read_only=True)
+    tags = AdminTagSerializer(many=True, read_only=True)
+    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
+    
 
     class Meta:
-
         model = Question
         fields = [
-            'id',
-            'title',
-            'user_name',
-            'created_at',
-            'answers_count',
-            'tags'
+            "id",
+            "title",
+            "body",
+            "user_name", 
+            
+            "created_at",
+            "answers_count",
+            "likes_count",
+            "views_count",
+            "tags"
         ]
+
+
 
 
 class QuestionDetailedSerializer(serializers.ModelSerializer):
 
     user_name = serializers.CharField(source="user.username",read_only=True)
     tags = AdminTagSerializer(many=True,read_only=True)
-    answer_count = serializers.IntegerField(source="answers.count",read_only=True)
+    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
     course_name = serializers.CharField(source="course.title", read_only=True)
 
     class Meta:
@@ -79,7 +83,9 @@ class QuestionDetailedSerializer(serializers.ModelSerializer):
             "user_name",
             "course_name",
             "created_at",
-            "answer_count",
+            "answers_count",
+            "likes_count",
+            "views_count",
             "tags"
         ]
 
@@ -125,3 +131,9 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ["body"]
+
+
+
+# teacher side
+
+

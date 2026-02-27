@@ -50,6 +50,7 @@ const QACommunityAnswers = () => {
 
     try {
       const res = await Api.get(`/qna/questions/${id}/`)
+      console.log("DETAIL DATA:", res.data) 
       setQuestion(res.data)
 
     } catch (err) {
@@ -127,6 +128,28 @@ const QACommunityAnswers = () => {
 
 
   };
+
+
+  const handleLikeQuestion = async(e)=>{
+
+      e.stopPropagation()
+
+      if(!isAuthenticated){
+        toast.error("Login required")
+        navigate("/student/login")
+        return
+      }
+
+      try{
+        await Api.post(`/qna/questions/${id}/like/`)
+        fetchQuestionDetail()
+      
+      }catch(err){
+        toast.error("Failed to like question")
+      }
+  }
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
@@ -216,18 +239,20 @@ const QACommunityAnswers = () => {
             {/* Left: Stats Column */}
             <div className="flex flex-row sm:flex-col items-center justify-start gap-6 sm:gap-4 text-gray-400 sm:min-w-[3rem] border-b sm:border-b-0 sm:border-r border-gray-100 pb-4 sm:pb-0 sm:pr-4">
               <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
-                <ThumbsUp size={20} className="hover:text-blue-500 cursor-pointer transition-colors" />
-                <span className="text-sm font-bold text-gray-700">{question?.votes || 0}</span>
+                <ThumbsUp
+                onClick={handleLikeQuestion}
+                size={20} className="hover:text-blue-500 cursor-pointer transition-colors" />
+                <span className="text-sm font-bold text-gray-700">{question?.likes_count || 0}</span>
                 <span className="text-[10px] uppercase hidden sm:block">votes</span>
               </div>
               <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
                 <MessageSquare size={20} className="text-gray-400" />
-                <span className="text-sm font-bold text-gray-700">{question?.answersCount || 0}</span>
+                <span className="text-sm font-bold text-gray-700">{question?.answers_count  || 0}</span>
                 <span className="text-[10px] uppercase hidden sm:block">answers</span>
               </div>
               <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
                 <Eye size={20} className="text-gray-400" />
-                <span className="text-sm font-bold text-gray-700">{question?.views || 0}</span>
+                <span className="text-sm font-bold text-gray-700">{question?.views_count || 0}</span>
                 <span className="text-[10px] uppercase hidden sm:block">views</span>
               </div>
             </div>
@@ -249,7 +274,7 @@ const QACommunityAnswers = () => {
 
               <div className="mb-6">
                 <span className="inline-block px-3 py-1 bg-gray-100 text-gray-500 text-xs rounded border border-gray-200">
-                  {question?.course_name}
+                  Course : {question?.course_name}
                 </span>
               </div>
 
@@ -259,7 +284,7 @@ const QACommunityAnswers = () => {
                 </div>
                 <div className="text-sm">
                   <span className="font-semibold text-blue-600">{question?.user_name}</span>
-                  <span className="text-gray-500 ml-1">asked {question?.time}</span>
+                  <span className="text-gray-500 ml-1">asked {formatDateTime(question?.created_at)}</span>
                 </div>
               </div>
             </div>
@@ -302,12 +327,12 @@ const QACommunityAnswers = () => {
 
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold">
-                        {answer.user_name.charAt(0).toUpperCase()}
+                        {answer?.user_name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
                       <div className="text-xs text-gray-500">
                         <span className="font-semibold text-gray-700">{answer?.user_name}</span>
                         <span className="ml-1">answered {answer.time}</span>
-                        <span>{formatDateTime(question.created_at)}</span>
+                        <span>{formatDateTime(answer?.created_at)}</span>
                       </div>
                     </div>
 

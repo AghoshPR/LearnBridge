@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from "sonner";
 import {
     LayoutDashboard,
@@ -29,45 +29,51 @@ const TeacherQACommunity = () => {
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Mock data based on the images
-    const unansweredQuestions = [
-        {
-            id: 1,
-            title: "How to implement custom hooks in React?",
-            description: "I'm trying to create a custom hook for API calls but facing issues...",
-            tags: ["react", "hooks"],
-            author: "John Doe",
-            course: "Advanced React Patterns",
-            time: "2 hours ago",
-            upvotes: 12,
-            comments: 0
-        },
-        {
-            id: 2,
-            title: "TypeScript generics best practices",
-            description: "What are the best practices when using generics in TypeScript?",
-            tags: ["typescript", "generics"],
-            author: "Jane Smith",
-            course: "TypeScript Essentials",
-            time: "5 hours ago",
-            upvotes: 8,
-            comments: 0
-        }
-    ];
+    const [questions, setQuestions] = useState([])
+    const [answerText, setAnswerText] = useState("")
 
-    const answeredQuestions = [
-        {
-            id: 3,
-            title: "Difference between useEffect and useLayoutEffect?",
-            description: "Can someone explain when to use each one?",
-            tags: ["react", "hooks"],
-            author: "Mike Johnson",
-            course: "Advanced React Patterns",
-            time: "1 day ago",
-            upvotes: 24,
-            comments: 3
+    const unansweredQuestions = questions.filter(
+        q => q.answers_count === 0
+    )
+
+    const answeredQuestions = questions.filter(
+        q => q.answers_count > 0
+    )
+
+
+    useEffect(() => {
+        fetchTeacherQuestions()
+    }, [])
+
+    const fetchTeacherQuestions = async () => {
+    try {
+        const res = await Api.get("/qna/teacher/questions/");
+        setQuestions(res.data);
+    } catch (error) {
+        console.log(error.response?.data);
+        toast.error("Failed to load questions");
+    }
+};
+
+
+    const postAnswer = async (questionId, body) => {
+        try {
+
+            await Api.post(`/qna/teacher/answer/${questionId}/`, {
+                body: body
+            });
+
+            toast.success("Answer posted")
+            fetchTeacherQuestions()
+            setAnswerText("")
+            closeAnswerModal()
+
+        } catch {
+            toast.error("Failed to post answer")
         }
-    ];
+    }
+
+
 
     const handleLogout = async () => {
         try {
@@ -231,23 +237,23 @@ const TeacherQACommunity = () => {
                                     <div className="flex flex-col items-center gap-3 pt-1 min-w-[3rem]">
                                         <div className="flex flex-col items-center gap-1">
                                             <ThumbsUp size={18} className="text-slate-400" />
-                                            <span className="text-sm font-bold text-slate-300">{question.upvotes}</span>
+                                            <span className="text-sm font-bold text-slate-300">{question.upvotes || 0}</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-1">
                                             <MessageCircle size={18} className="text-slate-400" />
-                                            <span className="text-sm font-bold text-slate-300">{question.comments}</span>
+                                            <span className="text-sm font-bold text-slate-300">{question.answers_count}</span>
                                         </div>
                                     </div>
 
                                     {/* Content Column */}
                                     <div className="flex-1">
                                         <h3 className="text-lg font-bold text-white mb-2">{question.title}</h3>
-                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">{question.description}</p>
+                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">{question.body}</p>
 
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {question.tags.map(tag => (
-                                                <span key={tag} className="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-300 border border-slate-700">
-                                                    {tag}
+                                            {question.tags && question.tags.map(tag => (
+                                                <span key={tag.id || tag.tag_name || tag} className="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-300 border border-slate-700">
+                                                    {tag.tag_name || tag}
                                                 </span>
                                             ))}
                                         </div>
@@ -258,7 +264,7 @@ const TeacherQACommunity = () => {
                                                 <span className="hidden sm:inline">•</span>
                                                 <span>{question.course}</span>
                                                 <span className="hidden sm:inline">•</span>
-                                                <span>{question.time}</span>
+                                                <span>{question.created_at ? new Date(question.created_at).toLocaleString() : ''}</span>
                                             </div>
                                             <button
                                                 onClick={() => openAnswerModal(question)}
@@ -278,22 +284,22 @@ const TeacherQACommunity = () => {
                                     <div className="flex flex-col items-center gap-3 pt-1 min-w-[3rem]">
                                         <div className="flex flex-col items-center gap-1">
                                             <ThumbsUp size={18} className="text-slate-400" />
-                                            <span className="text-sm font-bold text-slate-300">{question.upvotes}</span>
+                                            <span className="text-sm font-bold text-slate-300">{question.upvotes || 0}</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-1">
                                             <MessageCircle size={18} className="text-green-500" />
-                                            <span className="text-sm font-bold text-slate-300">{question.comments}</span>
+                                            <span className="text-sm font-bold text-slate-300">{question.answers_count}</span>
                                         </div>
                                     </div>
 
                                     <div className="flex-1">
                                         <h3 className="text-lg font-bold text-white mb-2">{question.title}</h3>
-                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">{question.description}</p>
+                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">{question.body || question.description}</p>
 
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {question.tags.map(tag => (
-                                                <span key={tag} className="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-300 border border-slate-700">
-                                                    {tag}
+                                            {question.tags && question.tags.map(tag => (
+                                                <span key={tag.id || tag.tag_name || tag} className="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-300 border border-slate-700">
+                                                    {tag.tag_name || tag}
                                                 </span>
                                             ))}
                                         </div>
@@ -304,7 +310,7 @@ const TeacherQACommunity = () => {
                                                 <span className="hidden sm:inline">•</span>
                                                 <span>{question.course}</span>
                                                 <span className="hidden sm:inline">•</span>
-                                                <span>{question.time}</span>
+                                                <span>{new Date(question.created_at).toLocaleString()}</span>
                                             </div>
                                             <button
                                                 className="w-full sm:w-auto px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-purple-900/20"
@@ -345,21 +351,21 @@ const TeacherQACommunity = () => {
                                     </span>
                                 </div>
 
-                                <p className="text-gray-600 text-sm mb-4">{selectedQuestion.description}</p>
+                                <p className="text-gray-600 text-sm mb-4">{selectedQuestion.body || selectedQuestion.description}</p>
 
                                 <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                                     <div className="flex items-center gap-2">
                                         <span>Asked by:</span>
                                         <span className="font-medium text-gray-900">{selectedQuestion.author}</span>
                                         <span className="text-gray-300">•</span>
-                                        <span>{selectedQuestion.time}</span>
+                                        <span>{selectedQuestion.created_at ? new Date(selectedQuestion.created_at).toLocaleString() : ''}</span>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-wrap gap-2">
-                                    {selectedQuestion.tags.map(tag => (
-                                        <span key={tag} className="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600">
-                                            {tag}
+                                    {selectedQuestion.tags && selectedQuestion.tags.map(tag => (
+                                        <span key={tag.id || tag.tag_name || tag} className="px-2 py-1 bg-white border border-gray-200 rounded text-xs text-gray-600">
+                                            {tag.tag_name || tag}
                                         </span>
                                     ))}
                                 </div>
@@ -368,6 +374,10 @@ const TeacherQACommunity = () => {
                             <div className="mb-6">
                                 <label className="block text-sm font-bold text-gray-900 mb-2">Your Answer</label>
                                 <textarea
+
+                                    value={answerText}
+                                    onChange={(e) => setAnswerText(e.target.value)}
+
                                     className="w-full h-48 p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-gray-700 bg-white"
                                     placeholder="Provide a clear, detailed explanation with examples if applicable"
                                 ></textarea>
@@ -382,8 +392,12 @@ const TeacherQACommunity = () => {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        toast.success("Answer posted successfully!");
-                                        closeAnswerModal();
+                                        if (!answerText.trim()) {
+                                            toast.error("Answer cannot be empty")
+                                            return
+                                        }
+
+                                        postAnswer(selectedQuestion.id, answerText)
                                     }}
                                     className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-bold transition-colors text-sm shadow-lg shadow-blue-900/20 hover:from-blue-700 hover:to-blue-800"
                                 >

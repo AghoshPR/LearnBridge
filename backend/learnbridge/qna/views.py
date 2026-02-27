@@ -5,6 +5,8 @@ from .models import *
 from .serializers import *
 from authapp.permissions import *
 from rest_framework.permissions import *
+from teacherapp.models import *
+from django.db.models import *
 
 
 
@@ -88,7 +90,26 @@ class QuestionListView(APIView):
 
     def get(self,request):
 
-        questions = Question.objects.filter(status="active").select_related("user").prefetch_related("tags").order_by("-created_at")
+
+        search = request.GET.get("search", "").strip()
+
+        questions = Question.objects.filter(
+            status="active"
+        ).select_related(
+            "user"
+        ).prefetch_related(
+            "tags"
+        )
+
+        if search:
+            questions = questions.filter(
+                Q(title__icontains=search) |
+                Q(body__icontains=search) |
+                Q(tags__tag_name__icontains=search)
+            ).distinct()
+
+        questions = questions.order_by("-created_at")
+        
 
         serializer = QuestionListSerializer(questions,many=True)
 
@@ -135,8 +156,65 @@ class QuestionDetailView(APIView):
         except Question.DoesNotExist:
             return Response({"error":"Not Found"},status=404)
         
+
+        # view counting
+
+        if request.user.is_authenticated:
+            obj,created = QuestionView.objects.get_or_create(
+                user=request.user,
+                question=question
+            )
+
+            if created:
+                question.views_count += 1
+                question.save()
+        
+        else:
+
+            ip = request.META.get("REMOTE_ADDR")
+
+            obj,created = QuestionView.objects.get_or_create(
+                ip_address = ip,
+                question=question
+            )
+
+            if created:
+                question.views_count += 1
+                question.save()
+
+            
+        
         serializer = QuestionDetailedSerializer(question)
         return Response(serializer.data)
+    
+class QuestionLikeToggleView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self,request,pk):
+
+        try:
+
+            question = Question.objects.get(pk=pk)
+        
+        except Question.DoesNotExist:
+
+            return Response({"error":"Not found"},status=404)
+        
+        like,created = QuestionLike.objects.get_or_create(
+            user=request.user,
+            question=question
+        )
+
+        if not created:
+            like.delete()
+            question.likes_count -=1
+            question.save()
+            return Response({"message":"Unliked"})
+        
+        question.likes_count += 1
+        question.save()
+        return Response({"message":"Liked"})
     
 
 # answer views
@@ -196,4 +274,11 @@ class PublicTagListView(APIView):
         tags = Tag.objects.filter(is_active=True)
         serializer = AdminTagSerializer(tags,many=True)
         return Response(serializer.data)
+
+
+
+
+# Teacher QA side
+
+
 

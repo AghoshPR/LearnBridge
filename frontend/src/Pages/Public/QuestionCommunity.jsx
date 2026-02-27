@@ -28,25 +28,37 @@ const QuestionCommunity = () => {
   const [courses, setCourses] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
+  const [searchQuery, setSearchQuery] = useState("")
+
 
 
 
 
   useEffect(() => {
-    fetchQuestions();
+    
     fetchTags();
     fetchCourses();
   }, [])
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = async (search="") => {
     try {
-      const res = await Api.get("/qna/questions/")
+      const res = await Api.get("/qna/questions/",{
+          params: {
+          search: searchQuery || undefined
+        }
+      })
+      
+      
       setQuestions(res.data)
 
     } catch (err) {
       toast.error("Failed to load ")
     }
   }
+
+  useEffect(() => {
+  fetchQuestions();
+}, [searchQuery]);
 
 
   const fetchTags = async () => {
@@ -72,12 +84,34 @@ const QuestionCommunity = () => {
 
   }
 
+  const handleLike = async(questionId,e)=>{
+
+      e.stopPropagation()
+
+      if(!isAuthenticated){
+        toast.error("Login required")
+        navigate("/student/login")
+        return
+      }
+
+      try{
+
+        await Api.post(`/qna/questions/${questionId}/like/`)
+        fetchQuestions()
+      }catch(err){
+        toast.error("Error liking question")
+      }
+  }
+
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim()) && tags.length < 5) {
       setTags([...tags, tagInput.trim()]);
       setTagInput('');
     }
   };
+
+
+
 
   const handleRemoveTag = (tagToRemove) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
@@ -97,10 +131,10 @@ const QuestionCommunity = () => {
       return;
     }
 
-    if (!selectedCourse) {
-      toast.error("Please select a course");
-      return;
-    }
+    // if (!selectedCourse) {
+    //   toast.error("Please select a course");
+    //   return;
+    // }
 
 
 
@@ -284,7 +318,10 @@ const QuestionCommunity = () => {
         <div className="mb-8">
           <input
             type="text"
-            placeholder=""
+            placeholder="Search questions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"
           />
         </div>
@@ -338,17 +375,20 @@ const QuestionCommunity = () => {
             >
               {/* Stats */}
               <div className="hidden sm:flex flex-col gap-2 min-w-[3rem] text-gray-400">
-                <div className="flex items-center gap-1.5" title="Votes">
-                  <ThumbsUp size={16} className={question.votes > 0 ? "text-blue-500" : ""} />
-                  <span className={`text-sm font-semibold ${question.votes > 0 ? "text-gray-700" : ""}`}>{question.votes}</span>
+                <div 
+                onClick={(e)=>handleLike(question.id,e)}
+
+                className="flex items-center gap-1.5" title="Like">
+                  <ThumbsUp size={16} className={question.likes_count  > 0 ? "text-blue-500" : ""} />
+                  <span className={`text-sm font-semibold ${question.likes_count  > 0 ? "text-gray-700" : ""}`}>{question.likes_count || 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5" title="Answers">
                   <MessageSquare size={16} />
-                  <span className="text-sm font-semibold">{question.answers}</span>
+                  <span className="text-sm font-semibold">{question.answers_count}</span>
                 </div>
                 <div className="flex items-center gap-1.5" title="Views">
                   <Eye size={16} />
-                  <span className="text-sm font-semibold">{question.views}</span>
+                  <span className="text-sm font-semibold"> {question.views_count || 0}</span>
                 </div>
               </div>
 
@@ -359,16 +399,16 @@ const QuestionCommunity = () => {
                 </h3>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {question.tags.map((tag) => (
+                  {question.tags?.map((tag) => (
                     <span key={tag.id} className="px-2.5 py-1 bg-gray-50 text-gray-600 text-xs font-bold rounded-lg border border-gray-200">
-                      {tag.tag_name}
+                      {tag?.tag_name}
                     </span>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className={`w-6 h-6 ${question.authorColor} rounded-full flex items-center justify-center text-white text-[10px] font-bold`}>
-                    {question.user_name.charAt(0)}
+                    {question.user_name?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
                     <User size={14} />
@@ -382,7 +422,7 @@ const QuestionCommunity = () => {
               {/* Mobile Stats (only visible on extra small screens if needed, otherwise hidden) */}
               <div className="sm:hidden flex flex-col gap-3 min-w-[3rem] items-end text-xs text-gray-500 font-medium">
                 <div className="flex items-center gap-1">
-                  <ThumbsUp size={14} /> {question.votes}
+                  <ThumbsUp size={14} /> {question.likes_count || 0}
                 </div>
                 <div className="flex items-center gap-1">
                   <MessageSquare size={14} /> {question.answers_count}

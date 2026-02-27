@@ -17,7 +17,8 @@ urlpatterns = [
     path('public-tags/', PublicTagListView.as_view()),
     path('questions/',QuestionListView.as_view()),
     path('questions/create/',QuestionCreateView.as_view()),
-     path('questions/<int:pk>/', QuestionDetailView.as_view()),
+    path('questions/<int:pk>/', QuestionDetailView.as_view()),
+    path('questions/<int:pk>/like/', QuestionLikeToggleView.as_view()),
 
 
     # public tags
@@ -31,6 +32,12 @@ urlpatterns = [
     # replies
 
     path('answers/reply/<int:pk>/', ReplyCreateView.as_view()),
+
+    # teacher qa
+
+    
+    
+    
 
 ]
 

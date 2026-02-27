@@ -609,7 +609,7 @@ const OrdersCheckout = () => {
                 )}
 
                 <button onClick={handleCheckout} className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
-                  Place Order
+                  Purchase Course
                 </button>
               </div>
 

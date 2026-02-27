@@ -16,6 +16,11 @@ import hmac
 import hashlib
 from wallet.services import credit_live_class_wallet
 from django.utils import timezone
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from notifications.models import *
+
+
 
 class TeacherLiveClassListView(APIView):
 
@@ -35,7 +40,43 @@ class TeacherLiveClassListView(APIView):
         teacher_profile = TeacherProfile.objects.get(user=request.user)
         serializer = LiveClassSerializer(data=request.data, context={'request': request})
 
+
+
         if serializer.is_valid():
+
+            live_class = serializer.save(teacher=teacher_profile)
+
+
+            channel_layer = get_channel_layer()
+
+            students = User.objects.filter(role="student")
+            print("Total students:", students.count())
+
+            for student in students:
+
+                notification = Notification.objects.create(
+                    user=student,
+                    title="New Live Class Scheduled",
+                    message=f"{live_class.title} scheduled on {live_class.start_time.strftime('%d %b %Y %I:%M %p')}",
+                    notification_type = "live_class"
+                )
+
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{student.id}",
+                    {
+                        "type": "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "title": notification.title,
+                            "message": notification.message,
+                            "is_read": notification.is_read,
+                            "created_at": str(notification.created_at),
+                        }
+                    }
+                )
+
+
+                
 
             serializer.save(teacher=teacher_profile)
             return Response(serializer.data,status=status.HTTP_201_CREATED)

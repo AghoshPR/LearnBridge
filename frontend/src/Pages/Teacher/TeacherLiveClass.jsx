@@ -83,7 +83,6 @@ const TeacherLiveClass = () => {
     time: '',
     durationHr: '',
     durationMin: '',
-    link: '',
     fee: '',
     status: 'scheduled',
     description: ''
@@ -159,7 +158,6 @@ const TeacherLiveClass = () => {
         time: start.toTimeString().slice(0, 5),
         durationHr: hours.toString(),
         durationMin: minutes.toString(),
-        link: cls.meeting_link,
         fee: cls.registration_fee,
         status: cls.status,
         description: cls.description
@@ -183,11 +181,12 @@ const TeacherLiveClass = () => {
         time: '',
         durationHr: '',
         durationMin: '',
-        link: '',
         fee: '',
         status: 'scheduled',
         description: ''
       });
+
+      
 
     }
 
@@ -197,6 +196,10 @@ const TeacherLiveClass = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+
+
+
 
   const handleSave = async () => {
 
@@ -228,21 +231,20 @@ const TeacherLiveClass = () => {
       return;
     }
 
-    if (durationMinutes > 480) {
-      toast.error("Class duration cannot exceed 8 hours");
-      return;
-    }
+    
 
 
-    if (file.size > 2 * 1024 * 1024) {
+  if (thumbnailFile && thumbnailFile.size > 2 * 1024 * 1024) {
       toast.error("Thumbnail must be less than 2MB");
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (thumbnailFile && !thumbnailFile.type.startsWith("image/")) {
       toast.error("Only image files are allowed");
       return;
     }
+
+    
 
 
 
@@ -253,11 +255,20 @@ const TeacherLiveClass = () => {
     if (durationMinutes <= 0) {
       toast.error("Duration must be greater than 0");
       return;
+    
     }
 
+    if (durationMinutes > 480) {
+      toast.error("Class duration cannot exceed 8 hours");
+      return;
+    }
+
+    
     const endDateTime = new Date(
       startDateTime.getTime() + durationMinutes * 60000
     )
+
+
 
 
     const payload = new FormData();

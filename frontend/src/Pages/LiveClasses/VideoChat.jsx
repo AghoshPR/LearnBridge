@@ -40,6 +40,9 @@ const VideoChat = () => {
   const peerConnection = useRef(null)
 
 
+  
+
+
 
 
     // 🔵 CONNECT WEBSOCKET
@@ -75,7 +78,7 @@ const VideoChat = () => {
 
     useEffect(() => {
     ws.current = new WebSocket(
-        `ws://localhost:8001/ws/chat/${classId}/`
+        `ws://localhost:8000/ws/chat/${classId}/`
     );
 
     ws.current.onopen = () => {

@@ -41,8 +41,8 @@ const StudentNotification = () => {
 
   useEffect(() => {
 
-    const socket = new WebSocket("ws://localhost:8001/ws/notifications/");
-    socket.onopen = ()=>console.log('haiiiiiiiiiiiii')
+    const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
+    socket.onopen = ()=>console.log('connected')
     socket.onerror = (err) => console.log("Error: ", err) 
     socket.onclose = ()=>console.log('stop')
 
