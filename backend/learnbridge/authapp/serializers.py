@@ -5,28 +5,25 @@ from django.contrib.auth.password_validation import validate_password
 from .models import *
 
 
-
 class RegisterStudentSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        model=User
-        fields=('username','email','password')
+        model = User
+        fields = ('username', 'email', 'password')
 
-
-    def validate_email(self,value):
+    def validate_email(self, value):
 
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already registered")
         return value
-    
-    def validate_password(self, value):
-        validate_password(value)  
-        return value
-    
 
-    def create(self,validated_data):
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
+    def create(self, validated_data):
 
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -39,6 +36,7 @@ class RegisterStudentSerializer(serializers.ModelSerializer):
 
         return user
 
+
 class RegisterTeacherSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
@@ -47,20 +45,19 @@ class RegisterTeacherSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already registered")
         return value
-    
+
     def validate_password(self, value):
         validate_password(value)
         return value
 
     class Meta:
 
-        model=User
-        fields=('username','email','password')
+        model = User
+        fields = ('username', 'email', 'password')
 
-    
-    def create(self,validated_data):
+    def create(self, validated_data):
 
-        user=User.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
@@ -69,56 +66,46 @@ class RegisterTeacherSerializer(serializers.ModelSerializer):
             status='blocked'
         )
         return user
-    
+
 
 class LoginSerializer(serializers.Serializer):
 
-    email=serializers.EmailField()
-    password=serializers.CharField()
-    role=serializers.CharField()
+    email = serializers.EmailField()
+    password = serializers.CharField()
+    role = serializers.CharField()
 
-
-    def validate(self,data):
-
-       
+    def validate(self, data):
 
         try:
             user_obj = User.objects.get(email=data['email'])
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid Credentials")
-        
 
         if user_obj.status == "blocked":
             raise serializers.ValidationError(
                 "Your account is blocked. Contact admin."
             )
-        
+
         if not user_obj.is_active:
             raise serializers.ValidationError("Account not verified")
-        
 
-        user=authenticate(
+        user = authenticate(
             username=user_obj.username,
             password=data['password']
 
         )
 
-        
-        
-    
         if not user:
 
             raise serializers.ValidationError("Invalid Credentials")
 
         if user.role != data['role']:
             raise serializers.ValidationError('Role Mismatch')
-        
+
         if not user.is_active:
             raise serializers.ValidationError("Account not verified")
-    
-        if user.role == 'teacher' and user.status !='active':
+
+        if user.role == 'teacher' and user.status != 'active':
             raise serializers.ValidationError("Teacher not Approved")
 
         return user
-    
-

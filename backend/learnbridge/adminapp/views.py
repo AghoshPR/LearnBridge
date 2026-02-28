@@ -16,16 +16,13 @@ from courses.models import *
 from studentapp.models import *
 
 
-
-
 # admin teacher approve requests
 
 class PendingTeachersView(APIView):
 
-
     permission_classes = [IsAdmin]
 
-    def get(self,request):
+    def get(self, request):
 
         profiles = TeacherProfile.objects.filter(status='pending')
 
@@ -35,9 +32,9 @@ class PendingTeachersView(APIView):
 
             data.append({
 
-                "id":profile.id,
-                "name":profile.user.username,
-                "email":profile.user.email,
+                "id": profile.id,
+                "name": profile.user.username,
+                "email": profile.user.email,
                 "teacher_type": profile.teacher_type,
                 "subjects": profile.subjects,
                 "experience": profile.years_of_experience or "Fresher",
@@ -47,40 +44,37 @@ class PendingTeachersView(APIView):
         return Response(data)
 
 
+# ----------admin approve and reject ----------#
 
-#----------admin approve and reject ----------#
 
-
-   
 # admin teacher reject with reson
-    
+
 class AdminTeacherRejectView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request,teacher_id):
+    def post(self, request, teacher_id):
 
         reason = request.data.get("reason")
 
         if not reason:
 
             return Response(
-                {"error":"Rejection reason is required"},
+                {"error": "Rejection reason is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         try:
 
-            profile = TeacherProfile.objects.select_related("user").get(id=teacher_id)
-        
+            profile = TeacherProfile.objects.select_related(
+                "user").get(id=teacher_id)
+
         except TeacherProfile.DoesNotExist:
 
             return Response(
-                {"error":"Teacher not found"},
+                {"error": "Teacher not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
-   
 
         # Send rejection email
 
@@ -92,22 +86,19 @@ class AdminTeacherRejectView(APIView):
         profile.user.delete()
 
         return Response(
-            {"message":"Teacher rejected and email sent successfully"},
+            {"message": "Teacher rejected and email sent successfully"},
             status=status.HTTP_200_OK
         )
 
 
-
-
-
 class ApproveTeacherView(APIView):
-    
+
     permission_classes = [IsAdmin]
 
+    def get(self, request):
 
-    def get(self,request):
-
-        profiles = TeacherProfile.objects.select_related("user").filter(status="approved",is_deleted=False)
+        profiles = TeacherProfile.objects.select_related(
+            "user").filter(status="approved", is_deleted=False)
 
         data = []
 
@@ -117,66 +108,57 @@ class ApproveTeacherView(APIView):
 
             courses_count = Course.objects.filter(
                 teacher=teacher,
-                is_deleted = False
+                is_deleted=False
             ).count()
 
             students_count = Enrollment.objects.filter(
                 course__teacher=teacher
             ).count()
-            
+
             avg_rating = CourseReview.objects.filter(
                 course__teacher=teacher
             ).aggregate(avg=Avg("rating"))["avg"] or 0
-            
-
 
             data.append({
 
-                "id":profile.id,
-                "name":profile.user.username,
-                'email':profile.user.email,
-                "subjects":profile.subjects,
+                "id": profile.id,
+                "name": profile.user.username,
+                'email': profile.user.email,
+                "subjects": profile.subjects,
                 "courses_count": courses_count,
                 "students_count": students_count,
                 "rating": round(avg_rating, 1),
-                "status":profile.user.status,
+                "status": profile.user.status,
                 "is_blocked": profile.user.status == "blocked"
 
             })
         return Response(data)
 
-
-    def post(self,request,id):
-
-        
+    def post(self, request, id):
 
         try:
 
             profile = TeacherProfile.objects.select_related('user').get(id=id)
-        
+
         except TeacherProfile.DoesNotExist:
 
             return Response(
-                {"error":"Teacher profile not found"},
+                {"error": "Teacher profile not found"},
                 status=404
             )
-        
+
         if profile.status != 'pending':
 
             return Response(
-                {"error":"Teacher Already processed"},
+                {"error": "Teacher Already processed"},
                 status=400
             )
-        
+
         if not profile.user.is_active:
             return Response(
                 {"error": "Teacher has not verified OTP"},
                 status=400
             )
-        
-
-
-
 
         profile.status = 'approved'
         profile.save()
@@ -185,22 +167,15 @@ class ApproveTeacherView(APIView):
         profile.user.save()
 
         return Response({
-            "message":"Teacher approved successfully"
+            "message": "Teacher approved successfully"
         })
-    
 
 
-
-
-
-
-
-    
 class BlockTeacherView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request,id):
+    def post(self, request, id):
 
         try:
             profile = TeacherProfile.objects.select_related("user").get(id=id)
@@ -208,21 +183,22 @@ class BlockTeacherView(APIView):
         except TeacherProfile.DoesNotExist:
 
             return Response(
-                {"error":"Teacher profile not found"},
+                {"error": "Teacher profile not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        profile.user.status="blocked"
+        profile.user.status = "blocked"
         profile.user.save()
 
         return Response({
-            "message":"Teacher Blocked Successfully"
+            "message": "Teacher Blocked Successfully"
         })
-    
+
+
 class UnBlockTeacherView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request,id):
+    def post(self, request, id):
 
         try:
 
@@ -230,147 +206,142 @@ class UnBlockTeacherView(APIView):
 
         except TeacherProfile.DoesNotExist:
             return Response(
-                {"error":"Teacher profile not found"},
+                {"error": "Teacher profile not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
-        profile.user.status="active"
+
+        profile.user.status = "active"
         profile.user.save()
 
-
         return Response({
-            "message":"Teacher unblocked successfully"
+            "message": "Teacher unblocked successfully"
         })
- 
 
 
 # AdminUsers
 
 class AdminCreateUser(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request):
+    def post(self, request):
 
         serializer = AdminCreateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user=serializer.save()
+        user = serializer.save()
 
         return Response(
             {
-                "message":"User create successfully",
-                "id":user.id,
-                "username":user.username,
-                "email":user.email,
+                "message": "User create successfully",
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
 
-            },status=status.HTTP_201_CREATED
+            }, status=status.HTTP_201_CREATED
         )
 
 
-
 class AdminUsers(APIView):
-    
-    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
 
-    permission_classes=[IsAdmin]
+    authentication_classes = [
+        CsrfExemptSessionAuthentication, CookieJWTAuthentication]
 
-    def get(self,request):
+    permission_classes = [IsAdmin]
 
-        search = request.GET.get("search","")
+    def get(self, request):
 
-        
-        
-        users=User.objects.filter(role="student",is_deleted=False).order_by("-date_joined")
+        search = request.GET.get("search", "")
+
+        users = User.objects.filter(
+            role="student", is_deleted=False).order_by("-date_joined")
 
         if search:
             users = users.filter(
                 Q(username__icontains=search) |
                 Q(email__icontains=search)
             )
-        
+
         paginator = AdminUserPagination()
 
-        page = paginator.paginate_queryset(users,request)
-        serializer=AdminUserSerializer(page,many=True)
+        page = paginator.paginate_queryset(users, request)
+        serializer = AdminUserSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
-    
+
 
 class BlockUser(APIView):
 
-    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
-    permission_classes=[IsAdmin]
+    authentication_classes = [
+        CsrfExemptSessionAuthentication, CookieJWTAuthentication]
+    permission_classes = [IsAdmin]
 
-    def patch(self,request,user_id):
+    def patch(self, request, user_id):
 
-        
-        
         try:
 
-            user = User.objects.get(id=user_id,role="student")
+            user = User.objects.get(id=user_id, role="student")
 
         except User.DoesNotExist:
-            return Response({"error":"Usernot found"},status=404)
-        
+            return Response({"error": "Usernot found"}, status=404)
+
         # if user.is_superuser:
         #     return Response(
         #         {"error": "Superuser cannot be blocked"},
         #         status=status.HTTP_403_FORBIDDEN
         #     )
-        
-        if user.status =="blocked":
+
+        if user.status == "blocked":
             return Response(
-                {"error":"User already blocked"},
+                {"error": "User already blocked"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
 
         user.is_active = False
-        user.status="blocked"
+        user.status = "blocked"
         user.save()
 
         return Response({
-            "message":"User blocked successfully",
+            "message": "User blocked successfully",
             "id": user.id,
             "status": user.status
 
-        },status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)
 
 
 class UnBlockUser(APIView):
 
-    authentication_classes=[CsrfExemptSessionAuthentication,CookieJWTAuthentication]
-    permission_classes=[IsAdmin]
+    authentication_classes = [
+        CsrfExemptSessionAuthentication, CookieJWTAuthentication]
+    permission_classes = [IsAdmin]
 
-    def patch(self,request,user_id):
+    def patch(self, request, user_id):
 
         try:
 
-            user=User.objects.get(id=user_id,role="student")
+            user = User.objects.get(id=user_id, role="student")
 
         except User.DoesNotExist:
             return Response(
-                {"error":"User not found"},
+                {"error": "User not found"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if user.status != "blocked":
 
             return Response(
-                {"error":"User is not blocked"},
+                {"error": "User is not blocked"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        user.is_active=True
-        user.status="active"
+
+        user.is_active = True
+        user.status = "active"
         user.save()
 
         return Response({
-            "message":"User Unblocked Successfully",
-            "id":user.id,
-            "status":user.status
-        },status=status.HTTP_200_OK)
-        
+            "message": "User Unblocked Successfully",
+            "id": user.id,
+            "status": user.status
+        }, status=status.HTTP_200_OK)
 
 
 class DeleteUserView(APIView):
@@ -379,7 +350,7 @@ class DeleteUserView(APIView):
     def delete(self, request, user_id):
         try:
             user = User.objects.get(id=user_id, role="student")
-            user.is_deleted=True
+            user.is_deleted = True
             user.is_active = False
             user.save()
 
@@ -388,20 +359,18 @@ class DeleteUserView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
 class AdminCreateTeacher(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request):
+    def post(self, request):
 
         serializers = AdminCreateTeacherSerializer(data=request.data)
         serializers.is_valid(raise_exception=True)
         serializers.save()
 
         return Response(
-            {"message":"Teacher created and approved successfully"},
+            {"message": "Teacher created and approved successfully"},
             status=status.HTTP_201_CREATED
         )
 
@@ -410,19 +379,16 @@ class AdminViewTeacherRegistartion:
     pass
 
 
-
-
-
 class AdminTeacherDeleteView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def delete(self,request,id):
+    def delete(self, request, id):
 
         try:
             profile = TeacherProfile.objects.get(id=id)
             user = profile.user
-            
+
             profile.is_deleted = True
             profile.save()
 
@@ -432,25 +398,24 @@ class AdminTeacherDeleteView(APIView):
             user.save()
 
             return Response(
-                {"message":"Teacher Deleted Successfully"},
+                {"message": "Teacher Deleted Successfully"},
                 status=status.HTTP_200_OK
             )
         except TeacherProfile.DoesNotExist:
-             return Response(
-                {"error":"Teacher not found"},
+            return Response(
+                {"error": "Teacher not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
 
-
 class AdminPendingTeacherDetailView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def get(self,request,id):
+    def get(self, request, id):
 
         profile = get_object_or_404(
-            TeacherProfile,id=id,
+            TeacherProfile, id=id,
             status="pending"
 
         )

@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 
+
 class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -12,7 +13,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         if user.is_anonymous:
 
             await self.close()
-        
+
         else:
 
             self.group_name = f"user_{user.id}"
@@ -25,9 +26,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
             await self.accept()
 
-    
     async def disconnect(self, close_code):
-        
+
         user = self.scope["user"]
 
         if not user.is_anonymous:
@@ -37,10 +37,8 @@ class NotificationConsumer(AsyncWebsocketConsumer):
                 self.channel_name
             )
 
-    
-    async def send_notification(self,event):
+    async def send_notification(self, event):
 
         await self.send(text_data=json.dumps({
-            "notification":event["notification"]
+            "notification": event["notification"]
         }))
-

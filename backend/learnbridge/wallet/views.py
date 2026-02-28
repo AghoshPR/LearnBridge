@@ -5,50 +5,52 @@ from .models import *
 from decimal import Decimal, ROUND_HALF_UP
 from django.db import transaction
 from django.utils import timezone
-from  .payout_service import *
+from .payout_service import *
 from authapp.permissions import *
+
 
 class AdminWalletSummaryView(APIView):
 
     permission_classes = [IsAdmin]
 
-    def get(self,request):
+    def get(self, request):
 
-        wallet,_ = AdminWallet.objects.get_or_create(id=1)
+        wallet, _ = AdminWallet.objects.get_or_create(id=1)
 
         return Response({
-            "total_earnings":wallet.total_earnings,
-            "available_balance":wallet.available_balance,
-            "pending_balance":wallet.pending_balance,
-            "withdrawn_amount":wallet.withdrawn_amount
+            "total_earnings": wallet.total_earnings,
+            "available_balance": wallet.available_balance,
+            "pending_balance": wallet.pending_balance,
+            "withdrawn_amount": wallet.withdrawn_amount
         })
-    
+
+
 class AdminWalletTransactionsView(APIView):
 
     permission_classes = [IsAdmin]
 
-    def get(self,request):
+    def get(self, request):
 
-        
-
-        wallet,_ = AdminWallet.objects.get_or_create(id=1)
+        wallet, _ = AdminWallet.objects.get_or_create(id=1)
 
         transactions = AdminTransaction.objects.select_related(
-            "course","course__teacher", "live_class","live_class__teacher__user"
+            "course", "course__teacher", "live_class", "live_class__teacher__user"
         ).filter(admin_wallet=wallet).order_by("-created_at")
 
-        data=[]
+        data = []
 
         for t in transactions:
 
             full_amount = int(t.amount)
 
             admin_share = int(
-                (t.amount * Decimal("0.20")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+                (t.amount * Decimal("0.20")
+                 ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             )
 
             teacher_share = int(
-                (t.amount * Decimal("0.80")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+                (t.amount * Decimal("0.80")
+                 ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
             )
 
             if t.source == "course_fee" and t.course:
@@ -76,9 +78,8 @@ class AdminWalletTransactionsView(APIView):
                 "description": t.description,
             })
 
-
         return Response(data)
-    
+
 
 class AdminTransferToTeacherView(APIView):
 
@@ -88,21 +89,20 @@ class AdminTransferToTeacherView(APIView):
     def post(self, request, transaction_id):
 
         admin_tx = AdminTransaction.objects.select_related(
-            "admin_wallet", "course__teacher","live_class__teacher__user",
+            "admin_wallet", "course__teacher", "live_class__teacher__user",
         ).get(id=transaction_id)
 
         if admin_tx.status != "transfer_pending":
             return Response({"error": "Already transferred"}, status=400)
 
         if admin_tx.source == "course_fee":
-            teacher = admin_tx.course.teacher 
+            teacher = admin_tx.course.teacher
 
         elif admin_tx.source == "live_class":
             teacher = admin_tx.live_class.teacher.user
 
         else:
             return Response({"error": "Invalid transaction type"}, status=400)
-        
 
         amount = admin_tx.amount
 
@@ -110,7 +110,6 @@ class AdminTransferToTeacherView(APIView):
             Decimal("1"), rounding=ROUND_HALF_UP
         )
 
-        
         # ADMIN WALLET UPDATE
         # =========================
         admin_wallet = admin_tx.admin_wallet
@@ -123,7 +122,6 @@ class AdminTransferToTeacherView(APIView):
         admin_tx.status = "transferred"
         admin_tx.save()
 
-        
         # TEACHER WALLET UPDATE
         # =========================
         teacher_wallet, _ = TeacherWallet.objects.get_or_create(
@@ -168,12 +166,11 @@ class AdminTransferToTeacherView(APIView):
         })
 
 
-
 class TeacherWalletSummaryView(APIView):
 
     permission_classes = [IsTeacher]
 
-    def get(self,request):
+    def get(self, request):
 
         wallet, _ = TeacherWallet.objects.get_or_create(
             teacher=request.user
@@ -189,53 +186,49 @@ class TeacherWalletSummaryView(APIView):
             "total_earnings": wallet.total_earnings,
             "available_balance": wallet.available_balance,
             "pending_balance": wallet.pending_balance,
-            "withdrawn_amount" : wallet.withdrawn_amount,
+            "withdrawn_amount": wallet.withdrawn_amount,
             "live_class_revenue": live_class_total
         })
-    
+
+
 class TeacherWalletTrasactionsView(APIView):
 
     permission_classes = [IsTeacher]
 
-    def get(self,request):
+    def get(self, request):
 
-        wallet,_ = TeacherWallet.objects.get_or_create(
-            teacher = request.user
+        wallet, _ = TeacherWallet.objects.get_or_create(
+            teacher=request.user
         )
 
-        
-        
-
         transactions = wallet.transactions.order_by("-created_at")
-
-
 
         data = []
 
         for t in transactions:
-
 
             if t.source == "course_sale" and t.course:
                 enrollment = t.course.enrollments.order_by("-id").first()
                 purchaser = enrollment.user.username if enrollment else None
 
             elif t.source == "live_class" and t.live_class:
-                registration = t.live_class.registrations.order_by("-registration_id").first()
+                registration = t.live_class.registrations.order_by(
+                    "-registration_id").first()
                 purchaser = registration.user.username if registration else None
 
             else:
                 purchaser = None
 
             data.append({
-                "id":t.id,
-                "date":t.created_at,
+                "id": t.id,
+                "date": t.created_at,
                 "transaction_id": t.transaction_id,
-                "description":t.description,
-                "amount":int(t.amount),
-                "status":t.status,
+                "description": t.description,
+                "amount": int(t.amount),
+                "status": t.status,
                 "source": t.source,
                 "purchaser": purchaser
 
             })
-        
+
         return Response(data)

@@ -5,6 +5,7 @@ from teacherapp.models import TeacherProfile
 from asgiref.sync import sync_to_async
 from .models import *
 
+
 class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
@@ -61,7 +62,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "user": self.user.username
             }
         )
-
 
     @sync_to_async
     def save_message(self, message):

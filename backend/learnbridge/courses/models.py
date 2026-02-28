@@ -6,10 +6,10 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Category(models.Model):
-    
-    STATUS_CHOICES =[
-        ('active','Active'),
-        ('blocked','Blocked')
+
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('blocked', 'Blocked')
     ]
 
     name = models.CharField(max_length=20)
@@ -26,37 +26,35 @@ class Category(models.Model):
         default='active'
     )
 
-    created_at=models.DateTimeField(auto_now_add=True)
-    updated_at=models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
-    
+
 
 class Course(models.Model):
 
-    
-
-    LEVEL_CHOICES =(
-        ('beginner','Beginner'),
-        ('intermediate','Intermediate'),
-        ('advanced','Advanced')
+    LEVEL_CHOICES = (
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced')
     )
 
     STATUS_CHOICES = (
         ("draft", "Draft"),
         ("published", "Published"),
         ("blocked", "Blocked"),
-       
+
     )
 
     teacher = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        limit_choices_to={'role':'teacher'}        
-        
+        limit_choices_to={'role': 'teacher'}
+
     )
 
     category = models.ForeignKey(
@@ -67,8 +65,8 @@ class Course(models.Model):
 
     title = models.CharField(max_length=250)
     description = models.TextField()
-    level = models.CharField(max_length=20,choices=LEVEL_CHOICES)
-    price = models.DecimalField(max_digits=10,decimal_places=2)
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     thumbnail = CloudinaryField(
         "thumbnail",
@@ -96,9 +94,10 @@ class Course(models.Model):
 
 class Lesson(models.Model):
 
-    course = models.ForeignKey(Course,on_delete=models.CASCADE,related_name="lessons")
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=250)
-    type = models.CharField(max_length=10,default='video')
+    type = models.CharField(max_length=10, default='video')
     duration = models.CharField(max_length=20)
     video_key = models.CharField(max_length=500)
     description = models.TextField(blank=True)
@@ -107,14 +106,16 @@ class Lesson(models.Model):
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
-        ordering=["position"]
+        ordering = ["position"]
 
 
 class LessonComments(models.Model):
 
-    lesson = models.ForeignKey(Lesson,on_delete=models.CASCADE,related_name="comments")
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    parent = models.ForeignKey("self",null=True,blank=True,on_delete=models.CASCADE,related_name="replies")
+    lesson = models.ForeignKey(
+        Lesson, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies")
     content = models.TextField()
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -126,20 +127,21 @@ class LessonComments(models.Model):
 
 class CommentLike(models.Model):
 
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    comment = models.ForeignKey(LessonComments,on_delete=models.CASCADE,related_name="likes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(
+        LessonComments, on_delete=models.CASCADE, related_name="likes")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "comment")
 
 
-
 # Public Course Review
 
 
 class CourseReview(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="reviews")
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="reviews")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)]
@@ -148,11 +150,4 @@ class CourseReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("course", "user")  
-
-
-        
-
-
-
-
+        unique_together = ("course", "user")

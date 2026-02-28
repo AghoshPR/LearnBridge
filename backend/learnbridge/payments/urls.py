@@ -5,19 +5,16 @@ from .views import *
 
 
 urlpatterns = [
-   
+
     path("cart/", CartDetailView.as_view()),
     path("cart/add/", AddtoCartView.as_view()),
     path("cart/remove/<int:course_id>/", RemoveFromCartView.as_view()),
     path("cart/clear/", ClearCartView.as_view()),
-
-    path("createorder/",CreateOrderView.as_view()),
+    path("createorder/", CreateOrderView.as_view()),
 
     path("stripe/success/", StripePaymentSuccessView.as_view()),
-    
-    
-    path("razorpay/create/",CreateRazorpayOrderView.as_view()),
-    path("razorpay/verify/",RazorpayPaymentVerifyView.as_view())
+    path("razorpay/create/", CreateRazorpayOrderView.as_view()),
+    path("razorpay/verify/", RazorpayPaymentVerifyView.as_view())
 
 
 ]

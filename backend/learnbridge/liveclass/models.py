@@ -6,23 +6,24 @@ from courses.models import Course
 from studentapp.models import User
 from cloudinary.models import CloudinaryField
 
+
 class LiveClass(models.Model):
 
     STATUS_CHOICES = (
-        ('scheduled' , 'Scheduled'),
-        ('completed' , 'Completed'),
-        ('cancelled' , 'Cancelled')
+        ('scheduled', 'Scheduled'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled')
     )
 
     class_id = models.AutoField(primary_key=True)
 
     thumbnail = CloudinaryField(
-    "image",
-    folder="live_thumbnails",
-    blank=True,
-    null=True
+        "image",
+        folder="live_thumbnails",
+        blank=True,
+        null=True
     )
-    
+
     teacher = models.ForeignKey(
         TeacherProfile,
         on_delete=models.CASCADE,
@@ -40,7 +41,7 @@ class LiveClass(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     meeting_link = models.CharField(max_length=255)
-    subject = models.CharField(max_length=255,blank=True,null=True)
+    subject = models.CharField(max_length=255, blank=True, null=True)
 
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
@@ -55,7 +56,7 @@ class LiveClass(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default="scheduled"
-        
+
     )
 
     duration_minutes = models.PositiveIntegerField(default=0)
@@ -64,6 +65,7 @@ class LiveClass(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.teacher.user.username}"
+
 
 class LiveClassRegistration(models.Model):
 
@@ -90,4 +92,3 @@ class LiveClassRegistration(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.live_class.title}"
-

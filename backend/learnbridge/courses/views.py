@@ -3,12 +3,12 @@ from rest_framework.response import Response
 from authapp.permissions import *
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from courses.models import Category,Course,Lesson
+from courses.models import Category, Course, Lesson
 from .serializers import *
 from django.shortcuts import get_object_or_404
-from courses.utils import upload_video,generate_signed_url,delete_video_from_s3
+from courses.utils import upload_video, generate_signed_url, delete_video_from_s3
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Max,Q
+from django.db.models import Max, Q
 from .pagination import CoursePagination
 from authapp.authentication import *
 from adminapp.pagination import *
@@ -23,13 +23,13 @@ from asgiref.sync import async_to_sync
 
 class AdminCategoryView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def get(self,request):
+    def get(self, request):
 
-
-        search = request.GET.get("search","").strip()
-        categories = Category.objects.filter(is_deleted=False).order_by('-created_at')
+        search = request.GET.get("search", "").strip()
+        categories = Category.objects.filter(
+            is_deleted=False).order_by('-created_at')
 
         if search:
 
@@ -38,107 +38,98 @@ class AdminCategoryView(APIView):
                 Q(description__icontains=search)
             )
 
-
         paginator = AdminCategoryPagination()
         page = paginator.paginate_queryset(categories, request)
 
-        serializer = CategorySerializer(page,many=True)
+        serializer = CategorySerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
-    
+
     def post(self, request):
 
         serializer = CategorySerializer(
             data=request.data,
-            context={"request":request}
+            context={"request": request}
         )
 
         if serializer.is_valid():
-                serializer.save(created_by=request.user)
-                return Response(serializer.data, status=201)
+            serializer.save(created_by=request.user)
+            return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
-    
-    
-    def patch(self,request,pk):
 
-        category = get_object_or_404(Category,pk=pk)
+    def patch(self, request, pk):
+
+        category = get_object_or_404(Category, pk=pk)
 
         serializer = CategorySerializer(
             category,
             data=request.data,
-            partial = True,
-            context = {'request':request}
+            partial=True,
+            context={'request': request}
         )
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
 
-    def delete(self,request,pk):
-        
-        category = get_object_or_404(Category,pk=pk)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        category = get_object_or_404(Category, pk=pk)
         category.is_deleted = True
         category.save()
 
         return Response(
-            {"detail":"Category deleted"},
+            {"detail": "Category deleted"},
             status=status.HTTP_204_NO_CONTENT
         )
 
+
 class AdminCategoryToggleStatus(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request,pk):
+    def post(self, request, pk):
 
-        category = get_object_or_404(Category,pk=pk)
+        category = get_object_or_404(Category, pk=pk)
 
         category.status = 'blocked' if category.status == 'active' else 'active'
         category.save()
 
         return Response(
             {
-                "message":"Category status updated",
-                "status":category.status
+                "message": "Category status updated",
+                "status": category.status
             },
             status=status.HTTP_200_OK
         )
-
-
-
-
-
-
-
-
 
 
 # Admin CourseListView
 
 class AdminCourseView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def get(self, request,pk=None):
+    def get(self, request, pk=None):
 
         if pk:
 
-            course = get_object_or_404(Course,pk=pk)
+            course = get_object_or_404(Course, pk=pk)
             serializer = CourseSerializer(course)
             return Response(serializer.data)
-        
+
         search = request.GET.get("search", "")
 
-        courses = Course.objects.select_related('teacher','category').filter(is_deleted=False).order_by('-created_at')
+        courses = Course.objects.select_related('teacher', 'category').filter(
+            is_deleted=False).order_by('-created_at')
 
         if search:
             courses = courses.filter(
                 Q(title__icontains=search) |
-                Q(teacher__username__icontains=search) | 
+                Q(teacher__username__icontains=search) |
                 Q(category__name__icontains=search)
             )
 
@@ -146,23 +137,23 @@ class AdminCourseView(APIView):
 
         paginated_courses = paginator.paginate_queryset(courses, request)
 
-        serializer = CourseSerializer(paginated_courses,many=True)
+        serializer = CourseSerializer(paginated_courses, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    def post(self,request):
+    def post(self, request):
 
         serializer = CourseSerializer(
             data=request.data,
-            context = {'request':request}
+            context={'request': request}
         )
 
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
-    def patch(self,request,pk):
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
 
         course = get_object_or_404(Course, pk=pk)
 
@@ -176,29 +167,27 @@ class AdminCourseView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
 
-    def delete(self,request,pk):
-        course = get_object_or_404(Course,pk=pk)
-        course.is_deleted=True
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
+        course.is_deleted = True
         course.save()
 
         return Response(
-            {"detail":"Course deleted"},
+            {"detail": "Course deleted"},
             status=status.HTTP_204_NO_CONTENT
         )
 
 
 class AdminCourseToggleStatus(APIView):
-    
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def post(self,request,pk):
+    def post(self, request, pk):
 
-        course = get_object_or_404(Course,pk=pk)
+        course = get_object_or_404(Course, pk=pk)
 
         course.status = "blocked" if course.status == "published" else "published"
 
@@ -206,8 +195,8 @@ class AdminCourseToggleStatus(APIView):
 
         return Response(
             {
-                "message":"Course status updated",
-                "status":course.status
+                "message": "Course status updated",
+                "status": course.status
             },
             status=status.HTTP_200_OK
         )
@@ -217,29 +206,30 @@ class AdminCourseToggleStatus(APIView):
 
 class AdminLessonView(APIView):
 
-    permission_classes=[IsAdmin]
+    permission_classes = [IsAdmin]
 
-    def get(self,request,course_id):
+    def get(self, request, course_id):
 
         lessons = Lesson.objects.filter(
-            
+
             course_id=course_id,
-            is_deleted = False,
+            is_deleted=False,
         ).order_by("position")
 
-        serializer = LessonSerializer(lessons,many=True)
+        serializer = LessonSerializer(lessons, many=True)
         return Response(serializer.data)
 
-class AdminLessonDeleteView(APIView):
-    permission_classes=[IsAdmin]
 
-    def delete(self,request,pk):
+class AdminLessonDeleteView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, pk):
         lesson = get_object_or_404(Lesson, pk=pk)
         lesson.is_deleted = True
         lesson.save()
 
         return Response(
-            {"detail":"Lesson deleted"},
+            {"detail": "Lesson deleted"},
             status=status.HTTP_204_NO_CONTENT
         )
 
@@ -251,36 +241,35 @@ class TeacherCategoryView(APIView):
 
     permission_classes = [IsTeacher]
 
+    def get(self, request):
 
-    def get(self,request):
-        
+        categories = Category.objects.filter(is_deleted=False, status="active")
 
-        categories = Category.objects.filter(is_deleted=False,status="active")
-
-        serializer = CategorySerializer(categories,many=True,context={"request": request}  )
+        serializer = CategorySerializer(
+            categories, many=True, context={"request": request})
         return Response(serializer.data)
-    
 
     # Create category
-    def post(self,request):
+    def post(self, request):
 
         if request.user.role != 'teacher':
             return Response(
                 {"detail": "Only teachers can create categories"},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        serializer = CategorySerializer(data=request.data,context={"request": request})
+
+        serializer = CategorySerializer(
+            data=request.data, context={"request": request})
 
         if serializer.is_valid():
             serializer.save(created_by=request.user)
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     # Edit category
 
-    def patch(self,request,pk=None):
+    def patch(self, request, pk=None):
 
         category = get_object_or_404(
             Category,
@@ -298,10 +287,10 @@ class TeacherCategoryView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self,request,pk=None):
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
 
         category = get_object_or_404(
             Category,
@@ -309,22 +298,23 @@ class TeacherCategoryView(APIView):
             created_by=request.user
         )
 
-        category.is_deleted=True
+        category.is_deleted = True
         category.save()
         return Response(
 
-            {"detail":"Category deleted"},
-             status=status.HTTP_204_NO_CONTENT
+            {"detail": "Category deleted"},
+            status=status.HTTP_204_NO_CONTENT
         )
 
 # Category Block
 
+
 class CatgeoryBlock(APIView):
-    
+
     permission_classes = [IsTeacher]
 
-    def post(self,request,id):
-        
+    def post(self, request, id):
+
         category = get_object_or_404(
             Category,
             id=id,
@@ -337,7 +327,7 @@ class CatgeoryBlock(APIView):
         #         {"error":"Category is already blocked"},
         #         status=status.HTTP_400_BAD_REQUEST
         #     )
-        
+
         # if category.courses.exists():
         #     return Response(
         #         {"error": "Cannot block category with existing courses"},
@@ -348,17 +338,16 @@ class CatgeoryBlock(APIView):
         category.save()
 
         return Response(
-            {"message":"Category blocked successfully"},
+            {"message": "Category blocked successfully"},
             status=status.HTTP_200_OK
         )
-    
+
 
 class CategoryUnBlock(APIView):
 
-    permission_classes=[IsTeacher]
+    permission_classes = [IsTeacher]
 
-
-    def post(self,request,id):
+    def post(self, request, id):
 
         category = get_object_or_404(
             Category,
@@ -370,18 +359,17 @@ class CategoryUnBlock(APIView):
         if category.status == 'active':
 
             return Response(
-                {"error":"Category is already active"},
+                {"error": "Category is already active"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        category.status='active'
+
+        category.status = 'active'
         category.save()
 
         return Response(
-            {"message":"Category unblocked successfully"},
+            {"message": "Category unblocked successfully"},
             status=status.HTTP_200_OK
         )
-
 
 
 # Teacher Create Course
@@ -389,53 +377,50 @@ class CategoryUnBlock(APIView):
 
 class TeacherCourseView(APIView):
 
-    permission_classes=[IsTeacher]
+    permission_classes = [IsTeacher]
 
     # view all courses
-    def get(self,request,pk=None):
+    def get(self, request, pk=None):
 
         # SINGLE COURSES
 
         if pk:
-            courses = get_object_or_404(Course,pk=pk,teacher=request.user,is_deleted=False)
+            courses = get_object_or_404(
+                Course, pk=pk, teacher=request.user, is_deleted=False)
             serialzer = CourseSerializer(courses)
             return Response(serialzer.data)
-        
+
         #  ALL COURSES
-        
-        courses = Course.objects.filter(teacher=request.user,is_deleted=False)
-        serialzer = CourseSerializer(courses,many=True,context={"request":request})
+
+        courses = Course.objects.filter(teacher=request.user, is_deleted=False)
+        serialzer = CourseSerializer(
+            courses, many=True, context={"request": request})
         return Response(serialzer.data)
-    
 
     # Creating Course
 
-    def post(self,request):
+    def post(self, request):
 
         if request.user.role != 'teacher':
             return Response(
                 {"detail": "Only teachers can create courses"},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         serializer = CourseSerializer(
             data=request.data,
             context={
-                "request":request
+                "request": request
             }
         )
 
-        
-
-
         if serializer.is_valid():
             serializer.save(teacher=request.user)
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-    
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self,request,pk):
+    def patch(self, request, pk):
 
         course = get_object_or_404(
             Course,
@@ -447,17 +432,16 @@ class TeacherCourseView(APIView):
             course,
             data=request.data,
             partial=True,
-            context={"request":request}
+            context={"request": request}
         )
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
 
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self,request,pk):
+    def delete(self, request, pk):
 
         course = get_object_or_404(
             Course,
@@ -465,51 +449,47 @@ class TeacherCourseView(APIView):
             teacher=request.user
         )
 
-        course.is_deleted=True
+        course.is_deleted = True
         course.save()
 
         return Response(
-            {"detail":"Course deleted"},
+            {"detail": "Course deleted"},
             status=status.HTTP_204_NO_CONTENT
         )
-    
+
 
 class TeacherLessonCreateView(APIView):
 
-    permission_classes=[IsTeacher]
+    permission_classes = [IsTeacher]
 
+    def get(self, request, course_id):
 
-    def get(self,request,course_id):
+        lessons = Lesson.objects.filter(
+            course_id=course_id, is_deleted=False).order_by("position")
+        serializer = LessonSerializer(lessons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        lessons = Lesson.objects.filter(course_id=course_id,is_deleted=False).order_by("position")
-        serializer = LessonSerializer(lessons,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    
+    def post(self, request, course_id):
 
-
-    def post(self,request,course_id):
-
-        title=request.data.get('title')
+        title = request.data.get('title')
         duration = request.data.get("duration")
-        description = request.data.get("description","")
+        description = request.data.get("description", "")
         video = request.FILES.get("video")
-
 
         if not video:
 
             return Response(
-                {"error":"video file is required"},
+                {"error": "video file is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         last_position = (
             Lesson.objects.filter(course_id=course_id)
             .aggregate(max_pos=Max("position"))
             .get("max_pos") or 0
         )
 
-        
-        video_key = upload_video(video,course_id)
+        video_key = upload_video(video, course_id)
 
         Lesson.objects.create(
 
@@ -524,8 +504,6 @@ class TeacherLessonCreateView(APIView):
 
         # nottification
 
-        
-
         channel_layer = get_channel_layer()
         print("Channel Layer:", channel_layer)
 
@@ -537,12 +515,11 @@ class TeacherLessonCreateView(APIView):
 
                 student = enrollment.user
 
-
                 notification = Notification.objects.create(
                     user=student,
                     title="Course Updated",
                     message=f"New lesson added to '{course.title}'",
-                    notification_type = "general"
+                    notification_type="general"
                 )
 
                 print("Sending to group:", f"user_{student.id}")
@@ -550,57 +527,57 @@ class TeacherLessonCreateView(APIView):
 
                     f"user_{student.id}",
                     {
-                        "type":"send_notification",
-                        "notification":{
-                            "id":notification.id,
-                            "title":notification.title,
-                            "message":notification.message,
-                            "is_read":notification.is_read,
-                            "created_at":str(notification.created_at),
+                        "type": "send_notification",
+                        "notification": {
+                            "id": notification.id,
+                            "title": notification.title,
+                            "message": notification.message,
+                            "is_read": notification.is_read,
+                            "created_at": str(notification.created_at),
                         }
                     }
                 )
         except Exception as e:
             print("Socket error:", e)
 
-
         return Response(
-            {"message":"Lesson uploaded successfully"},
+            {"message": "Lesson uploaded successfully"},
             status=status.HTTP_201_CREATED
         )
 
+
 class TeacherLessonDetailView(APIView):
 
-    permission_classes=[IsTeacher]
+    permission_classes = [IsTeacher]
 
-    def put(self,request,lesson_id):
+    def put(self, request, lesson_id):
 
-        lesson = get_object_or_404(Lesson,id=lesson_id)
+        lesson = get_object_or_404(Lesson, id=lesson_id)
 
         title = request.data.get("title")
         duration = request.data.get("duration")
-        description = request.data.get("description","")
+        description = request.data.get("description", "")
         video = request.FILES.get("video")
 
         if not title or not duration:
 
             return Response(
-                {"error":"Title and duration are required"},
+                {"error": "Title and duration are required"},
                 status=status.HTTP_400_BAD_REQUEST
 
             )
-        
+
         lesson.title = title
         lesson.duration = duration
         lesson.description = description
 
         if video:
-            old_key=lesson.video_key
-            new_key = upload_video(video,lesson.course_id)
+            old_key = lesson.video_key
+            new_key = upload_video(video, lesson.course_id)
             lesson.video_key = new_key
 
             delete_video_from_s3(old_key)
-        
+
         lesson.save()
 
         channel_layer = get_channel_layer()
@@ -610,10 +587,10 @@ class TeacherLessonDetailView(APIView):
             student = enrollment.user
 
             notification = Notification.objects.create(
-                user = student,
+                user=student,
                 title="Lesson Updated",
                 message=f"Lesson '{lesson.title}' has been updated",
-                notification_type= "general"
+                notification_type="general"
             )
 
             async_to_sync(channel_layer.group_send)(
@@ -630,27 +607,23 @@ class TeacherLessonDetailView(APIView):
                 }
             )
 
-
-
         return Response(
-            {"message":"Lesson updated successfully"},
+            {"message": "Lesson updated successfully"},
             status=status.HTTP_200_OK
         )
-    
-    def delete(self,request,lesson_id):
 
-        lesson = get_object_or_404(Lesson,id=lesson_id)
+    def delete(self, request, lesson_id):
+
+        lesson = get_object_or_404(Lesson, id=lesson_id)
 
         # delete_video_from_s3(lesson.video_key)
         lesson.is_deleted = True
         lesson.save()
-        
 
         return Response(
-            {"message":"Lesson deleted successfully"},
+            {"message": "Lesson deleted successfully"},
             status=status.HTTP_204_NO_CONTENT
         )
-    
 
 
 # Public course list
@@ -658,23 +631,22 @@ class TeacherLessonDetailView(APIView):
 
 class PublicCourseListView(APIView):
 
-    authentication_classes = [PublicAuthentication] 
-    permission_classes=[AllowAny]
+    authentication_classes = [PublicAuthentication]
+    permission_classes = [AllowAny]
 
-    def get(self,request):
+    def get(self, request):
 
         search = request.GET.get("search")
         category = request.GET.get("category")
-
 
         courses = Course.objects.filter(
             is_deleted=False,
             status="published",
             category__status="active"
-            
-            
 
-        ).select_related("teacher","category").prefetch_related("lessons").order_by("-created_at")
+
+
+        ).select_related("teacher", "category").prefetch_related("lessons").order_by("-created_at")
 
         if search:
             courses = courses.filter(
@@ -693,13 +665,14 @@ class PublicCourseListView(APIView):
 
 class PublicCategoryListView(APIView):
 
-    authentication_classes = [PublicAuthentication] 
-    permission_classes=[AllowAny]
+    authentication_classes = [PublicAuthentication]
+    permission_classes = [AllowAny]
 
-    def get(self,request):
+    def get(self, request):
 
-        categories = Category.objects.filter(is_deleted=False,status="active").order_by("name")
-        serializer = PublicCategorySerializer(categories,many=True)
+        categories = Category.objects.filter(
+            is_deleted=False, status="active").order_by("name")
+        serializer = PublicCategorySerializer(categories, many=True)
         return Response(serializer.data)
 
 
@@ -708,104 +681,102 @@ class PublicCategoryListView(APIView):
 class PublicCourseDetailView(APIView):
 
     authentication_classes = [
-    CookieJWTAuthentication,
-    CsrfExemptSessionAuthentication,
-]
+        CookieJWTAuthentication,
+        CsrfExemptSessionAuthentication,
+    ]
     permission_classes = [AllowAny]
-    
 
-    def get(self,request,pk):
+    def get(self, request, pk):
 
         course = get_object_or_404(
-            Course.objects.select_related("teacher","category"),
+            Course.objects.select_related("teacher", "category"),
             id=pk,
             status="published",
             category__status="active"
-            
+
         )
 
         serializer = PublicCourseDetailSerializer(
             course,
-            context = {"request":request}
-            )
-        
+            context={"request": request}
+        )
+
         return Response(serializer.data)
-
-
-
 
 
 class StudentLessonVideoView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get(self,request,lesson_id):
+    def get(self, request, lesson_id):
 
         lesson = Lesson.objects.get(id=lesson_id)
 
         signed_url = generate_signed_url(lesson.video_key)
 
         return Response(
-            {"signed_url":signed_url}
+            {"signed_url": signed_url}
         )
 
-    
+
 class LessonCommentsView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get(self,request,lesson_id):
+    def get(self, request, lesson_id):
 
         comments = LessonComments.objects.filter(
             lesson_id=lesson_id,
             parent=None,
             is_deleted=False
         )
-        
+
         serializer = LessonCommentSerializer(
-        comments,
-        many=True,
-        context={"request": request} 
-    )
-
-        return Response(serializer.data)
-    
-    def post(self,request,lesson_id):
-
-        LessonComments.objects.create(
-            lesson_id = lesson_id,
-            user=request.user,
-            content = request.data.get("content")
+            comments,
+            many=True,
+            context={"request": request}
         )
 
-        return Response({"detail":"Comment added"})
-    
+        return Response(serializer.data)
+
+    def post(self, request, lesson_id):
+
+        LessonComments.objects.create(
+            lesson_id=lesson_id,
+            user=request.user,
+            content=request.data.get("content")
+        )
+
+        return Response({"detail": "Comment added"})
+
+
 class ReplyCommentsView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def post(self,request,comment_id):
+    def post(self, request, comment_id):
 
         parent = LessonComments.objects.get(id=comment_id)
 
         LessonComments.objects.create(
-            lesson = parent.lesson,
+            lesson=parent.lesson,
             user=request.user,
             parent=parent,
-            content = request.data.get("content")
+            content=request.data.get("content")
         )
 
-        return Response({"detail":"Reply added"})
-    
+        return Response({"detail": "Reply added"})
+
+
 class ToggleCommentLikeView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def post(self,request,comment_id):
+    def post(self, request, comment_id):
 
         comment = LessonComments.objects.get(id=comment_id)
 
-        like,created = CommentLike.objects.get_or_create(
+        like, created = CommentLike.objects.get_or_create(
             user=request.user,
             comment=comment
         )
@@ -814,48 +785,48 @@ class ToggleCommentLikeView(APIView):
             like.delete()
 
         return Response({
-            "likes":comment.likes.count(),
-            "liked":"created"
+            "likes": comment.likes.count(),
+            "liked": "created"
         })
+
 
 class DeleteCommentView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def delete(self,request,comment_id):
-        
-        comment = LessonComments.objects.get(id=comment_id,user=request.user)
-        comment.is_deleted=True
+    def delete(self, request, comment_id):
+
+        comment = LessonComments.objects.get(id=comment_id, user=request.user)
+        comment.is_deleted = True
         comment.save()
 
-        return Response({"detail":"Deleted"})
-    
+        return Response({"detail": "Deleted"})
+
 
 # Course Review
 
 class CourseReviewView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get(self,request,course_id):
+    def get(self, request, course_id):
 
         reviews = CourseReview.objects.filter(course_id=course_id)
-        serializer = CourseReviewSerializer(reviews,many=True)
+        serializer = CourseReviewSerializer(reviews, many=True)
         return Response(serializer.data)
-    
 
-    def post(self,request,course_id):
+    def post(self, request, course_id):
 
         rating = request.data.get("rating")
         review = request.data.get("review")
 
-        obj,created = CourseReview.objects.update_or_create(
+        obj, created = CourseReview.objects.update_or_create(
             course_id=course_id,
             user=request.user,
             defaults={
-                "rating":rating,
-                "review":review
+                "rating": rating,
+                "review": review
             }
         )
 
-        return Response({"deatil":"Review saved"})
+        return Response({"deatil": "Review saved"})

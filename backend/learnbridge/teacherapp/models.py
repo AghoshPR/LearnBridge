@@ -7,14 +7,14 @@ from cloudinary.models import CloudinaryField
 class TeacherProfile(models.Model):
 
     TEACHER_TYPE_CHOICES = [
-        ('fresher','Fresher'),
-        ('experienced','Experience')
+        ('fresher', 'Fresher'),
+        ('experienced', 'Experience')
     ]
 
     STATUS_CHOICES = [
-        ('pending','Pending'),
-        ('approved','Approved'),
-        ('rejected','Rejected')
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
     ]
 
     profile_image = CloudinaryField(
@@ -23,38 +23,44 @@ class TeacherProfile(models.Model):
         null=True
     )
 
-    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='teacher_profile')
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='teacher_profile')
 
-    teacher_type = models.CharField(max_length=20,choices=TEACHER_TYPE_CHOICES)
+    teacher_type = models.CharField(
+        max_length=20, choices=TEACHER_TYPE_CHOICES)
 
-    phone=models.CharField(max_length=15)
+    phone = models.CharField(max_length=15)
 
-    qualification = models.CharField(max_length=255,help_text="Highesh qualification of the teacher")
-    subjects = models.CharField(max_length=255,help_text="Subjects teacher can teach")
+    qualification = models.CharField(
+        max_length=255, help_text="Highesh qualification of the teacher")
+    subjects = models.CharField(
+        max_length=255, help_text="Subjects teacher can teach")
 
     bio = models.TextField(help_text="Short introduction about the teacher")
 
-    years_of_experience = models.PositiveIntegerField(null=True,blank=True,help_text="Required only if teacher is experienced")
+    years_of_experience = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Required only if teacher is experienced")
 
     resume = CloudinaryField(
-    resource_type="raw",
-    folder="teacher_resumes",
-    null=True,
-    blank=True
-)
+        resource_type="raw",
+        folder="teacher_resumes",
+        null=True,
+        blank=True
+    )
 
-    status = models.CharField(max_length=20,choices=STATUS_CHOICES,default='pending')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='pending')
 
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
 
     is_deleted = models.BooleanField(default=False)
 
-    account_holder_name = models.CharField(max_length=255,null=True,blank=True)
-    bank_account_number = models.CharField(max_length=30,null=True,blank=True)
-    ifse_code = models.CharField(max_length=20,null=True,blank=True)
-
+    account_holder_name = models.CharField(
+        max_length=255, null=True, blank=True)
+    bank_account_number = models.CharField(
+        max_length=30, null=True, blank=True)
+    ifse_code = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return f'{self.user.email}-{self.teacher_type}'
-

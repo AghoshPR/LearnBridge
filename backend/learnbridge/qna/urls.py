@@ -4,8 +4,6 @@ from django.urls import path
 from .views import *
 
 
-
-   
 urlpatterns = [
     path('tags/', AdminTagListView.as_view()),
     path('tags/create/', AdminTagCreateView.as_view()),
@@ -15,8 +13,8 @@ urlpatterns = [
     # questions
 
     path('public-tags/', PublicTagListView.as_view()),
-    path('questions/',QuestionListView.as_view()),
-    path('questions/create/',QuestionCreateView.as_view()),
+    path('questions/', QuestionListView.as_view()),
+    path('questions/create/', QuestionCreateView.as_view()),
     path('questions/<int:pk>/', QuestionDetailView.as_view()),
     path('questions/<int:pk>/like/', QuestionLikeToggleView.as_view()),
 
@@ -35,10 +33,5 @@ urlpatterns = [
 
     # teacher qa
 
-    
-    
-    
 
 ]
-
-

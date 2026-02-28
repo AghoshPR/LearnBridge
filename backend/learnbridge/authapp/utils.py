@@ -9,13 +9,13 @@ from datetime import datetime
 
 OTP_EXPIRY = 60
 
+
 def send_otp(email):
 
-    otp = str(random.randint(100000,999999))
-
+    otp = str(random.randint(100000, 999999))
 
     # Store OTP in Redis (auto expires)
-    cache.set(f"otp:{email}",otp,timeout=OTP_EXPIRY)
+    cache.set(f"otp:{email}", otp, timeout=OTP_EXPIRY)
 
     print("===================================")
     print(f"OTP for {email} is: {otp}")
@@ -44,5 +44,3 @@ def send_otp(email):
 
     email_msg.attach_alternative(html_content, "text/html")
     email_msg.send()
-
-

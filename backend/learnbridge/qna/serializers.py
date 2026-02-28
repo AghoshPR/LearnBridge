@@ -1,52 +1,51 @@
 from rest_framework import serializers
 from .models import *
 
-class AdminTagSerializer(serializers.ModelSerializer):
 
+class AdminTagSerializer(serializers.ModelSerializer):
 
     class Meta:
 
         model = Tag
-        fields = ['id','tag_name','slug','created_at']
-        read_only_fields = ['slug','created_at']
+        fields = ['id', 'tag_name', 'slug', 'created_at']
+        read_only_fields = ['slug', 'created_at']
 
-
-    def valid_tag_name(self,value):
+    def valid_tag_name(self, value):
 
         if Tag.objects.filter(tag_name__iexact=value).exists():
             raise serializers.ValidationError("Tag already exists")
-        
+
         return value
-    
 
 
 # Question creation
 
 class QuestionCreateSerializer(serializers.ModelSerializer):
 
-    tag_ids  = serializers.ListField(child=serializers.IntegerField(),write_only=True)
+    tag_ids = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True)
 
     class Meta:
 
         model = Question
-        fields = ['course','title','body','tag_ids']
+        fields = ['course', 'title', 'body', 'tag_ids']
 
-    def create(self,validated_data):
+    def create(self, validated_data):
 
-        tag_ids  = validated_data.pop('tag_ids',[])
+        tag_ids = validated_data.pop('tag_ids', [])
         question = Question.objects.create(**validated_data)
 
         if tag_ids:
             question.tags.set(tag_ids)
-        
+
         return question
-        
+
 
 class QuestionListSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.username", read_only=True)
     tags = AdminTagSerializer(many=True, read_only=True)
-    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
-    
+    answers_count = serializers.IntegerField(
+        source="answers.count", read_only=True)
 
     class Meta:
         model = Question
@@ -54,8 +53,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "body",
-            "user_name", 
-            
+            "user_name",
             "created_at",
             "answers_count",
             "likes_count",
@@ -64,13 +62,12 @@ class QuestionListSerializer(serializers.ModelSerializer):
         ]
 
 
-
-
 class QuestionDetailedSerializer(serializers.ModelSerializer):
 
-    user_name = serializers.CharField(source="user.username",read_only=True)
-    tags = AdminTagSerializer(many=True,read_only=True)
-    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
+    user_name = serializers.CharField(source="user.username", read_only=True)
+    tags = AdminTagSerializer(many=True, read_only=True)
+    answers_count = serializers.IntegerField(
+        source="answers.count", read_only=True)
     course_name = serializers.CharField(source="course.title", read_only=True)
 
     class Meta:
@@ -89,9 +86,11 @@ class QuestionDetailedSerializer(serializers.ModelSerializer):
             "tags"
         ]
 
+
 class ReplySerializer(serializers.ModelSerializer):
 
-    user_name = serializers.CharField(source="user.username",read_only=True)
+    user_name = serializers.CharField(source="user.username", read_only=True)
+
     class Meta:
 
         model = Reply
@@ -102,6 +101,7 @@ class ReplySerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
+
 class ReplyCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -109,15 +109,14 @@ class ReplyCreateSerializer(serializers.ModelSerializer):
         fields = ["body"]
 
 
-
 class AnswerSerializer(serializers.ModelSerializer):
 
-    user_name = serializers.CharField(source="user.username",read_only=True)
-    replies = ReplySerializer(many=True,read_only=True)
+    user_name = serializers.CharField(source="user.username", read_only=True)
+    replies = ReplySerializer(many=True, read_only=True)
 
     class Meta:
 
-        model=Answer
+        model = Answer
         fields = [
             "id",
             "body",
@@ -126,6 +125,7 @@ class AnswerSerializer(serializers.ModelSerializer):
             "replies"
         ]
 
+
 class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -133,7 +133,4 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
         fields = ["body"]
 
 
-
 # teacher side
-
-

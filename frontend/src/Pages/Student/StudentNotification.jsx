@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../Store/authSlice';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../Store/authSlice";
 import { toast } from "sonner";
-import Logo from '../../assets/learnbridge-logo.png';
+import Logo from "../../assets/learnbridge-logo.png";
 
 import {
   ShoppingCart,
@@ -19,9 +19,9 @@ import {
   Package,
   LogOut,
   Menu,
-  Ticket
-} from 'lucide-react';
-import Api from '../Services/Api';
+  Ticket,
+} from "lucide-react";
+import Api from "../Services/Api";
 
 const StudentNotification = () => {
   const navigate = useNavigate();
@@ -31,88 +31,73 @@ const StudentNotification = () => {
 
   const [notifications, setNotifications] = useState([]);
 
-
-
   useEffect(() => {
-
     fetchNotifications();
   }, []);
 
-
   useEffect(() => {
-
     const socket = new WebSocket("ws://localhost:8000/ws/notifications/");
-    socket.onopen = ()=>console.log('connected')
-    socket.onerror = (err) => console.log("Error: ", err) 
-    socket.onclose = ()=>console.log('stop')
+    socket.onopen = () => console.log("connected");
+    socket.onerror = (err) => console.log("Error: ", err);
+    socket.onclose = () => console.log("stop");
 
     socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
 
-      const data = JSON.parse(event.data)
-      console.log(data)
-
-      setNotifications(prev => [
-        data.notification,
-        ...prev
-      ])
-    }
-    return () => socket.close()
-
-  }, [])
+      setNotifications((prev) => [data.notification, ...prev]);
+    };
+    return () => socket.close();
+  }, []);
 
   const fetchNotifications = async () => {
-
     try {
-      const res = await Api.get("/notification/")
-      setNotifications(res.data)
-
+      const res = await Api.get("/notification/");
+      setNotifications(res.data);
     } catch (error) {
-      toast.error(error.response?.data?.error || error.message || "Something went wrong")
+      toast.error(
+        error.response?.data?.error || error.message || "Something went wrong",
+      );
     }
-
-  }
-
+  };
 
   const markAsRead = async (id) => {
-
     try {
-      await Api.post(`/notification/mark-read/${id}/`)
+      await Api.post(`/notification/mark-read/${id}/`);
 
-      setNotifications(prev =>
-        prev.map(n =>
-          n.id === id ? { ...n, is_read: true } : n
-        )
-      )
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
+      );
     } catch (error) {
-      toast.error(error.response?.data?.error || error.message || "Something went wrong")
+      toast.error(
+        error.response?.data?.error || error.message || "Something went wrong",
+      );
     }
-  }
+  };
 
   const markAllAsRead = async () => {
     try {
-      await Api.post("/notification/mark-all-read/")
+      await Api.post("/notification/mark-all-read/");
 
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, is_read: true }))
-      )
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
-      toast.error(error.response?.data?.error || error.message || "Something went wrong")
+      toast.error(
+        error.response?.data?.error || error.message || "Something went wrong",
+      );
     }
-  }
+  };
 
   const deleteNotification = async (id) => {
-
     try {
-      await Api.delete(`/notification/delete/${id}/`)
+      await Api.delete(`/notification/delete/${id}/`);
 
-      setNotifications(prev =>
-        prev.filter(n => n.id !== id)
-      )
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (error) {
-      toast.error(error.response?.data?.error || error.message || "Something went wrong")
+      toast.error(
+        error.response?.data?.error || error.message || "Something went wrong",
+      );
     }
-  }
-
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -122,24 +107,38 @@ const StudentNotification = () => {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+              <span className="text-xl font-bold text-gray-900">
+                LearnBridge
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+              <Link
+                to="/courses"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </Link>
+              <a href="#" className="hover:text-blue-600 transition-colors">
+                Q&A Community
+              </a>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/cart')}
+              onClick={() => navigate("/cart")}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
             >
               <ShoppingCart className="w-5 h-5" />
             </button>
             <button
-              onClick={() => navigate('/student/notifications')}
+              onClick={() => navigate("/student/notifications")}
               className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors text-gray-800 relative"
             >
               <Bell className="w-5 h-5" />
@@ -148,10 +147,14 @@ const StudentNotification = () => {
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
+                <span className="text-sm font-medium">
+                  {isAuthenticated ? `Hi, ${username}` : "User"}
+                </span>
 
                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  {isAuthenticated && username ? username.charAt(0).toUpperCase() : "U"}
+                  {isAuthenticated && username
+                    ? username.charAt(0).toUpperCase()
+                    : "U"}
                 </div>
               </button>
 
@@ -163,7 +166,7 @@ const StudentNotification = () => {
                       onClick={() => navigate("/student/login")}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
                     >
-                      <User className='w-4 h-4' />
+                      <User className="w-4 h-4" />
                       Login
                     </button>
                     <button
@@ -178,19 +181,31 @@ const StudentNotification = () => {
 
                 {isAuthenticated && (
                   <>
-                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                    <button
+                      onClick={() => navigate("/student/profile")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
+                    >
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/mycourse")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/wishlist")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
-                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/student/coupons")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Ticket className="w-4 h-4" />
                       Coupons
                     </button>
@@ -211,8 +226,15 @@ const StudentNotification = () => {
               </div>
             </div>
 
-            <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -220,24 +242,60 @@ const StudentNotification = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
-            <a href="#" className="text-gray-700 font-medium text-left">Q&A Community</a>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium text-left">Live Classes</Link>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 font-medium text-left"
+            >
+              Explore
+            </button>
+            <a href="#" className="text-gray-700 font-medium text-left">
+              Q&A Community
+            </a>
+            <Link
+              to="/student/liveclass"
+              className="text-gray-700 font-medium text-left"
+            >
+              Live Classes
+            </Link>
             <hr className="border-gray-100" />
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {isAuthenticated && username ? username.charAt(0).toUpperCase() : "U"}
+                {isAuthenticated && username
+                  ? username.charAt(0).toUpperCase()
+                  : "U"}
               </div>
-              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
+              <span className="text-sm font-medium">
+                {isAuthenticated ? username : "Guest"}
+              </span>
             </div>
 
             {isAuthenticated && (
               <div className="flex flex-col gap-3 mt-2">
-                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
                 <button
                   onClick={() => {
                     dispatch(logout());
@@ -253,8 +311,18 @@ const StudentNotification = () => {
 
             {!isAuthenticated && (
               <div className="flex flex-col gap-3 mt-2">
-                <button onClick={() => navigate("/student/login")} className="text-gray-700 font-medium text-left">Login</button>
-                <button onClick={() => navigate("/student/register")} className="text-gray-700 font-medium text-left">Sign Up</button>
+                <button
+                  onClick={() => navigate("/student/login")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => navigate("/student/register")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Sign Up
+                </button>
               </div>
             )}
           </div>
@@ -268,12 +336,14 @@ const StudentNotification = () => {
             <Bell className="w-6 h-6 text-white/90" />
             <div>
               <h1 className="text-xl font-bold">Notifications</h1>
-              <p className="text-purple-100 text-sm">Stay updated with your activities</p>
+              <p className="text-purple-100 text-sm">
+                Stay updated with your activities
+              </p>
             </div>
           </div>
           <div>
             <span className="bg-white text-purple-600 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-              {notifications.filter(n => !n.is_read).length} Unread
+              {notifications.filter((n) => !n.is_read).length} Unread
             </span>
           </div>
         </div>
@@ -285,7 +355,8 @@ const StudentNotification = () => {
           <h2 className="text-sm font-bold text-gray-800">All Notifications</h2>
           <button
             onClick={markAllAsRead}
-            className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer">
+            className="text-xs text-white bg-slate-900 px-3 py-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
+          >
             Mark all as read
           </button>
         </div>
@@ -294,7 +365,7 @@ const StudentNotification = () => {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 rounded-xl border flex gap-4 transition-all ${notification.is_read ? 'bg-blue-50/50 border-blue-100 hover:border-blue-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}
+              className={`p-4 rounded-xl border flex gap-4 transition-all ${notification.is_read ? "bg-blue-50/50 border-blue-100 hover:border-blue-200" : "bg-white border-gray-100 hover:border-gray-200"}`}
             >
               <div className="mt-1">
                 <Bell className="w-5 h-5 text-blue-500" />
@@ -303,21 +374,28 @@ const StudentNotification = () => {
               <div className="flex-1">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-gray-900">{notification.title}</h3>
+                    <h3 className="text-sm font-bold text-gray-900">
+                      {notification.title}
+                    </h3>
                     {notification.isNew && (
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
                     <X
-
                       onClick={() => deleteNotification(notification.id)}
-                      size={14} className="cursor-pointer hover:text-gray-600" />
+                      size={14}
+                      className="cursor-pointer hover:text-gray-600"
+                    />
                     <span className="opacity-50 text-xs hidden sm:inline-block"></span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 mt-1 mb-2 leading-relaxed max-w-2xl">{notification.message}</p>
-                <span className="text-xs font-medium text-gray-400">{new Date(notification.created_at).toLocaleString()}</span>
+                <p className="text-sm text-gray-500 mt-1 mb-2 leading-relaxed max-w-2xl">
+                  {notification.message}
+                </p>
+                <span className="text-xs font-medium text-gray-400">
+                  {new Date(notification.created_at).toLocaleString()}
+                </span>
               </div>
             </div>
           ))}

@@ -18,29 +18,27 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
 
 class AdminCreateUserSerializer(serializers.ModelSerializer):
-    
+
     password = serializers.CharField(write_only=True)
 
     class Meta:
 
-        model=User
-        fields = ["username","email","password"]
+        model = User
+        fields = ["username", "email", "password"]
 
-    
-    def validate_email(self,value):
+    def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already exists")
         return value
 
     def validate_password(self, value):
-            validate_password(value)
-            return value
+        validate_password(value)
+        return value
 
-    
     def create(self, validated_data):
-         
+
         user = User.objects.create_user(
-             
+
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
@@ -50,7 +48,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
 
         )
         return user
-    
+
 
 # Admin Teacher Creation
 
@@ -96,15 +94,14 @@ class AdminCreateTeacherSerializer(serializers.Serializer):
             bio=validated_data["bio"],
             years_of_experience=validated_data.get("years_of_experience"),
             resume=validated_data.get("resume"),
-            status="approved"   
+            status="approved"
         )
 
         return user
-    
 
 
 class AdminTeacherProfileDetailSerializer(serializers.ModelSerializer):
-    
+
     name = serializers.CharField(source="user.username")
     email = serializers.EmailField(source="user.email")
     resume = serializers.SerializerMethodField()

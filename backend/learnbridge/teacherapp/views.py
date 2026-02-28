@@ -20,64 +20,59 @@ class SubmitTeacherProfileView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    def post(self,request):
+    def post(self, request):
 
-        user=request.user
+        user = request.user
 
         print("USER:", request.user)
         print("AUTH:", request.user.is_authenticated)
 
         if user.role != 'teacher':
             return Response(
-                {'error':'Only teacher can submit profile'},status=403)
-                
-            
-        
-        if hasattr(user,'teacher_profile'):
+                {'error': 'Only teacher can submit profile'}, status=403)
+
+        if hasattr(user, 'teacher_profile'):
             return Response(
-                {'error':'Profile already submitted'},status=400)
-        
-        
-        
+                {'error': 'Profile already submitted'}, status=400)
+
         serializer = TeacherProfileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user)
 
         return Response({
-            "message":"Profile sumbitted successfully. Waiting for admin approval"
+            "message": "Profile sumbitted successfully. Waiting for admin approval"
         })
 
 
 class TeacherProfileView(APIView):
 
-    permission_classes=[IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    def get(self,request):
+    def get(self, request):
 
         try:
 
             profile = request.user.teacher_profile
-        
+
         except TeacherProfile.DoesNotExist:
             return Response(
-                {"error":"Profile not found"},
+                {"error": "Profile not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
+
         serializer = TeacherProfileSerializer(profile)
 
         return Response(serializer.data)
-    
 
-    def patch(self,request):
+    def patch(self, request):
 
-        profile,created = TeacherProfile.objects.get_or_create(
+        profile, created = TeacherProfile.objects.get_or_create(
             user=request.user
         )
 
         serializer = TeacherProfileSerializer(
             profile,
-            data = request.data,
+            data=request.data,
             partial=True
         )
 
@@ -85,6 +80,6 @@ class TeacherProfileView(APIView):
         serializer.save()
 
         return Response(
-            {"message":"Profile updated successfully"},
+            {"message": "Profile updated successfully"},
             status=status.HTTP_200_OK
         )

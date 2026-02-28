@@ -9,6 +9,7 @@ s3 = boto3.client(
     region_name=settings.AWS_S3_REGION_NAME,
 )
 
+
 def upload_video(file, course_id):
     key = f"courses/{course_id}/videos/{uuid4()}_{file.name}"
 

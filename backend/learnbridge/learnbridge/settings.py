@@ -9,7 +9,6 @@ import cloudinary
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 SECRET_KEY = config("SECRET_KEY")
 
 
@@ -25,7 +24,6 @@ SESSION_COOKIE_SECURE = False
 
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = False
-
 
 
 AUTH_USER_MODEL = "authapp.User"
@@ -77,7 +75,6 @@ INSTALLED_APPS = [
 ]
 
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -92,7 +89,7 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
@@ -121,19 +118,14 @@ TEMPLATES = [
 ]
 
 
-
-
-
-
-
 WSGI_APPLICATION = 'LearnBridge.wsgi.application'
-
 
 
 # OTP mail
 
 
-EMAIL_BACKEND = config("EMAIL_BACKEND",default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
 
 EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
@@ -143,7 +135,6 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
-
 
 
 # Database
@@ -219,7 +210,6 @@ SIMPLE_JWT = {
 # google authtentication
 
 
-
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI")
@@ -233,8 +223,6 @@ cloudinary.config(
 )
 
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-
-
 
 
 # S3 bucket
@@ -266,7 +254,6 @@ ASGI_APPLICATION = "LearnBridge.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
-       
+
     },
 }
-

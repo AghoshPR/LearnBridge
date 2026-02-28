@@ -4,11 +4,10 @@ from .models import *
 
 class NotificationSerializer(serializers.ModelSerializer):
 
-
     class Meta:
 
         model = Notification
-        fields =[
+        fields = [
 
             "id",
             "title",
