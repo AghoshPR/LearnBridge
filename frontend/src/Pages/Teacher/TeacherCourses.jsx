@@ -47,13 +47,20 @@ const TeacherCourses = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
 
 
-    const [page, setPage] = useState(1)
-    const [totalPages, setTotalPages] = useState(1)
-    const PAGE_SIZE = 10
-    const [search, setSearch] = useState("")
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+    const [searchQuery, setSearchQuery] = useState("");
 
+    const filteredCourses = courses.filter(course =>
+        course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.category_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-
+    const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
+    const currentCourses = filteredCourses.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     const handleLogout = async () => {
         try {
@@ -79,7 +86,7 @@ const TeacherCourses = () => {
         // { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-        { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+        // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
         // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
         { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
     ];
@@ -297,6 +304,11 @@ const TeacherCourses = () => {
                     <input
                         type="text"
                         placeholder="Search your courses..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1);
+                        }}
                         className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
                     />
                 </div>
@@ -304,7 +316,13 @@ const TeacherCourses = () => {
                 {/* Course Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    {courses.map((course) => (
+                    {currentCourses.length === 0 && (
+                        <div className="col-span-full text-center py-10 text-slate-500">
+                            No courses found.
+                        </div>
+                    )}
+
+                    {currentCourses.map((course) => (
 
                         <div key={course.id} className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-slate-700 transition-all duration-300 group">
                             {/* Course Image Placeholder */}
@@ -345,7 +363,7 @@ const TeacherCourses = () => {
                                         <div className="flex justify-center mb-1 text-yellow-400">
                                             <Star size={16} />
                                         </div>
-                                        <p className="text-white font-bold">{course.average_rating || 0}</p>
+                                        <p className="text-white font-bold">{course.average_rating ? Number(course.average_rating).toFixed(1) : "0.0"}</p>
                                         <p className="text-[10px] text-slate-500 uppercase tracking-wider">Rating</p>
                                     </div>
                                     <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
@@ -376,6 +394,39 @@ const TeacherCourses = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 0 && currentCourses.length > 0 && (
+                    <div className="flex justify-center items-center gap-2 mt-8">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            className="px-4 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 transition-colors"
+                        >
+                            Prev
+                        </button>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setCurrentPage(i + 1)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                    ${currentPage === i + 1
+                                        ? "bg-purple-600 text-white"
+                                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                    }`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            className="px-4 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-800 transition-colors"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </main>
 
             {/* Create Course Modal Overlay */}

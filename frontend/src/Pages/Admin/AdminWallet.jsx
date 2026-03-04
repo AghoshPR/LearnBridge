@@ -22,7 +22,8 @@ import {
     ArrowDownLeft,
     Clock,
     CheckCircle2,
-    DollarSign
+    DollarSign,
+    Search
 } from 'lucide-react';
 import Api from '../Services/Api';
 
@@ -34,6 +35,11 @@ const AdminWallet = () => {
     const [walletSummary, setWalletSummary] = useState(null)
     const [transactions, setTransactions] = useState([])
     const [loading, setLoading] = useState(true)
+
+    // Pagination & Search States
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -93,8 +99,17 @@ const AdminWallet = () => {
 
     };
 
+    // Pagination & Search Logic
+    const filteredTransactions = transactions.filter(tx =>
+        (tx.description && tx.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (tx.tutorName && tx.tutorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (tx.courseName && tx.courseName.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
 
-
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
 
     // Sidebar Items Component
     const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
@@ -243,9 +258,26 @@ const AdminWallet = () => {
 
                 {/* Transaction History */}
                 <div>
-                    <div className="flex items-center gap-2 mb-6">
-                        <Wallet className="text-blue-500" size={24} />
-                        <h2 className="text-xl font-bold text-white">Transaction History</h2>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div className="flex items-center gap-2">
+                            <Wallet className="text-blue-500" size={24} />
+                            <h2 className="text-xl font-bold text-white">Transaction History</h2>
+                        </div>
+                        <div className="relative w-full md:w-64">
+                            <input
+                                type="text"
+                                placeholder="Search transactions..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="bg-[#0F1014] border border-gray-800 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-colors placeholder-gray-500"
+                            />
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <Search size={16} className="text-gray-500" />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="bg-[#0F1014] border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
@@ -265,7 +297,7 @@ const AdminWallet = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800/50">
-                                    {transactions.map((transaction, index) => (
+                                    {currentTransactions.map((transaction, index) => (
                                         <tr key={transaction.id} className="hover:bg-gray-800/20 transition-colors group">
                                             <td className="px-6 py-4 text-sm text-gray-500 font-medium">
                                                 {index + 1}
@@ -293,21 +325,20 @@ const AdminWallet = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span
-                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                                                    transaction.status === "transfer_pending"
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${transaction.status === "transfer_pending"
                                                         ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                                                         : transaction.status === "transferred"
-                                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                                        : "bg-gray-500/10 text-gray-400 border-gray-500/20"
-                                                    }`}
+                                                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                                            : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                                                        }`}
                                                 >
                                                     {transaction.status === "transfer_pending"
-                                                    ? "Pending Transfer"
-                                                    : transaction.status === "transferred"
-                                                    ? "Transferred"
-                                                    : transaction.status}
+                                                        ? "Pending Transfer"
+                                                        : transaction.status === "transferred"
+                                                            ? "Transferred"
+                                                            : transaction.status}
                                                 </span>
-                                                </td>
+                                            </td>
                                             <td className="px-6 py-4 text-right">
                                                 {transaction.status === 'transfer_pending' ? (
                                                     <button
@@ -332,6 +363,39 @@ const AdminWallet = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 0 && transactions.length > 0 && (
+                            <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-800">
+                                <button
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                {[...Array(totalPages)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPage(i + 1)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                            ${currentPage === i + 1
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

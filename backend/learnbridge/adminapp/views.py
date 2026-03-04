@@ -14,6 +14,8 @@ from django.db.models import *
 from .pagination import *
 from courses.models import *
 from studentapp.models import *
+from qna.models import Question
+
 
 
 # admin teacher approve requests
@@ -253,7 +255,10 @@ class AdminUsers(APIView):
         search = request.GET.get("search", "")
 
         users = User.objects.filter(
-            role="student", is_deleted=False).order_by("-date_joined")
+            role="student", is_deleted=False
+        ).annotate(
+            courses_count=Count('enrollments')
+        ).order_by("-date_joined")
 
         if search:
             users = users.filter(
@@ -422,3 +427,46 @@ class AdminPendingTeacherDetailView(APIView):
 
         serializer = AdminTeacherProfileDetailSerializer(profile)
         return Response(serializer.data)
+
+class AdminDashboardStatsView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        total_users = User.objects.filter(role="student", is_deleted=False).count()
+        active_courses = Course.objects.filter(status="published", is_deleted=False).count()
+        pending_teachers = TeacherProfile.objects.filter(status="pending").count()
+        qna_posts = Question.objects.filter(status="active").count()
+
+        # Recent Users
+        recent_users = User.objects.filter(role="student", is_deleted=False).order_by("-date_joined")[:5]
+        recent_users_data = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "date_joined": u.date_joined
+            } for u in recent_users
+        ]
+
+        # Recent Courses
+        recent_courses = Course.objects.filter(is_deleted=False).order_by("-created_at")[:5]
+        recent_courses_data = [
+            {
+                "id": c.id,
+                "title": c.title,
+                "teacher": c.teacher.username,
+                "status": c.status,
+                "created_at": c.created_at
+            } for c in recent_courses
+        ]
+
+        return Response({
+            "stats": {
+                "total_users": total_users,
+                "active_courses": active_courses,
+                "pending_teachers": pending_teachers,
+                "qna_posts": qna_posts
+            },
+            "recent_users": recent_users_data,
+            "recent_courses": recent_courses_data
+        })

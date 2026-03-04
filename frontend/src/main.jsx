@@ -10,6 +10,7 @@ import { Toaster } from "./components/ui/sonner";
 
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import { NotificationProvider } from './context/NotificationContext'
 
 
 
@@ -31,9 +32,15 @@ createRoot(document.getElementById('root')).render(
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
 
         <Elements stripe={stripePromise}>
-        
+
+          <NotificationProvider>
+
             <App />
             <Toaster position="bottom-right" />
+
+          </NotificationProvider>
+        
+           
         
         </Elements>
           

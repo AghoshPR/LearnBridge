@@ -88,9 +88,12 @@ class AdminTransferToTeacherView(APIView):
     @transaction.atomic
     def post(self, request, transaction_id):
 
-        admin_tx = AdminTransaction.objects.select_related(
-            "admin_wallet", "course__teacher", "live_class__teacher__user",
-        ).get(id=transaction_id)
+        try:
+            admin_tx = AdminTransaction.objects.select_related(
+                "admin_wallet", "course__teacher", "live_class__teacher__user",
+            ).get(id=transaction_id)
+        except AdminTransaction.DoesNotExist:
+            return Response({"error": "Transaction not found"}, status=404)
 
         if admin_tx.status != "transfer_pending":
             return Response({"error": "Already transferred"}, status=400)
@@ -152,12 +155,12 @@ class AdminTransferToTeacherView(APIView):
         if teacher_tx:
             teacher_tx.status = "payment_completed"
 
-            teacher_tx.transaction_id = (
-                admin_tx.razorpay_payout_id
-
-                if admin_tx.razorpay_payout_id
-                else f"TRX-{admin_tx.id}-{int(timezone.now().timestamp())}"
-            )
+            if not teacher_tx.transaction_id:
+                teacher_tx.transaction_id = (
+                    admin_tx.razorpay_payout_id
+                    if admin_tx.razorpay_payout_id
+                    else f"TRX-{admin_tx.id}-{int(timezone.now().timestamp())}"
+                )
 
             teacher_tx.save()
 

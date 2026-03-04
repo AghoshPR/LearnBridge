@@ -74,6 +74,8 @@ class CourseSerializer(serializers.ModelSerializer):
     students_count = serializers.SerializerMethodField()
 
     average_rating = serializers.SerializerMethodField()
+    
+    revenue = serializers.SerializerMethodField()
 
     class Meta:
 
@@ -121,6 +123,9 @@ class CourseSerializer(serializers.ModelSerializer):
             obj.reviews.aggregate(avg=Avg("rating"))["avg"] or 0,
             1
         )
+        
+    def get_revenue(self, obj):
+        return obj.enrollments.count() * obj.price
 
     def validate_category(self, category):
 

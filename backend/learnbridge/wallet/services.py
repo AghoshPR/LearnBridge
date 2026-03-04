@@ -4,7 +4,7 @@ from django.conf import settings
 from liveclass.models import *
 
 
-def credit_admin_wallet(amount, description, course=None, source="course_fee"):
+def credit_admin_wallet(amount, description, course=None, source="course_fee",razorpay_payment_id=None):
 
     wallet, _ = AdminWallet.objects.get_or_create(id=1)
 
@@ -41,11 +41,12 @@ def credit_admin_wallet(amount, description, course=None, source="course_fee"):
         course=course,
         amount=teacher_share,
         description=description,
-        status="payment_pending"
+        status="payment_pending",
+        transaction_id=razorpay_payment_id
     )
 
 
-def credit_live_class_wallet(live_class, amount, description, student):
+def credit_live_class_wallet(live_class, amount, description, student, razorpay_payment_id=None):
 
     wallet, _ = AdminWallet.objects.get_or_create(id=1)
 
@@ -94,5 +95,6 @@ def credit_live_class_wallet(live_class, amount, description, student):
         source="live_class",
         amount=teacher_share,
         description=description,
-        status="payment_pending"
+        status="payment_pending",
+        transaction_id=razorpay_payment_id
     )

@@ -1,4 +1,6 @@
 from django.contrib import admin
+# Trigger reload
+
 from django.urls import path, include
 
 
@@ -16,4 +18,5 @@ urlpatterns = [
     path('api/', include('notifications.urls')),
     path('api/', include('liveclass.urls')),
     path('api/', include('chat.urls')),
+    path("api/", include("ai_assistant.urls")),
 ]

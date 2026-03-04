@@ -17,7 +17,8 @@ import {
   Edit2,
   Trash2,
   Plus,
-  X
+  X,
+  Search
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -107,14 +108,36 @@ const TeacherLiveClass = () => {
 
   }
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPageUpcoming, setCurrentPageUpcoming] = useState(1);
+  const [currentPagePast, setCurrentPagePast] = useState(1);
+  const itemsPerPage = 5;
+
+  const filteredClasses = classes.filter(cls =>
+    cls.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    cls.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const now = new Date();
 
-  const upcomingClasses = classes.filter(
+  const upcomingClassesFiltered = filteredClasses.filter(
     cls => new Date(cls.start_time) >= now
   );
 
-  const pastClasses = classes.filter(
+  const totalPagesUpcoming = Math.ceil(upcomingClassesFiltered.length / itemsPerPage);
+  const currentUpcoming = upcomingClassesFiltered.slice(
+    (currentPageUpcoming - 1) * itemsPerPage,
+    currentPageUpcoming * itemsPerPage
+  );
+
+  const pastClassesFiltered = filteredClasses.filter(
     cls => new Date(cls.start_time) < now
+  );
+
+  const totalPagesPast = Math.ceil(pastClassesFiltered.length / itemsPerPage);
+  const currentPast = pastClassesFiltered.slice(
+    (currentPagePast - 1) * itemsPerPage,
+    currentPagePast * itemsPerPage
   );
 
   const handleLogout = async () => {
@@ -186,7 +209,7 @@ const TeacherLiveClass = () => {
         description: ''
       });
 
-      
+
 
     }
 
@@ -231,10 +254,10 @@ const TeacherLiveClass = () => {
       return;
     }
 
-    
 
 
-  if (thumbnailFile && thumbnailFile.size > 2 * 1024 * 1024) {
+
+    if (thumbnailFile && thumbnailFile.size > 2 * 1024 * 1024) {
       toast.error("Thumbnail must be less than 2MB");
       return;
     }
@@ -244,7 +267,7 @@ const TeacherLiveClass = () => {
       return;
     }
 
-    
+
 
 
 
@@ -255,7 +278,7 @@ const TeacherLiveClass = () => {
     if (durationMinutes <= 0) {
       toast.error("Duration must be greater than 0");
       return;
-    
+
     }
 
     if (durationMinutes > 480) {
@@ -263,7 +286,7 @@ const TeacherLiveClass = () => {
       return;
     }
 
-    
+
     const endDateTime = new Date(
       startDateTime.getTime() + durationMinutes * 60000
     )
@@ -379,7 +402,7 @@ const TeacherLiveClass = () => {
     { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: true },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
     // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
@@ -476,6 +499,22 @@ const TeacherLiveClass = () => {
             </button>
           </header>
 
+          {/* Search Bar */}
+          <div className="relative mb-8">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search live classes..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPageUpcoming(1);
+                setCurrentPagePast(1);
+              }}
+              className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"
+            />
+          </div>
+
           {/* Upcoming Classes */}
           <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 mb-8">
             <div className="flex items-center gap-2 mb-6">
@@ -484,7 +523,12 @@ const TeacherLiveClass = () => {
             </div>
 
             <div className="space-y-4">
-              {upcomingClasses.map((cls) => (
+
+              {currentUpcoming.length === 0 && (
+                <p className="text-slate-400 text-sm">No upcoming classes found.</p>
+              )}
+
+              {currentUpcoming.map((cls) => (
                 <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-5 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
@@ -533,9 +577,9 @@ const TeacherLiveClass = () => {
 
                   <div className="flex items-center gap-3 mt-4 md:mt-0">
                     <button
-                    onClick={()=>navigate(`/liveclass/room/${cls.class_id}`)}
+                      onClick={() => navigate(`/liveclass/room/${cls.class_id}`)}
 
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
                       <Video size={16} />
                       Start Class
                     </button>
@@ -555,6 +599,39 @@ const TeacherLiveClass = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls - Upcoming */}
+            {totalPagesUpcoming > 0 && upcomingClassesFiltered.length > 0 && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <button
+                  disabled={currentPageUpcoming === 1}
+                  onClick={() => setCurrentPageUpcoming(prev => Math.max(prev - 1, 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                >
+                  Prev
+                </button>
+                {[...Array(totalPagesUpcoming)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPageUpcoming(i + 1)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                ${currentPageUpcoming === i + 1
+                        ? "bg-purple-600 text-white"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPageUpcoming === totalPagesUpcoming}
+                  onClick={() => setCurrentPageUpcoming(prev => Math.min(prev + 1, totalPagesUpcoming))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Past Classes */}
@@ -562,11 +639,11 @@ const TeacherLiveClass = () => {
             <h2 className="text-xl font-bold text-white mb-6">Past Classes</h2>
 
             <div className="space-y-4">
-              {pastClasses.length === 0 && (
-                <p className="text-slate-400 text-sm">No past classes.</p>
+              {currentPast.length === 0 && (
+                <p className="text-slate-400 text-sm">No past classes found.</p>
               )}
 
-              {pastClasses.map((cls) => (
+              {currentPast.map((cls) => (
                 <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-4 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 flex-shrink-0">
@@ -582,13 +659,46 @@ const TeacherLiveClass = () => {
                     <div className="text-sm font-medium text-slate-400">{new Date(cls.start_time).toLocaleString()}</div>
 
                     <div className="text-sm font-medium text-purple-400">{cls.registered_count} attended</div>
-                    <span className="px-4 py-1.5 bg-transparent text-white-500 rounded-full text-xs font-bold border border-slate-700">
-                      {cls.status}
+                    <span className="px-4 py-1.5 bg-transparent text-white-500 rounded-full text-xs font-bold border border-slate-700 capitalize">
+                      {cls.status === 'scheduled' ? 'completed' : cls.status}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls - Past */}
+            {totalPagesPast > 0 && pastClassesFiltered.length > 0 && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <button
+                  disabled={currentPagePast === 1}
+                  onClick={() => setCurrentPagePast(prev => Math.max(prev - 1, 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                >
+                  Prev
+                </button>
+                {[...Array(totalPagesPast)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPagePast(i + 1)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                ${currentPagePast === i + 1
+                        ? "bg-purple-600 text-white"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPagePast === totalPagesPast}
+                  onClick={() => setCurrentPagePast(prev => Math.min(prev + 1, totalPagesPast))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

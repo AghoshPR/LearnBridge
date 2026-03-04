@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { logout } from '@/Store/authSlice';
@@ -27,7 +27,7 @@ import Api from '../Services/Api';
 
 const AdminQA_Community = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'reported'
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -37,55 +37,20 @@ const AdminQA_Community = () => {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Mock Data
-  const [allQuestions] = useState([
-    {
-      id: 1,
-      question: "React hooks vs class components",
-      author: "Mike Johnson",
-      answers: 12,
-      views: 450,
-      status: "active",
-      date: "2024-05-09"
-    },
-    {
-      id: 2,
-      question: "Node.js authentication best practices",
-      author: "Sarah Williams",
-      answers: 8,
-      views: 320,
-      status: "active",
-      date: "2024-05-08"
-    },
-    {
-      id: 3,
-      question: "How to center a div in CSS?",
-      author: "John Doe",
-      answers: 25,
-      views: 1200,
-      status: "active",
-      date: "2024-05-07"
-    }
-  ]);
+  const [questions, setQuestions] = useState([]);
 
-  const [reportedQuestions, setReportedQuestions] = useState([
-    {
-      id: 101,
-      question: "How to center a div in CSS?",
-      author: "John Doe",
-      reports: 3,
-      reason: "Spam",
-      date: "2024-05-10"
-    },
-    {
-      id: 102,
-      question: "Best framework for 2024?",
-      author: "Jane Smith",
-      reports: 5,
-      reason: "Off-topic",
-      date: "2024-05-11"
+  useEffect(() => {
+    fetchQuestions();
+  }, [activeTab, searchQuery]);
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await Api.get('/qna/admin/questions/', { params: { status: activeTab } });
+      setQuestions(res.data);
+    } catch (err) {
+      toast.error("Failed to load questions");
     }
-  ]);
+  };
 
   const handleLogout = async () => {
     try {
@@ -109,21 +74,27 @@ const AdminQA_Community = () => {
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (activeTab === 'reported') {
-      setReportedQuestions(reportedQuestions.filter(q => q.id !== selectedItem.id));
-    } else {
-      // In a real app, you'd probably delete from both or fetch fresh data
-      toast.error("Cannot delete from all questions in this demo");
+  const confirmDelete = async () => {
+    if (!selectedItem) return;
+    try {
+      await Api.delete(`/qna/admin/questions/${selectedItem.id}/action/`);
+      toast.success("Question deleted successfully");
+      setDeleteModalOpen(false);
+      setSelectedItem(null);
+      fetchQuestions();
+    } catch (err) {
+      toast.error("Failed to delete question");
     }
-    setDeleteModalOpen(false);
-    setSelectedItem(null);
-    toast.success("Question deleted successfully");
   };
 
-  const handleApprove = (id) => {
-    setReportedQuestions(reportedQuestions.filter(q => q.id !== id));
-    toast.success("Question approved/kept");
+  const handleApprove = async (id) => {
+    try {
+      await Api.post(`/qna/admin/questions/${id}/action/`);
+      toast.success("Question approved/kept");
+      fetchQuestions();
+    } catch (err) {
+      toast.error("Failed to approve question");
+    }
   };
 
   return (
@@ -267,7 +238,7 @@ const AdminQA_Community = () => {
 
           {/* Tabs */}
           <div className="flex items-center gap-2">
-            <button
+            {/* <button
               onClick={() => setActiveTab('reported')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'reported'
                   ? 'bg-[#1e293b] text-blue-400 border border-blue-500/30'
@@ -275,12 +246,12 @@ const AdminQA_Community = () => {
                 }`}
             >
               Reported ({reportedQuestions.length})
-            </button>
+            </button> */}
             <button
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'all'
-                  ? 'bg-[#1e293b] text-blue-400 border border-blue-500/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                ? 'bg-[#1e293b] text-blue-400 border border-blue-500/30'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
                 }`}
             >
               All Questions
@@ -314,7 +285,7 @@ const AdminQA_Community = () => {
               </thead>
               <tbody className="divide-y divide-gray-800/50">
                 {activeTab === 'reported' ? (
-                  reportedQuestions.map((item) => (
+                  questions.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-800/20 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -349,23 +320,27 @@ const AdminQA_Community = () => {
                     </tr>
                   ))
                 ) : (
-                  allQuestions.map((item) => (
+                  questions.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-800/20 transition-colors">
                       <td className="px-6 py-4 text-sm font-medium text-white">{item.question}</td>
                       <td className="px-6 py-4 text-sm text-gray-400">{item.author}</td>
                       <td className="px-6 py-4 text-sm text-gray-400">{item.answers}</td>
                       <td className="px-6 py-4 text-sm text-gray-400">{item.views}</td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium border bg-green-500/10 text-green-400 border-green-500/20">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${item.status === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                            item.status === 'reported' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                              'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                          }`}>
                           {item.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">{item.date}</td>
                       <td className="px-6 py-4">
                         <button
+                          onClick={() => handleDeleteClick(item)}
                           className="flex items-center gap-1.5 px-3 py-1.5 hover:text-red-400 text-gray-500 transition-colors"
                         >
-                          <X size={14} className="border rounded-full border-current p-0.5" /> Delete
+                          <Trash size={14} /> Delete
                         </button>
                       </td>
                     </tr>

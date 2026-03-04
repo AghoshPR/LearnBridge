@@ -195,16 +195,22 @@ class StripePaymentSuccessView(APIView):
         order_id = intent.metadata.get("order_id")
         user_id = intent.metadata.get("user_id")
 
-        order = Order.objects.get(id=order_id)
-        user = User.objects.get(id=user_id)
+        try:
+            order = Order.objects.get(id=order_id)
+            user = User.objects.get(id=user_id)
+        except (Order.DoesNotExist, User.DoesNotExist):
+            return Response({"error": "Order or User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if order.payment_status == "paid":
             return Response({"detail": "Already processed"})
 
-        order = Order.objects.get(
-            id=order_id,
-            user=request.user
-        )
+        try:
+            order = Order.objects.get(
+                id=order_id,
+                user=request.user
+            )
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found for current user"}, status=status.HTTP_404_NOT_FOUND)
 
         if order.payment_status == "paid":
             return Response({"detail": "Already processed"})
@@ -237,6 +243,7 @@ class StripePaymentSuccessView(APIView):
             amount=order.final_amount,
             course=first_item.course,
             description=f"Course purchase – Order #{order.id}"
+
         )
 
         cart = Cart.objects.filter(user=user).first()
@@ -295,7 +302,10 @@ class CreateRazorpayOrderView(APIView):
 
         # total = sum(item.course.price for item in cart_items)
 
-        cart = Cart.objects.get(user=user)
+        try:
+            cart = Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
         cart_serilizer = CartSerializer(cart)
         total = Decimal(cart_serilizer.data["total_amount"])
 
@@ -382,7 +392,10 @@ class RazorpayPaymentVerifyView(APIView):
         if expected_signature != razorpay_signature:
             return Response({"error": "Invalid payment signature"}, status=400)
 
-        order = Order.objects.get(id=data.get("order_id"), user=request.user)
+        try:
+            order = Order.objects.get(id=data.get("order_id"), user=request.user)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if order.payment_status == "paid":
             return Response({"detail": "Already processed"})
@@ -413,7 +426,8 @@ class RazorpayPaymentVerifyView(APIView):
         credit_admin_wallet(
             amount=order.final_amount,
             course=first_item.course,
-            description=f"Course purchase - Order #{order.id}"
+            description=f"Course purchase - Order #{order.id}",
+            razorpay_payment_id=razorpay_payment_id 
         )
 
         # Clear Cart

@@ -9,6 +9,11 @@ from .models import TeacherProfile
 from rest_framework import status
 from authapp.authentication import CookieJWTAuthentication, CsrfExemptSessionAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.db.models import *
+from django.utils import timezone
+from courses.models import Course, CourseReview
+from liveclass.models import LiveClass, LiveClassRegistration
+from studentapp.models import Enrollment
 
 
 class SubmitTeacherProfileView(APIView):
@@ -83,3 +88,65 @@ class TeacherProfileView(APIView):
             {"message": "Profile updated successfully"},
             status=status.HTTP_200_OK
         )
+
+
+
+class TeacherDashboardDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.role != 'teacher':
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Total courses created by teacher
+        teacher_courses = Course.objects.filter(teacher=user)
+        total_courses = teacher_courses.count()
+
+        # Total distinct students enrolled in teacher's courses
+        total_students = Enrollment.objects.filter(course__teacher=user).values('user').distinct().count()
+
+        # Total Live Classes scheduled by teacher
+        teacher_live_classes = LiveClass.objects.filter(teacher__user=user)
+        live_classes_count = teacher_live_classes.count()
+
+        # Average course rating for teacher's courses
+        avg_rating_agg = CourseReview.objects.filter(course__teacher=user).aggregate(Avg('rating'))
+        avg_rating = round(avg_rating_agg['rating__avg'] or 0.0, 1)
+
+        # Top 3 courses based on enrollments / revenue
+        top_courses_qs = teacher_courses.annotate(
+            student_count=Count('enrollments')
+        ).order_by('-student_count')[:3]
+
+        top_courses = []
+        for c in top_courses_qs:
+            revenue = sum([e.course.price for e in c.enrollments.all()])
+            rating = round(c.reviews.aggregate(Avg('rating'))['rating__avg'] or 0.0, 1)
+            top_courses.append({
+                "id": c.id,
+                "title": c.title,
+                "student_count": c.student_count,
+                "revenue": revenue,
+                "rating": rating
+            })
+
+        # Upcoming live classes (start time > now)
+        upcoming_qs = teacher_live_classes.filter(start_time__gt=timezone.now()).order_by('start_time')[:2]
+        upcoming_classes = []
+        for cls in upcoming_qs:
+            upcoming_classes.append({
+                "id": cls.class_id,
+                "title": cls.title,
+                "start_time": cls.start_time,
+                "registered_count": cls.registrations.count()
+            })
+
+        return Response({
+            "total_courses": total_courses,
+            "total_students": total_students,
+            "live_classes_count": live_classes_count,
+            "avg_rating": avg_rating,
+            "top_courses": top_courses,
+            "upcoming_classes": upcoming_classes
+        })

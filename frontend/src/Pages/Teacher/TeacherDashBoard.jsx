@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -21,8 +21,9 @@ import {
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import Api from '../Services/Api';
+
 import { logout } from '../../Store/authSlice';
+import Api from '../Services/Api';
 
 
 
@@ -33,6 +34,35 @@ const TeacherDashBoard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { username } = useSelector((state) => state.auth);
+
+  const [dashboardData, setDashboardData] = useState({
+    total_courses: 0,
+    total_students: 0,
+    live_classes_count: 0,
+    avg_rating: 0,
+    top_courses: [],
+    upcoming_classes: []
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await Api.get('/teacher/dashboard/');
+        if (response.status === 200) {
+          setDashboardData(response.data);
+        }
+      } catch (err) {
+        toast.error("Failed to load dashboard data", {
+          description: err.response?.data?.error || "An error occurred fetching dashboard stats.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
 
 
   const handleLogout = async () => {
@@ -62,54 +92,19 @@ const TeacherDashBoard = () => {
     // { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
     // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
 
   const stats = [
-    { title: 'Total Courses', value: '12', icon: BookOpen, color: 'bg-blue-600' },
-    { title: 'Total Students', value: '1,234', icon: Users, color: 'bg-emerald-600' },
-    { title: 'Live Classes', value: '8', icon: Video, color: 'bg-purple-600' },
-    { title: 'Avg Rating', value: '4.8', icon: Star, color: 'bg-yellow-600' },
+    { title: 'Total Courses', value: dashboardData.total_courses, icon: BookOpen, color: 'bg-blue-600' },
+    { title: 'Total Students', value: dashboardData.total_students, icon: Users, color: 'bg-emerald-600' },
+    { title: 'Live Classes', value: dashboardData.live_classes_count, icon: Video, color: 'bg-purple-600' },
+    { title: 'Avg Rating', value: dashboardData.avg_rating, icon: Star, color: 'bg-yellow-600' },
   ];
 
-  const topCourses = [
-    {
-      title: 'Advanced React Patterns',
-      students: '234 students enrolled',
-      price: '$12,340',
-      rating: '4.9',
-      color: 'bg-blue-600'
-    },
-    {
-      title: 'Node.js Masterclass',
-      students: '169 students enrolled',
-      price: '$9,450',
-      rating: '4.7',
-      color: 'bg-green-600'
-    },
-    {
-      title: 'Full Stack Development',
-      students: '312 students enrolled',
-      price: '$15,600',
-      rating: '4.8',
-      color: 'bg-purple-600'
-    },
-  ];
-
-  const upcomingClasses = [
-    {
-      title: 'React Hooks Deep Dive',
-      time: 'Today, 3:00 PM',
-      registered: '45 registered'
-    },
-    {
-      title: 'TypeScript Best Practices',
-      time: 'Tomorrow, 10:00 AM',
-      registered: '38 registered'
-    }
-  ];
+  const topCourseColors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600'];
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
@@ -171,123 +166,156 @@ const TeacherDashBoard = () => {
           <p className="text-slate-400">Welcome back! Here's your teaching overview.</p>
         </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl hover:border-slate-700 transition-all duration-300 group">
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-slate-400 text-sm font-medium">{stat.title}</span>
-                <div className={`p-2 rounded-lg ${stat.color} bg-opacity-20 text-white group-hover:scale-110 transition-transform`}>
-                  <stat.icon size={18} />
-                </div>
-              </div>
-              <h3 className="text-3xl font-bold text-white">{stat.value}</h3>
-            </div>
-          ))}
-        </div>
-
-        {/* Top Courses Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white">Your Top Courses</h2>
-            <button className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors">
-              View All
-            </button>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64 text-slate-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <span className="ml-3">Loading dashboard data...</span>
           </div>
-          <div className="space-y-4">
-            {topCourses.map((course, index) => (
-              <div key={index} className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center justify-between hover:bg-slate-800/50 transition-colors group">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-lg ${course.color} flex items-center justify-center text-white shadow-lg`}>
-                    <BookOpen size={20} />
+        ) : (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {stats.map((stat, index) => (
+                <div key={index} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl hover:border-slate-700 transition-all duration-300 group">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-slate-400 text-sm font-medium">{stat.title}</span>
+                    <div className={`p-2 rounded-lg ${stat.color} bg-opacity-20 text-white group-hover:scale-110 transition-transform`}>
+                      <stat.icon size={18} />
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-white mb-1">{course.title}</h3>
-                    <p className="text-xs text-slate-400">{course.students}</p>
-                  </div>
+                  <h3 className="text-3xl font-bold text-white">{stat.value}</h3>
                 </div>
-                <div className="flex items-center gap-8">
-                  <div className="text-right">
-                    <p className="font-bold text-white mb-1">{course.price}</p>
-                    <p className="text-xs text-slate-400">Revenue</p>
+              ))}
+            </div>
+
+            {/* Top Courses Section */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">Your Top Courses</h2>
+                <button
+                  onClick={() => navigate('/teacher/courses')}
+                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors"
+                >
+                  View All
+                </button>
+              </div>
+              <div className="space-y-4">
+                {dashboardData.top_courses.length === 0 ? (
+                  <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex items-center justify-center text-slate-400">
+                    No courses found. Create one to get started!
                   </div>
-                  <div className="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
-                    <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-bold text-white">{course.rating}</span>
-                  </div>
-                  <button className="px-4 py-2 bg-white text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors">
-                    Manage
+                ) : (
+                  dashboardData.top_courses.map((course, index) => (
+                    <div key={index} className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center justify-between hover:bg-slate-800/50 transition-colors group">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-lg ${topCourseColors[index % topCourseColors.length]} flex items-center justify-center text-white shadow-lg`}>
+                          <BookOpen size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-white mb-1">{course.title}</h3>
+                          <p className="text-xs text-slate-400">{course.student_count} students enrolled</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-8">
+                        <div className="text-right">
+                          <p className="font-bold text-white mb-1">₹{course.revenue}</p>
+                          <p className="text-xs text-slate-400">Revenue</p>
+                        </div>
+                        <div className="flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+                          <Star size={12} className="text-yellow-500 fill-yellow-500" />
+                          <span className="text-sm font-bold text-white">{course.rating}</span>
+                        </div>
+                        <button
+                          onClick={() => navigate(`/teacher/courses`)}
+                          className="px-4 py-2 bg-white text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Upcoming Live Classes */}
+              <div>
+                <div className="flex items-center gap-2 mb-6">
+                  <Video className="text-purple-500" size={20} />
+                  <h2 className="text-xl font-bold text-white">Upcoming Live Classes</h2>
+                </div>
+                <div className="space-y-4">
+                  {dashboardData.upcoming_classes.length === 0 ? (
+                    <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex items-center justify-center text-slate-400">
+                      No upcoming live classes.
+                    </div>
+                  ) : (
+                    dashboardData.upcoming_classes.map((cls, index) => (
+                      <div key={index} className="bg-slate-900 p-5 rounded-xl border border-slate-800">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-bold text-white mb-2">{cls.title}</h3>
+                            <p className="text-sm text-slate-400 mb-1">{new Date(cls.start_time).toLocaleString()}</p>
+                          </div>
+                          <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-xs font-medium border border-purple-500/20">
+                            {cls.registered_count} registered
+                          </span>
+                        </div>
+                        <div className="h-1 w-full bg-slate-800 rounded-full mb-4 overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-purple-600 to-blue-600 w-2/3 rounded-full"></div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <button
+                    onClick={() => navigate('/teacher/liveclass')}
+                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-purple-900/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    Manage Live Classes
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upcoming Live Classes */}
-          <div>
-            <div className="flex items-center gap-2 mb-6">
-              <Video className="text-purple-500" size={20} />
-              <h2 className="text-xl font-bold text-white">Upcoming Live Classes</h2>
-            </div>
-            <div className="space-y-4">
-              {upcomingClasses.map((cls, index) => (
-                <div key={index} className="bg-slate-900 p-5 rounded-xl border border-slate-800">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-white mb-2">{cls.title}</h3>
-                      <p className="text-sm text-slate-400 mb-1">{cls.time}</p>
+              {/* Quick Actions */}
+              <div>
+                <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => navigate('/teacher/courses')}
+                    className="w-full p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center gap-4 text-white hover:shadow-lg hover:shadow-blue-900/20 transition-all group cursor-pointer"
+                  >
+                    <div className="p-2 bg-white/10 rounded-lg">
+                      <Plus size={20} />
                     </div>
-                    <span className="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-xs font-medium border border-purple-500/20">
-                      {cls.registered}
-                    </span>
-                  </div>
-                  <div className="h-1 w-full bg-slate-800 rounded-full mb-4 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-purple-600 to-blue-600 w-2/3 rounded-full"></div>
-                  </div>
+                    <span className="font-bold">Create New Course</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/teacher/liveclass')}
+                    className="w-full p-4 bg-white text-slate-900 rounded-xl flex items-center gap-4 hover:bg-slate-100 transition-all group border border-slate-200 cursor-pointer"
+                  >
+                    <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
+                      <Video size={20} />
+                    </div>
+                    <span className="font-bold">Schedule Live Class</span>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/teacher/qa')}
+                    className="w-full p-4 bg-white text-slate-900 rounded-xl flex items-center gap-4 hover:bg-slate-100 transition-all group border border-slate-200 cursor-pointer"
+                  >
+                    <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
+                      <MessageCircle size={20} />
+                    </div>
+                    <span className="font-bold">Q&A Questions</span>
+                  </button>
+
                 </div>
-              ))}
-              <button className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-purple-900/20 transition-all flex items-center justify-center gap-2">
-                Manage Live Classes
-              </button>
+              </div>
             </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
-            <div className="space-y-3">
-              <button className="w-full p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center gap-4 text-white hover:shadow-lg hover:shadow-blue-900/20 transition-all group">
-                <div className="p-2 bg-white/10 rounded-lg">
-                  <Plus size={20} />
-                </div>
-                <span className="font-bold">Create New Course</span>
-              </button>
-
-              <button className="w-full p-4 bg-white text-slate-900 rounded-xl flex items-center gap-4 hover:bg-slate-100 transition-all group border border-slate-200">
-                <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
-                  <Video size={20} />
-                </div>
-                <span className="font-bold">Schedule Live Class</span>
-              </button>
-
-              <button className="w-full p-4 bg-white text-slate-900 rounded-xl flex items-center gap-4 hover:bg-slate-100 transition-all group border border-slate-200">
-                <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
-                  <MessageCircle size={20} />
-                </div>
-                <span className="font-bold">Answer Questions</span>
-              </button>
-
-              <button className="w-full p-4 bg-white text-slate-900 rounded-xl flex items-center gap-4 hover:bg-slate-100 transition-all group border border-slate-200">
-                <div className="p-2 bg-slate-200 rounded-lg text-slate-700">
-                  <TrendingUp size={20} />
-                </div>
-                <span className="font-bold">View Analytics</span>
-              </button>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </main>
     </div>
   );

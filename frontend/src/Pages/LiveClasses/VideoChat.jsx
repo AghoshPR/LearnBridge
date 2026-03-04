@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 
 const VideoChat = () => {
   const navigate = useNavigate();
-  const [isChatOpen, setIsChatOpen] = useState(false); 
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMicOn, setIsMicOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
 
@@ -20,7 +20,7 @@ const VideoChat = () => {
     name: "Michael Chang",
     role: "Instructor",
     initials: "MC",
-    
+
     bgColor: "from-blue-50 via-gray-100 to-orange-50"
   };
 
@@ -34,133 +34,173 @@ const VideoChat = () => {
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState("")
 
-  
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  const chatContainerRef = useRef(null);
   const ws = useRef(null)
   const peerConnection = useRef(null)
 
 
-  
 
 
 
 
-    // 🔵 CONNECT WEBSOCKET
-    useEffect(() => {
+
+  // 🔵 LOAD MESSAGES
+  useEffect(() => {
     const loadMessages = async () => {
-        try {
+      if (loadingMore || !hasMore) return;
+      try {
+        setLoadingMore(true);
         const res = await fetch(
-            `http://localhost:8000/api/student/liveclass/messages/${classId}/`,
-            { credentials: "include" }
+          `http://localhost:8000/api/student/liveclass/messages/${classId}/?page=${page}`,
+          { credentials: "include" }
         );
 
         const data = await res.json();
 
-        const formatted = data.map(msg => ({
-            id: msg.id,
-            sender: msg.user,
-            time: new Date(msg.created_at).toLocaleTimeString([], {
+        const formatted = data.messages.map(msg => ({
+          id: msg.id,
+          sender: msg.user,
+          time: new Date(msg.created_at).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit"
-            }),
-            text: msg.message
+          }),
+          text: msg.message
         }));
 
-        setMessages(formatted);
-        } catch (err) {
-        console.error("Failed to load messages");
+        // Prepend older messages when scrolling, prevent duplicates
+        setMessages(prev => {
+          const prevIds = prev.map(m => m.id);
+          const uniqueFormatted = formatted.filter(m => !prevIds.includes(m.id));
+          return [...uniqueFormatted, ...prev];
+        });
+
+        setHasMore(data.has_more);
+
+        // Scroll to bottom on first load
+        if (page === 1) {
+          setTimeout(() => {
+            if (chatContainerRef.current) {
+              chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            }
+          }, 100);
         }
+      } catch (err) {
+        console.error("Failed to load messages");
+      } finally {
+        setLoadingMore(false);
+      }
     };
 
     loadMessages();
-    }, [classId]);
+  }, [classId, page]);
+
+  // Handle scroll to top for pagination
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      if (chatContainerRef.current.scrollTop === 0 && hasMore && !loadingMore) {
+        setPage(prev => prev + 1);
+      }
+    }
+  };
 
 
-    useEffect(() => {
+  useEffect(() => {
     ws.current = new WebSocket(
-        `ws://localhost:8000/ws/chat/${classId}/`
+      `ws://localhost:8000/ws/chat/${classId}/`
     );
 
     ws.current.onopen = () => {
-        console.log("WebSocket Connected");
+      console.log("WebSocket Connected");
     };
 
     ws.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+      const data = JSON.parse(event.data);
 
-        setMessages(prev => [
+      setMessages(prev => [
         ...prev,
         {
-            id: Date.now(),
-            sender: data.user,
-            time: new Date().toLocaleTimeString([], {
+          id: Date.now(),
+          sender: data.user,
+          time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit"
-            }),
-            text: data.message
+          }),
+          text: data.message
         }
-        ]);
+      ]);
+
+      // Auto-scroll on new message
+      setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+      }, 100);
     };
 
     ws.current.onerror = (err) => {
-        console.error("WebSocket error:", err);
+      console.error("WebSocket error:", err);
     };
 
     ws.current.onclose = () => {
-        console.log("WebSocket Disconnected");
+      console.log("WebSocket Disconnected");
     };
 
     return () => {
-        if (ws.current) ws.current.close();
+      if (ws.current) ws.current.close();
     };
-    }, [classId]);
+  }, [classId]);
 
 
-    // 🔵 SEND MESSAGE
-    const handleSendMessage = (e) => {
-        e.preventDefault();
+  // 🔵 SEND MESSAGE
+  const handleSendMessage = (e) => {
+    e.preventDefault();
 
-        if (!newMessage.trim()) return;
-        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
+    if (!newMessage.trim()) return;
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) return;
 
-        ws.current.send(JSON.stringify({
-        message: newMessage
-        }));
+    ws.current.send(JSON.stringify({
+      message: newMessage
+    }));
 
-        setNewMessage("");
-    };
+    setNewMessage("");
+  };
 
 
-//   WebRTC Setup
+  //   WebRTC Setup
 
-  const startCall = async ()=>{
+  const startCall = async () => {
 
     peerConnection.current = new RTCPeerConnection();
 
     const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+      video: true,
+      audio: true
     });
 
-    stream.getTracks().forEach(track=>{
-        peerConnection.current.addTrack(track,stream)
+    stream.getTracks().forEach(track => {
+      peerConnection.current.addTrack(track, stream)
     })
 
     peerConnection.current.onicecandidate = (event) => {
-        if (event.candidate) {
+      if (event.candidate) {
         ws.current.send(JSON.stringify({
-            type: "candidate",
-            candidate: event.candidate
+          type: "candidate",
+          candidate: event.candidate
         }));
-        }
+      }
     };
 
     const offer = await peerConnection.current.createOffer()
     await peerConnection.current.setLocalDescription(offer)
 
     ws.current.send(JSON.stringify({
-        type: "offer",
-        offer: offer
+      type: "offer",
+      offer: offer
     }))
 
   }
@@ -168,25 +208,25 @@ const VideoChat = () => {
 
   const handleEndCall = () => {
 
-  
-  if (peerConnection.current) {
-    peerConnection.current.getSenders().forEach(sender => {
-      if (sender.track) sender.track.stop();
-    });
 
-    peerConnection.current.close();
-    peerConnection.current = null;
-  }
+    if (peerConnection.current) {
+      peerConnection.current.getSenders().forEach(sender => {
+        if (sender.track) sender.track.stop();
+      });
 
-  // Close websocket
-  if (ws.current) {
-    ws.current.close();
-    ws.current = null;
-  }
+      peerConnection.current.close();
+      peerConnection.current = null;
+    }
 
-  
-  navigate(-1);
-};
+    // Close websocket
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
+    }
+
+
+    navigate(-1);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
@@ -274,8 +314,8 @@ const VideoChat = () => {
               {!isVideoOn ? <VideoOff className="w-5 h-5 md:w-6 md:h-6" /> : <Video className="w-5 h-5 md:w-6 md:h-6" />}
             </button>
             <button
-            onClick={handleEndCall}
-            className="p-3.5 md:p-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              onClick={handleEndCall}
+              className="p-3.5 md:p-4 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
               <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           </div>
@@ -308,7 +348,12 @@ const VideoChat = () => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          <div
+            ref={chatContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-5 space-y-6 scroll-smooth"
+          >
+            {loadingMore && <div className="text-center text-xs text-gray-400 py-2">Loading older messages...</div>}
             {messages.map((msg) => (
               <div key={msg.id} className="flex flex-col">
                 <div className="flex items-baseline gap-2 mb-1.5">

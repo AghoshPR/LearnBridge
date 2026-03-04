@@ -60,6 +60,11 @@ const AdminOffer = () => {
 
   const [editingId, setEditingId] = useState(null)
 
+  // Pagination & Search States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     fetchOffers()
     fetchCategories()
@@ -181,6 +186,18 @@ const AdminOffer = () => {
     }
   }
 
+  // Pagination & Search Logic
+  const filteredOffers = offers.filter(offer =>
+    (offer.title && offer.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (categories.find(c => Number(c.id) === Number(offer.category))?.name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (courses.find(c => Number(c.id) === Number(offer.course))?.title?.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const totalPages = Math.ceil(filteredOffers.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOffers = filteredOffers.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
 
@@ -268,18 +285,36 @@ const AdminOffer = () => {
 
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Page Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
             <div>
               <h1 className="text-2xl font-bold text-white">Offers</h1>
               <p className="text-gray-400 mt-1 text-sm">Manage discounts for courses and categories</p>
             </div>
-            <button
-              onClick={handleOpenModal}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-            >
-              <Plus size={18} />
-              <span>Add Offer</span>
-            </button>
+
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search offers..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-[#111216] border border-gray-800 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-colors placeholder-gray-500"
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <Search size={16} className="text-gray-500" />
+                </div>
+              </div>
+              <button
+                onClick={handleOpenModal}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95 whitespace-nowrap"
+              >
+                <Plus size={18} />
+                <span>Add Offer</span>
+              </button>
+            </div>
           </div>
 
           {/* Offers Table */}
@@ -303,7 +338,7 @@ const AdminOffer = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
-                    {offers.map((offer) => {
+                    {currentOffers.map((offer) => {
 
                       const categoryName = categories.find(
                         (c) => Number(c.id) === Number(offer.category)
@@ -381,6 +416,39 @@ const AdminOffer = () => {
                 </table>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 0 && offers.length > 0 && (
+              <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-800">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                >
+                  Prev
+                </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                                          ${currentPage === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

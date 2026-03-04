@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Clock } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from "sonner";
-
+import Api from '../Services/Api';
 
 
 
@@ -21,90 +21,36 @@ const Home = () => {
 
 
 
-    const categories = [
-        { name: 'Web Development', count: '2,543 courses', icon: <Code className="w-6 h-6 text-white" />, color: 'bg-blue-500' },
-        { name: 'Data Science', count: '1,825 courses', icon: <Database className="w-6 h-6 text-white" />, color: 'bg-orange-500' },
-        { name: 'Design', count: '1,458 courses', icon: <PenTool className="w-6 h-6 text-white" />, color: 'bg-purple-500' },
-        { name: 'Business', count: '2,371 courses', icon: <Layout className="w-6 h-6 text-white" />, color: 'bg-green-500' },
-        { name: 'Marketing', count: '1,570 courses', icon: <TrendingUp className="w-6 h-6 text-white" />, color: 'bg-red-500' },
-        { name: 'Photography', count: '948 courses', icon: <Camera className="w-6 h-6 text-white" />, color: 'bg-pink-500' },
-    ];
+    const [categories, setCategories] = useState([]);
+    const [trendingCourses, setTrendingCourses] = useState([]);
+    const [questions, setQuestions] = useState([]);
+    const [popularTags, setPopularTags] = useState([]);
 
-    const trendingCourses = [
-        {
-            title: 'Complete Web Development Bootcamp 2024',
-            instructor: 'Dr. Angela Yu',
-            rating: 4.8,
-            students: '45,232',
-            duration: '52h',
-            price: '$89.99',
-            image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600',
-            tag: 'Bestseller',
-            tagColor: 'bg-yellow-400 text-black'
-        },
-        {
-            title: 'Data Science and Machine Learning with Python',
-            instructor: 'Jose Portilla',
-            rating: 4.6,
-            students: '38,456',
-            duration: '44h',
-            price: '$94.99',
-            image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=600',
-            tag: 'Trending',
-            tagColor: 'bg-orange-500 text-white'
-        },
-        {
-            title: 'UI/UX Design Masterclass: Design Thinking to Prototyping',
-            instructor: 'Sarah Chen',
-            rating: 4.7,
-            students: '22,109',
-            duration: '18h',
-            price: '$79.99',
-            image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600',
-            tag: 'New',
-            tagColor: 'bg-green-500 text-white'
-        },
-        {
-            title: 'Advanced React and TypeScript Development',
-            instructor: 'Maximilian Schwarzmüller',
-            rating: 4.9,
-            students: '12,989',
-            duration: '26h',
-            price: '$99.99',
-            image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600',
-            tag: 'Advanced',
-            tagColor: 'bg-purple-500 text-white'
-        }
-    ];
+    useEffect(() => {
+        Api.get("/courses/categories/public/")
+            .then((res) => setCategories(res.data))
+            .catch((err) => console.log(err));
 
-    const questions = [
-        {
-            title: 'How to implement authentication with JWT in React?',
-            tags: ['React', 'JWT', 'Authentication'],
-            author: 'Alex Andrews',
-            time: '2 hours ago',
-            votes: 11,
-            answers: 5,
-            views: '1.2k'
-        },
-        {
-            title: 'Best practices for state management in large React applications',
-            tags: ['React', 'State Management', 'Redux'],
-            author: 'Maria Garcia',
-            time: '5 hours ago',
-            votes: 24,
-            answers: 8,
-            views: '456'
-        },
-        {
-            title: 'Understanding async/await vs Promises in JavaScript',
-            tags: ['JavaScript', 'Async', 'Promises'],
-            author: 'David Lee',
-            time: '1 day ago',
-            votes: 45,
-            answers: 12,
-            views: '789'
-        }
+        Api.get("/courses/public/")
+            .then((res) => setTrendingCourses(res.data.results ? res.data.results.slice(0, 4) : res.data.slice(0, 4)))
+            .catch((err) => console.log(err));
+
+        Api.get("/qna/questions/")
+            .then((res) => setQuestions(res.data.slice(0, 3)))
+            .catch((err) => console.log(err));
+
+        Api.get("/qna/public-tags/")
+            .then((res) => setPopularTags(res.data.slice(0, 4)))
+            .catch((err) => console.log(err));
+    }, []);
+
+    const ICONS = [
+        { icon: Code, color: 'bg-blue-500' },
+        { icon: Database, color: 'bg-orange-500' },
+        { icon: PenTool, color: 'bg-purple-500' },
+        { icon: Layout, color: 'bg-green-500' },
+        { icon: TrendingUp, color: 'bg-red-500' },
+        { icon: Camera, color: 'bg-pink-500' },
     ];
 
     return (
@@ -113,35 +59,35 @@ const Home = () => {
             <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
                 <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-8">
-                        <a href="/" className="flex items-center gap-2">
+                        <a href="/" className="flex items-center gap-2 cursor-pointer">
                             <img src={Logo} alt="LearnBridge Logo" className="h-8" />
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
 
-                            <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
+                            <Link to='/courses' className="hover:text-blue-600 transition-colors cursor-pointer">Explore</Link>
 
-                            <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
-                            <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+                            <Link to="/question-community" className="hover:text-blue-600 transition-colors cursor-pointer">Q&A Community</Link>
+                            <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors cursor-pointer">Live Classes</Link>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                        <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 cursor-pointer">
                             <ShoppingCart className="w-5 h-5  cursor-pointer" />
                         </button>
-                        <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+                        <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative cursor-pointer">
                             <Bell className="w-5 h-5" />
                             {/* Mock notification badge */}
                             <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
-                        <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+                        <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 cursor-pointer">
                             <Heart className="w-5 h-5" />
                         </button>
 
 
                         <div className="relative group">
-                            <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
+                            <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200 cursor-pointer">
                                 <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
 
                                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
@@ -164,7 +110,7 @@ const Home = () => {
                                     <>
                                         <button
                                             onClick={() => navigate("/student/login")}
-                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
                                         >
                                             <User className='w-4 h-4' />
                                             Login
@@ -173,7 +119,7 @@ const Home = () => {
 
                                         <button
                                             onClick={() => navigate("/student/register")}
-                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
                                         >
                                             <BookOpen className="w-4 h-4" />
                                             Sign Up
@@ -204,7 +150,7 @@ const Home = () => {
                                             Wishlist
                                         </button>
 
-                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
                                             <Package className="w-4 h-4" />
                                             Coupons
                                         </button>
@@ -236,7 +182,7 @@ const Home = () => {
                         </div>
 
 
-                        <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        <button className="md:hidden p-2 text-gray-600 cursor-pointer" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
@@ -244,9 +190,9 @@ const Home = () => {
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-                        <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-                        <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-                        <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+                        <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left cursor-pointer">Explore</button>
+                        <Link to="/question-community" className="text-gray-700 font-medium cursor-pointer">Q&A Community</Link>
+                        <Link to="/student/liveclass" className="text-gray-700 font-medium cursor-pointer">Live Classes</Link>
                         <hr className="border-gray-100" />
 
                         <div className="flex items-center gap-3">
@@ -293,9 +239,9 @@ const Home = () => {
 
                     <div className="flex flex-wrapjustify-center gap-3 text-sm text-blue-100 items-center justify-center">
                         <span className="opacity-70">Popular:</span>
-                        {['Web Development', 'Data Science', 'UI/UX Design', 'Machine Learning'].map(tag => (
-                            <button key={tag} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors border border-white/10">
-                                {tag}
+                        {popularTags.map(tag => (
+                            <button key={tag.id} onClick={() => navigate('/question-community')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors border border-white/10">
+                                {tag.tag_name}
                             </button>
                         ))}
                     </div>
@@ -311,17 +257,21 @@ const Home = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {categories.map((category, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-100 transition-all cursor-pointer group flex items-start gap-4">
-                                <div className={`${category.color} p-3 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                                    {category.icon}
+                        {categories.map((category, idx) => {
+                            const IconData = ICONS[idx % ICONS.length];
+                            const IconComponent = IconData.icon;
+                            return (
+                                <div key={category.id} onClick={() => navigate('/courses')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-100 transition-all cursor-pointer group flex items-start gap-4">
+                                    <div className={`${IconData.color} p-3 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                                        <IconComponent className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{category.name}</h3>
+                                        <p className="text-sm text-gray-500">Explore Courses</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{category.name}</h3>
-                                    <p className="text-sm text-gray-500">{category.count}</p>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>
@@ -341,11 +291,11 @@ const Home = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {trendingCourses.map((course, idx) => (
-                            <div key={idx} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+                            <div key={course.id} onClick={() => navigate(`/courseview/${course.id}`)} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer">
                                 <div className="relative h-48 overflow-hidden">
-                                    <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                    <span className={`absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded-md shadow-sm ${course.tagColor}`}>
-                                        {course.tag}
+                                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-gray-100" />
+                                    <span className={`absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded-md shadow-sm bg-orange-500 text-white`}>
+                                        {course.level}
                                     </span>
                                 </div>
                                 <div className="p-5 flex flex-col flex-1">
@@ -354,18 +304,20 @@ const Home = () => {
 
                                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
                                         <span className="flex items-center gap-1 text-orange-500">
-                                            ★ {course.rating}
+                                            ★ {course.average_rating ? Number(course.average_rating).toFixed(1) : "0.0"}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <User className="w-3 h-3" /> {course.students}
+                                            <User className="w-3 h-3" /> {course.students_count || 0}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <TrendingUp className="w-3 h-3" /> {course.duration}
+                                            <Clock className="w-3 h-3" /> {course.total_duration || "0m"}
                                         </span>
                                     </div>
 
                                     <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                                        <span className="text-xl font-bold text-blue-600">{course.price}</span>
+                                        <span className="text-xl font-bold text-blue-600">
+                                            {course.has_offer ? `₹${Number(course.final_price).toFixed(2)}` : `₹${course.original_price}`}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -389,33 +341,33 @@ const Home = () => {
 
                     <div className="flex flex-col gap-4">
                         {questions.map((q, idx) => (
-                            <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex gap-6">
+                            <div key={q.id} onClick={() => navigate('/question-community')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex gap-6 cursor-pointer">
                                 <div className="hidden md:flex flex-col items-center gap-2 text-gray-500 min-w-[3rem]">
                                     <div className="flex flex-col items-center">
                                         <ThumbsUp className="w-5 h-5" />
-                                        <span className="text-sm font-semibold">{q.votes}</span>
+                                        <span className="text-sm font-semibold">{q.likes_count || 0}</span>
                                     </div>
                                     <div className="flex flex-col items-center text-blue-500">
                                         <MessageSquare className="w-5 h-5" />
-                                        <span className="text-sm font-semibold">{q.answers}</span>
+                                        <span className="text-sm font-semibold">{q.answers_count || 0}</span>
                                     </div>
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-lg font-bold text-gray-900 mb-2 hover:text-blue-600 cursor-pointer">{q.title}</h3>
                                     <div className="flex flex-wrap gap-2 mb-4">
-                                        {q.tags.map(tag => (
-                                            <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-md border border-gray-200">
-                                                {tag}
+                                        {q.tags && q.tags.map(tag => (
+                                            <span key={tag.id} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-md border border-gray-200">
+                                                {tag.tag_name}
                                             </span>
                                         ))}
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-gray-500">
                                         <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
-                                            {q.author.charAt(0)}
+                                            {q.user_name ? q.user_name.charAt(0).toUpperCase() : 'U'}
                                         </div>
-                                        <span>{q.author}</span>
+                                        <span>{q.user_name}</span>
                                         <span>•</span>
-                                        <span>{q.time}</span>
+                                        <span>{new Date(q.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -441,27 +393,27 @@ const Home = () => {
                         <div>
                             <h4 className="font-bold text-gray-900 mb-4">Platform</h4>
                             <ul className="space-y-3 text-sm text-gray-500">
-                                <li><a href="#" className="hover:text-blue-600">Browse Courses</a></li>
-                                <li><Link to="/student/liveclass" className="hover:text-blue-600">Live Classes</Link></li>
-                                <li><a href="#" className="hover:text-blue-600">Q&A Community</a></li>
+                                <li><a href="/courses" className="hover:text-blue-600 cursor-pointer">Browse Courses</a></li>
+                                <li><Link to="/student/liveclass" className="hover:text-blue-600 cursor-pointer">Live Classes</Link></li>
+                                <li><a href="/question-community" className="hover:text-blue-600 cursor-pointer">Q&A Community</a></li>
                             </ul>
                         </div>
 
                         <div>
                             <h4 className="font-bold text-gray-900 mb-4">Support</h4>
                             <ul className="space-y-3 text-sm text-gray-500">
-                                <li><a href="#" className="hover:text-blue-600">Help Center</a></li>
-                                <li><a href="#" className="hover:text-blue-600">Contact Us</a></li>
-                                <li><a href="#" className="hover:text-blue-600">FAQs</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">Help Center</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">Contact Us</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">FAQs</a></li>
                             </ul>
                         </div>
 
                         <div>
                             <h4 className="font-bold text-gray-900 mb-4">Company</h4>
                             <ul className="space-y-3 text-sm text-gray-500">
-                                <li><a href="#" className="hover:text-blue-600">About Us</a></li>
-                                <li><a href="#" className="hover:text-blue-600">Careers</a></li>
-                                <li><a href="#" className="hover:text-blue-600">Blog</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">About Us</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">Careers</a></li>
+                                <li><a href="#" className="hover:text-blue-600 cursor-pointer">Blog</a></li>
                             </ul>
                         </div>
                     </div>

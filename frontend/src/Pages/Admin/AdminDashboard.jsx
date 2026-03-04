@@ -1,8 +1,10 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '@/Store/authSlice';
 import { useDispatch } from 'react-redux';
+import { toast } from 'sonner';
+import Api from '../Services/Api';
 import {
     LayoutDashboard,
     BookOpen,
@@ -24,9 +26,30 @@ import {
 const AdminDashboard = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    const [stats, setStats] = useState({
+        total_users: 0,
+        active_courses: 0,
+        pending_teachers: 0,
+        qna_posts: 0
+    });
+    const [recentUsers, setRecentUsers] = useState([]);
+    const [recentCourses, setRecentCourses] = useState([]);
+
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const navigate = useNavigate()
     const dispatch = useDispatch()
+
+    useEffect(() => {
+        Api.get('/admin/dashboard-stats/')
+            .then(res => {
+                setStats(res.data.stats);
+                setRecentUsers(res.data.recent_users);
+                setRecentCourses(res.data.recent_courses);
+            })
+            .catch(err => {
+                console.error('Failed to fetch dashboard stats', err);
+            });
+    }, []);
 
 
     const handleLogout = async () => {
@@ -197,29 +220,25 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                     <StatsCard
                         title="Total Users"
-                        value="12,458"
-                        change="+12.5%"
+                        value={stats.total_users || 0}
                         icon={Users}
                         color="blue"
                     />
                     <StatsCard
                         title="Active Courses"
-                        value="342"
-                        change="+8.2%"
+                        value={stats.active_courses || 0}
                         icon={BookOpen}
                         color="green"
                     />
                     <StatsCard
                         title="Pending Teachers"
-                        value="23"
-                        change="+5"
+                        value={stats.pending_teachers || 0}
                         icon={GraduationCap}
                         color="orange"
                     />
                     <StatsCard
                         title="Q&A Posts"
-                        value="5,892"
-                        change="+15.3%"
+                        value={stats.qna_posts || 0}
                         icon={MessageSquare}
                         color="purple"
                     />
@@ -228,61 +247,61 @@ const AdminDashboard = () => {
                 {/* Content Split */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                    {/* Recent Activity */}
+                    {/* Recent Users */}
                     <div className="bg-[#111216] border border-gray-800 rounded-2xl p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-full border border-gray-700">
-                                    <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
-                                </div>
-                                <h2 className="text-lg font-bold text-white">Recent Activity</h2>
+                                <Users className="w-5 h-5 text-blue-500" />
+                                <h2 className="text-lg font-bold text-white">Recent Users</h2>
                             </div>
+                            <button onClick={() => navigate('/admin/users')} className="text-sm text-blue-500 hover:text-blue-400">View All</button>
                         </div>
 
-                        <div className="space-y-6">
-                            <ActivityItem
-                                title="New teacher approval request"
-                                desc="John Smith • 5 min ago"
-                                color="blue"
-                            />
-                            <ActivityItem
-                                title="Course published"
-                                desc="Sarah Johnson • 12 min ago"
-                                color="green"
-                            />
-                            <ActivityItem
-                                title="Q&A post reported"
-                                desc="Mike Chen • 23 min ago"
-                                color="purple"
-                            />
-                            <ActivityItem
-                                title="New user registered"
-                                desc="Emma Wilson • 35 min ago"
-                                color="blue"
-                            />
-                            <ActivityItem
-                                title="Course updated"
-                                desc="David Lee • 1 hour ago"
-                                color="orange"
-                            />
+                        <div className="space-y-4">
+                            {recentUsers.map(user => (
+                                <div key={user.id} className="flex items-center justify-between py-2 border-b border-gray-800 last:border-0 last:pb-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs uppercase">
+                                            {user.username.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-200">{user.username}</p>
+                                            <p className="text-xs text-gray-500">{user.email}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs text-gray-500">{new Date(user.date_joined).toLocaleDateString()}</span>
+                                </div>
+                            ))}
+                            {recentUsers.length === 0 && <p className="text-sm text-gray-500 text-center py-4">No recent users.</p>}
                         </div>
                     </div>
 
-                    {/* Platform Growth */}
+                    {/* Recent Courses */}
                     <div className="bg-[#111216] border border-gray-800 rounded-2xl p-6">
-                        <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 rounded-full border border-gray-700">
-                                    <TrendingUpIcon />
-                                </div>
-                                <h2 className="text-lg font-bold text-white">Platform Growth</h2>
+                                <BookOpen className="w-5 h-5 text-green-500" />
+                                <h2 className="text-lg font-bold text-white">Recent Courses</h2>
                             </div>
+                            <button onClick={() => navigate('/admin/courses')} className="text-sm text-green-500 hover:text-green-400">View All</button>
                         </div>
 
-                        <div className="space-y-8">
-                            <GrowthBar label="User Growth" percent={85} change="+24%" color="bg-green-500" />
-                            <GrowthBar label="Course Completion" percent={65} change="+18%" color="bg-blue-500" />
-                            <GrowthBar label="Engagement Rate" percent={78} change="+32%" color="bg-purple-500" />
+                        <div className="space-y-4">
+                            {recentCourses.map(course => (
+                                <div key={course.id} className="flex flex-col gap-1 py-2 border-b border-gray-800 last:border-0 last:pb-0">
+                                    <div className="flex justify-between items-start">
+                                        <p className="text-sm font-medium text-gray-200 truncate pr-4">{course.title}</p>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full capitalize ${course.status === 'published' ? 'bg-green-500/10 text-green-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                                            {course.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs text-gray-500">
+                                        <span>By {course.teacher}</span>
+                                        <span>{new Date(course.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {recentCourses.length === 0 && <p className="text-sm text-gray-500 text-center py-4">No recent courses.</p>}
                         </div>
                     </div>
 
@@ -307,19 +326,12 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
     </div>
 );
 
-const StatsCard = ({ title, value, change, icon: Icon, color }) => {
+const StatsCard = ({ title, value, icon: Icon, color }) => {
     const colors = {
         blue: 'text-blue-500 bg-blue-500/10',
         green: 'text-green-500 bg-green-500/10',
         orange: 'text-amber-500 bg-amber-500/10',
         purple: 'text-purple-500 bg-purple-500/10',
-    };
-
-    const textColors = {
-        blue: 'text-blue-400',
-        green: 'text-green-400',
-        orange: 'text-amber-400',
-        purple: 'text-purple-400',
     };
 
     return (
@@ -333,55 +345,9 @@ const StatsCard = ({ title, value, change, icon: Icon, color }) => {
             <div className="flex items-end gap-2">
                 <h3 className="text-3xl font-bold text-white">{value}</h3>
             </div>
-            <p className={`text-xs mt-2 font-medium ${textColors[color]}`}>
-                {change} <span className="text-gray-500">from last month</span>
-            </p>
         </div>
     );
 };
 
-const ActivityItem = ({ title, desc, color }) => {
-    const dotColors = {
-        blue: 'bg-blue-500',
-        green: 'bg-green-500',
-        purple: 'bg-purple-500',
-        orange: 'bg-amber-500',
-    };
-
-    return (
-        <div className="flex items-start gap-4 pb-4 border-b border-gray-800 last:border-0 last:pb-0">
-            <div className={`mt-2 w-2 h-2 rounded-full ${dotColors[color]} shadow-[0_0_8px_rgba(0,0,0,0.5)]`} />
-            <div>
-                <h4 className="text-sm font-medium text-white">{title}</h4>
-                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-            </div>
-        </div>
-    );
-};
-
-const GrowthBar = ({ label, percent, change, color }) => (
-    <div>
-        <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-300 font-medium">{label}</span>
-            <span className={`font-bold ${color.includes('green') ? 'text-green-400' :
-                color.includes('blue') ? 'text-blue-400' : 'text-purple-400'
-                }`}>{change}</span>
-        </div>
-        <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
-            <div
-                className={`h-full rounded-full ${color} shadow-[0_0_10px_rgba(0,0,0,0.3)]`}
-                style={{ width: `${percent}%` }}
-            ></div>
-        </div>
-    </div>
-);
-
-// Custom icon for growth section title since lucide might not have exact match
-const TrendingUpIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-        <polyline points="17 6 23 6 23 12"></polyline>
-    </svg>
-);
 
 export default AdminDashboard;

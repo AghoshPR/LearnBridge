@@ -342,15 +342,15 @@ const AdminCourses = () => {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-white mb-1">{course.title}</span>
-                        <span className="text-xs text-gray-500">{course.lessons} lessons</span>
+                        <span className="text-xs text-gray-500">{course.total_lessons} lessons</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">{course.instructor}</td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{course.students}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">{course.students_count}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-white">
                         <Star size={14} className="text-amber-400 fill-amber-400" />
-                        <span>{course.rating || 0}</span>
+                        <span>{course.average_rating || 0}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">{course.price}</td>
@@ -365,9 +365,7 @@ const AdminCourses = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
 
-                        <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer">
-                          <Pencil size={16} />
-                        </button>
+
 
                         <button
                           onClick={() => toggleCourseStatus(course.id)}

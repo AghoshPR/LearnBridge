@@ -10,9 +10,15 @@ class LiveClassMessagesView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, class_id):
+        page = int(request.GET.get('page', 1))
+        limit = 20
+        start = (page - 1) * limit
+        end = start + limit
+
+        # Fetch latest messages first, then slice
         messages = LiveClassMessage.objects.filter(
             live_class_id=class_id
-        ).select_related("user").order_by("created_at")
+        ).select_related("user").order_by("-created_at")[start:end]
 
         data = [
             {
@@ -24,4 +30,12 @@ class LiveClassMessagesView(APIView):
             for m in messages
         ]
 
-        return Response(data)
+        # Reverse so they are chronological in the frontend
+        data.reverse()
+
+        return Response({
+            "messages": data,
+            "has_more": len(data) == limit,
+            "next_page": page + 1 if len(data) == limit else None
+        })
+

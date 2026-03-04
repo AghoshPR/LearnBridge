@@ -69,7 +69,7 @@ const TeacherCourseCategory = () => {
     { icon: Folder, label: 'Categories', path: '/teacher/categories', active: true },
     { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
     // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
   ];
@@ -408,8 +408,8 @@ const TeacherCourseCategory = () => {
                               setIsBlockModalOpen(true);
                             }}
                             className={`p-1.5 rounded-lg ${category.status === 'blocked'
-                                ? 'text-red-400 hover:bg-red-500/10'
-                                : 'text-green-400 hover:bg-green-500/10'
+                              ? 'text-red-400 hover:bg-red-500/10'
+                              : 'text-green-400 hover:bg-green-500/10'
                               }`}
                           >
                             {category.status === 'blocked'
@@ -607,8 +607,8 @@ const TeacherCourseCategory = () => {
                 <button
                   onClick={handleConfirmBlockToggle}
                   className={`px-4 py-2 text-white rounded-lg font-bold transition-colors text-sm shadow-lg ${selectedCategory.status === 'blocked'
-                      ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
-                      : 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
+                    ? 'bg-green-600 hover:bg-green-500 shadow-green-900/20'
+                    : 'bg-yellow-600 hover:bg-yellow-500 shadow-yellow-900/20'
                     }`}
                 >
                   {selectedCategory.status === 'blocked' ? 'Unblock' : 'Block'}

@@ -13,7 +13,9 @@ import {
     Search,
     ThumbsUp,
     MessageCircle,
-    X
+    X,
+    Edit,
+    Trash2
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -29,16 +31,82 @@ const TeacherQACommunity = () => {
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const [questions, setQuestions] = useState([])
-    const [answerText, setAnswerText] = useState("")
+    const [questions, setQuestions] = useState([]);
+    const [answerText, setAnswerText] = useState("");
+    const [answers, setAnswers] = useState([]);
+    const [isAnswersModalOpen, setIsAnswersModalOpen] = useState(false);
+    const [editingAnswerId, setEditingAnswerId] = useState(null);
+    const [editAnswerText, setEditAnswerText] = useState("");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [answerToDelete, setAnswerToDelete] = useState(null);
 
-    const unansweredQuestions = questions.filter(
+    const fetchAnswers = async (questionId) => {
+        try {
+            const res = await Api.get(`/qna/questions/answers/${questionId}/`);
+            setAnswers(res.data);
+        } catch (error) {
+            toast.error("Failed to load answers");
+        }
+    };
+
+    const handleUpdateAnswer = async (answerId) => {
+        try {
+            await Api.patch(`/qna/answers/${answerId}/modify/`, {
+                body: editAnswerText
+            });
+            toast.success("Answer updated successfully");
+            setEditingAnswerId(null);
+            setEditAnswerText("");
+            fetchAnswers(selectedQuestion.id);
+        } catch (err) {
+            toast.error("Failed to update answer");
+        }
+    };
+
+    const handleDeleteAnswer = async () => {
+        if (!answerToDelete) return;
+        try {
+            await Api.delete(`/qna/answers/${answerToDelete}/modify/`);
+            toast.success("Answer deleted successfully");
+            setIsDeleteModalOpen(false);
+            setAnswerToDelete(null);
+            fetchAnswers(selectedQuestion.id);
+            fetchTeacherQuestions();
+        } catch (err) {
+            toast.error("Failed to delete answer");
+        }
+    };
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPageUnanswered, setCurrentPageUnanswered] = useState(1);
+    const [currentPageAnswered, setCurrentPageAnswered] = useState(1);
+    const itemsPerPage = 5;
+
+    const filteredQuestions = questions.filter(q =>
+        q.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.body?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q.course?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const unansweredQuestionsFull = filteredQuestions.filter(
         q => q.answers_count === 0
     )
 
-    const answeredQuestions = questions.filter(
+    const answeredQuestionsFull = filteredQuestions.filter(
         q => q.answers_count > 0
     )
+
+    const totalPagesUnanswered = Math.ceil(unansweredQuestionsFull.length / itemsPerPage);
+    const currentUnanswered = unansweredQuestionsFull.slice(
+        (currentPageUnanswered - 1) * itemsPerPage,
+        currentPageUnanswered * itemsPerPage
+    );
+
+    const totalPagesAnswered = Math.ceil(answeredQuestionsFull.length / itemsPerPage);
+    const currentAnswered = answeredQuestionsFull.slice(
+        (currentPageAnswered - 1) * itemsPerPage,
+        currentPageAnswered * itemsPerPage
+    );
 
 
     useEffect(() => {
@@ -46,14 +114,14 @@ const TeacherQACommunity = () => {
     }, [])
 
     const fetchTeacherQuestions = async () => {
-    try {
-        const res = await Api.get("/qna/teacher/questions/");
-        setQuestions(res.data);
-    } catch (error) {
-        console.log(error.response?.data);
-        toast.error("Failed to load questions");
-    }
-};
+        try {
+            const res = await Api.get("/qna/teacher/questions/");
+            setQuestions(res.data);
+        } catch (error) {
+            console.log(error.response?.data);
+            toast.error("Failed to load questions");
+        }
+    };
 
 
     const postAnswer = async (questionId, body) => {
@@ -108,7 +176,7 @@ const TeacherQACommunity = () => {
         { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: true },
-        { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+        // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
         // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
         { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
     ];
@@ -200,7 +268,13 @@ const TeacherQACommunity = () => {
                     <div className="relative mb-8">
                         <input
                             type="text"
-                            placeholder=""
+                            placeholder="Search questions..."
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setCurrentPageUnanswered(1);
+                                setCurrentPageAnswered(1);
+                            }}
                             className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 pl-10 text-slate-300 focus:outline-none focus:border-purple-500 transition-colors"
                         />
                         <Search className="absolute left-3 top-3.5 text-slate-500" size={18} />
@@ -215,7 +289,7 @@ const TeacherQACommunity = () => {
                                 : 'text-slate-400 hover:text-white'
                                 }`}
                         >
-                            Unanswered ({unansweredQuestions.length})
+                            Unanswered ({unansweredQuestionsFull.length})
                         </button>
                         <button
                             onClick={() => setActiveTab('answered')}
@@ -224,13 +298,13 @@ const TeacherQACommunity = () => {
                                 : 'text-slate-400 hover:text-white'
                                 }`}
                         >
-                            Answered ({answeredQuestions.length})
+                            Answered ({answeredQuestionsFull.length})
                         </button>
                     </div>
 
                     {/* Questions List */}
                     <div className="space-y-4">
-                        {activeTab === 'unanswered' && unansweredQuestions.map((question) => (
+                        {activeTab === 'unanswered' && currentUnanswered.map((question) => (
                             <div key={question.id} className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-all">
                                 <div className="flex gap-4">
                                     {/* Stats Column */}
@@ -278,7 +352,39 @@ const TeacherQACommunity = () => {
                             </div>
                         ))}
 
-                        {activeTab === 'answered' && answeredQuestions.map((question) => (
+                        {activeTab === 'unanswered' && totalPagesUnanswered > 0 && currentUnanswered.length > 0 && (
+                            <div className="flex justify-center items-center gap-2 mt-6">
+                                <button
+                                    disabled={currentPageUnanswered === 1}
+                                    onClick={() => setCurrentPageUnanswered(prev => Math.max(prev - 1, 1))}
+                                    className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                {[...Array(totalPagesUnanswered)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPageUnanswered(i + 1)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                            ${currentPageUnanswered === i + 1
+                                                ? "bg-purple-600 text-white"
+                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={currentPageUnanswered === totalPagesUnanswered}
+                                    onClick={() => setCurrentPageUnanswered(prev => Math.min(prev + 1, totalPagesUnanswered))}
+                                    className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+
+                        {activeTab === 'answered' && currentAnswered.map((question) => (
                             <div key={question.id} className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-all">
                                 <div className="flex gap-4">
                                     <div className="flex flex-col items-center gap-3 pt-1 min-w-[3rem]">
@@ -313,6 +419,11 @@ const TeacherQACommunity = () => {
                                                 <span>{new Date(question.created_at).toLocaleString()}</span>
                                             </div>
                                             <button
+                                                onClick={() => {
+                                                    setSelectedQuestion(question);
+                                                    fetchAnswers(question.id);
+                                                    setIsAnswersModalOpen(true);
+                                                }}
                                                 className="w-full sm:w-auto px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-purple-900/20"
                                             >
                                                 View Answers
@@ -322,6 +433,38 @@ const TeacherQACommunity = () => {
                                 </div>
                             </div>
                         ))}
+
+                        {activeTab === 'answered' && totalPagesAnswered > 0 && currentAnswered.length > 0 && (
+                            <div className="flex justify-center items-center gap-2 mt-6">
+                                <button
+                                    disabled={currentPageAnswered === 1}
+                                    onClick={() => setCurrentPageAnswered(prev => Math.max(prev - 1, 1))}
+                                    className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                {[...Array(totalPagesAnswered)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPageAnswered(i + 1)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                            ${currentPageAnswered === i + 1
+                                                ? "bg-purple-600 text-white"
+                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={currentPageAnswered === totalPagesAnswered}
+                                    onClick={() => setCurrentPageAnswered(prev => Math.min(prev + 1, totalPagesAnswered))}
+                                    className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>
@@ -404,6 +547,122 @@ const TeacherQACommunity = () => {
                                     Post Answer
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Answers Modal */}
+            {isAnswersModalOpen && selectedQuestion && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 my-8">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <h2 className="text-xl font-bold text-gray-900">Answers to: {selectedQuestion.title}</h2>
+                            <button onClick={() => { setIsAnswersModalOpen(false); setSelectedQuestion(null); setEditingAnswerId(null); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 max-h-[70vh] overflow-y-auto">
+                            {answers.length === 0 ? (
+                                <p className="text-center text-gray-500 py-8">No answers yet.</p>
+                            ) : (
+                                <div className="space-y-6">
+                                    {answers.map((answer) => (
+                                        <div key={answer.id} className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+                                                        {answer.user_name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <span className="font-bold text-gray-900 text-sm">{answer.user_name}</span>
+                                                        <div className="text-xs text-gray-500">{new Date(answer.created_at).toLocaleString()}</div>
+                                                    </div>
+                                                </div>
+
+                                                {answer.user_name === username && (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingAnswerId(answer.id);
+                                                                setEditAnswerText(answer.body);
+                                                            }}
+                                                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                            title="Edit Answer"
+                                                        >
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setAnswerToDelete(answer.id);
+                                                                setIsDeleteModalOpen(true);
+                                                            }}
+                                                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="Delete Answer"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {editingAnswerId === answer.id ? (
+                                                <div className="mt-4">
+                                                    <textarea
+                                                        value={editAnswerText}
+                                                        onChange={(e) => setEditAnswerText(e.target.value)}
+                                                        className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+                                                    ></textarea>
+                                                    <div className="flex justify-end gap-2 mt-3">
+                                                        <button
+                                                            onClick={() => setEditingAnswerId(null)}
+                                                            className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleUpdateAnswer(answer.id)}
+                                                            className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                                                        >
+                                                            Save Changes
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-gray-700 text-sm whitespace-pre-wrap">{answer.body}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Confirm Delete</h2>
+                        <p className="text-gray-600 mb-6">Are you sure you want to delete this answer? This action cannot be undone.</p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    setAnswerToDelete(null);
+                                }}
+                                className="px-6 py-2.5 rounded-xl text-gray-600 font-bold hover:bg-gray-100 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteAnswer}
+                                className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>

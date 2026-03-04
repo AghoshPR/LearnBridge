@@ -489,7 +489,13 @@ class TeacherLessonCreateView(APIView):
             .get("max_pos") or 0
         )
 
-        video_key = upload_video(video, course_id)
+        try:
+            video_key = upload_video(video, course_id)
+        except Exception as e:
+            return Response(
+                {"error": "Video upload failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         Lesson.objects.create(
 
@@ -508,7 +514,11 @@ class TeacherLessonCreateView(APIView):
         print("Channel Layer:", channel_layer)
 
         enrollments = Enrollment.objects.filter(course_id=course_id)
-        course = Course.objects.get(id=course_id)
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             for enrollment in enrollments:
@@ -710,7 +720,10 @@ class StudentLessonVideoView(APIView):
 
     def get(self, request, lesson_id):
 
-        lesson = Lesson.objects.get(id=lesson_id)
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
 
         signed_url = generate_signed_url(lesson.video_key)
 
@@ -756,7 +769,10 @@ class ReplyCommentsView(APIView):
 
     def post(self, request, comment_id):
 
-        parent = LessonComments.objects.get(id=comment_id)
+        try:
+            parent = LessonComments.objects.get(id=comment_id)
+        except LessonComments.DoesNotExist:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
 
         LessonComments.objects.create(
             lesson=parent.lesson,
@@ -774,7 +790,10 @@ class ToggleCommentLikeView(APIView):
 
     def post(self, request, comment_id):
 
-        comment = LessonComments.objects.get(id=comment_id)
+        try:
+            comment = LessonComments.objects.get(id=comment_id)
+        except LessonComments.DoesNotExist:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like, created = CommentLike.objects.get_or_create(
             user=request.user,
@@ -796,7 +815,11 @@ class DeleteCommentView(APIView):
 
     def delete(self, request, comment_id):
 
-        comment = LessonComments.objects.get(id=comment_id, user=request.user)
+        try:
+            comment = LessonComments.objects.get(
+                id=comment_id, user=request.user)
+        except LessonComments.DoesNotExist:
+            return Response({"error": "Comment not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
         comment.is_deleted = True
         comment.save()
 
