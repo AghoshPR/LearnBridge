@@ -28,8 +28,5 @@ urlpatterns = [
     path("teachers/approved/", ApproveTeacherView.as_view()),
     path("teachers/approve/<int:id>/", ApproveTeacherView.as_view()),
     path("teachers/pending/<int:id>/", AdminPendingTeacherDetailView.as_view()),
-
-
-
-
+    path("dashboard-stats/", AdminDashboardStatsView.as_view()),
 ]

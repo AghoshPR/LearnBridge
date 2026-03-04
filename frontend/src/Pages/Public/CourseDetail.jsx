@@ -121,6 +121,7 @@ const CourseDetail = () => {
                         </button>
                         <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
                             <Bell className="w-5 h-5" />
+                            <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
                         <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
                             <Heart className="w-5 h-5" />

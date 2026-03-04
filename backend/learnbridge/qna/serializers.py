@@ -23,7 +23,10 @@ class AdminTagSerializer(serializers.ModelSerializer):
 class QuestionCreateSerializer(serializers.ModelSerializer):
 
     tag_ids = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True)
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False
+    )
 
     class Meta:
 
@@ -39,6 +42,19 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             question.tags.set(tag_ids)
 
         return question
+    
+    def update(self, instance, validated_data):
+        tag_ids = validated_data.pop("tag_ids", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if tag_ids is not None:
+            instance.tags.set(tag_ids)
+
+        return instance
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
@@ -53,6 +69,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "body",
+            "course",
             "user_name",
             "created_at",
             "answers_count",
@@ -77,6 +94,7 @@ class QuestionDetailedSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "body",
+            "course",
             "user_name",
             "course_name",
             "created_at",
@@ -134,3 +152,24 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
 
 # teacher side
+
+class TeacherQuestionSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source="user.username", read_only=True)
+    tags = AdminTagSerializer(many=True, read_only=True)
+    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
+    course = serializers.CharField(source="course.title", read_only=True)
+    upvotes = serializers.IntegerField(source="likes_count", read_only=True)
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "title",
+            "body",
+            "course",
+            "author",
+            "created_at",
+            "answers_count",
+            "upvotes",
+            "tags"
+        ]

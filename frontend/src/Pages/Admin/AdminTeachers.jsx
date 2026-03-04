@@ -43,6 +43,10 @@ const AdminTeachers = () => {
     const [pendingTeachers, setPendingTeacher] = useState([])
     const [approvedTeacher, setApproveTeacher] = useState([])
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentPagePending, setCurrentPagePending] = useState(1);
+    const [currentPageApproved, setCurrentPageApproved] = useState(1);
+    const itemsPerPage = 5;
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [teacherToDelete, setTeacherToDelete] = useState(null);
     const [teacherToBlock, setTeacherToBlock] = useState(null);
@@ -317,13 +321,27 @@ const AdminTeachers = () => {
 
     // Filter functions
     const filteredPendingTeachers = pendingTeachers.filter(teacher =>
-        teacher.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        (teacher.name && teacher.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (teacher.email && teacher.email.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const filteredApprovedTeachers = approvedTeacher.filter(teacher =>
-        teacher.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        (teacher.name && teacher.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (teacher.email && teacher.email.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+
+    // Pagination Logic for Pending
+    const totalPagesPending = Math.ceil(filteredPendingTeachers.length / itemsPerPage);
+    const currentPending = filteredPendingTeachers.slice(
+        (currentPagePending - 1) * itemsPerPage,
+        currentPagePending * itemsPerPage
+    );
+
+    // Pagination Logic for Approved
+    const totalPagesApproved = Math.ceil(filteredApprovedTeachers.length / itemsPerPage);
+    const currentApproved = filteredApprovedTeachers.slice(
+        (currentPageApproved - 1) * itemsPerPage,
+        currentPageApproved * itemsPerPage
     );
 
     return (
@@ -457,7 +475,11 @@ const AdminTeachers = () => {
                             placeholder="Search by name or email..."
                             className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setCurrentPagePending(1);
+                                setCurrentPageApproved(1);
+                            }}
                         />
                     </div>
                 </div>
@@ -483,7 +505,7 @@ const AdminTeachers = () => {
 
                                 <tbody className="text-sm">
 
-                                    {filteredPendingTeachers.map((teacher) => (
+                                    {currentPending.map((teacher) => (
 
                                         <tr key={teacher.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
                                             <td className="px-3 py-3 font-medium text-white">{teacher.name}</td>
@@ -526,7 +548,45 @@ const AdminTeachers = () => {
 
                                 </tbody>
                             </table>
+                            {currentPending.length === 0 && (
+                                <div className="text-center py-8 text-gray-500 text-sm">
+                                    No pending teachers found.
+                                </div>
+                            )}
                         </div>
+
+                        {/* Pending Pagination controls */}
+                        {totalPagesPending > 0 && filteredPendingTeachers.length > 0 && (
+                            <div className="flex justify-center items-center gap-2 p-4 border-t border-gray-800">
+                                <button
+                                    disabled={currentPagePending === 1}
+                                    onClick={() => setCurrentPagePending(prev => Math.max(prev - 1, 1))}
+                                    className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                {[...Array(totalPagesPending)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPagePending(i + 1)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                            ${currentPagePending === i + 1
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={currentPagePending === totalPagesPending}
+                                    onClick={() => setCurrentPagePending(prev => Math.min(prev + 1, totalPagesPending))}
+                                    className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Approved Teachers Table */}
@@ -549,7 +609,7 @@ const AdminTeachers = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
-                                    {filteredApprovedTeachers.map((teacher) => (
+                                    {currentApproved.map((teacher) => (
                                         <tr
                                             key={teacher.id}
                                             className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors"
@@ -624,7 +684,45 @@ const AdminTeachers = () => {
                                     ))}
                                 </tbody>
                             </table>
+                            {currentApproved.length === 0 && (
+                                <div className="text-center py-8 text-gray-500 text-sm">
+                                    No approved teachers found.
+                                </div>
+                            )}
                         </div>
+
+                        {/* Approved Pagination controls */}
+                        {totalPagesApproved > 0 && filteredApprovedTeachers.length > 0 && (
+                            <div className="flex justify-center items-center gap-2 p-4 border-t border-gray-800">
+                                <button
+                                    disabled={currentPageApproved === 1}
+                                    onClick={() => setCurrentPageApproved(prev => Math.max(prev - 1, 1))}
+                                    className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Prev
+                                </button>
+                                {[...Array(totalPagesApproved)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setCurrentPageApproved(i + 1)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                                            ${currentPageApproved === i + 1
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    disabled={currentPageApproved === totalPagesApproved}
+                                    onClick={() => setCurrentPageApproved(prev => Math.min(prev + 1, totalPagesApproved))}
+                                    className="px-3 py-1.5 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

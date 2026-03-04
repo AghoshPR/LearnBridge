@@ -113,7 +113,10 @@ class AdminCouponUpdateView(APIView):
 
     def put(self, request, pk):
 
-        coupon = Coupon.objects.get(pk=pk)
+        try:
+            coupon = Coupon.objects.get(pk=pk)
+        except Coupon.DoesNotExist:
+            return Response({"error": "Coupon not found"}, status=404)
         serializer = CouponSerializer(coupon, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

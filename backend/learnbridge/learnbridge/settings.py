@@ -68,10 +68,6 @@ INSTALLED_APPS = [
 
     "channels",
 
-
-
-
-
 ]
 
 
@@ -257,3 +253,8 @@ CHANNEL_LAYERS = {
 
     },
 }
+
+
+# AI - Assistant
+
+GEMINI_API_KEY = config("GEMINI_API_KEY")

@@ -1,13 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { MapPin, Plus, Tag, CreditCard, Trash2, X, Search, ShoppingCart, Bell, Heart, User, BookOpen, LogOut, Menu, Check } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  MapPin,
+  Plus,
+  Tag,
+  CreditCard,
+  Trash2,
+  X,
+  Search,
+  ShoppingCart,
+  Bell,
+  Heart,
+  User,
+  BookOpen,
+  LogOut,
+  Menu,
+  Check,
+  Ticket,
+  Package,
+} from "lucide-react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import Logo from '../../assets/learnbridge-logo.png';
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../Store/authSlice';
-import Api from '../Services/Api';
+import Logo from "../../assets/learnbridge-logo.png";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../Store/authSlice";
+import Api from "../Services/Api";
 import { toast } from "sonner";
 import { useNavigate, Link } from "react-router-dom";
-
 
 const OrdersCheckout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,9 +33,9 @@ const OrdersCheckout = () => {
 
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [orderId, setOrderId] = useState('');
+  const [orderId, setOrderId] = useState("");
   const [selectedAddress, setSelectedAddress] = useState(1);
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState("");
 
   // stipe
 
@@ -26,69 +43,58 @@ const OrdersCheckout = () => {
   const elements = useElements();
   const navigate = useNavigate();
 
-  const [paymentMethod, setPaymentMethod] = useState("card")
-
-
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-
   // coupons
 
-  const [availableCoupons, setAvailableCoupons] = useState([])
-  const [selectedCouponId, setSelectedCouponId] = useState("")
-  const [couponDiscount, setCouponDiscount] = useState(0)
-
-
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [selectedCouponId, setSelectedCouponId] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + Number(item.original_price), 0
-  )
+    (sum, item) => sum + Number(item.original_price),
+    0,
+  );
 
   const totalAfterDiscount = cartItems.reduce(
-    (sum, item) => sum + Number(item.final_price), 0
-  )
+    (sum, item) => sum + Number(item.final_price),
+    0,
+  );
 
-  const offerDiscount = subtotal - totalAfterDiscount
+  const offerDiscount = subtotal - totalAfterDiscount;
 
   //  after coupon apply
-  const finalTotal = totalAfterDiscount - couponDiscount
-
-
+  const finalTotal = totalAfterDiscount - couponDiscount;
 
   useEffect(() => {
-    fetchCart()
-    fetchCoupons()
-  }, [])
+    fetchCart();
+    fetchCoupons();
+  }, []);
 
   const fetchCart = async () => {
-
     try {
-      const res = await Api.get("/cart/")
-      setCartItems(res.data.items)
-      setTotal(res.data.total_amount)
-
+      const res = await Api.get("/cart/");
+      setCartItems(res.data.items);
+      setTotal(res.data.total_amount);
     } catch {
-      toast.error("Failed to load checkout data")
+      toast.error("Failed to load checkout data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchCoupons = async () => {
-
     try {
-
-      const res = await Api.get("/mycoupons/")
-      setAvailableCoupons(res.data)
+      const res = await Api.get("/mycoupons/");
+      setAvailableCoupons(res.data);
     } catch {
-      toast.error("Failed to load coupons")
+      toast.error("Failed to load coupons");
     }
-
-  }
-
+  };
 
   const handleAddAddress = (e) => {
     e.preventDefault();
@@ -96,65 +102,49 @@ const OrdersCheckout = () => {
     setIsAddressModalOpen(false);
   };
 
-
-
-
   const payWithStripe = async () => {
-
     if (!stripe || !elements) {
-
-      toast.error("Stripe not loaded")
-      return
+      toast.error("Stripe not loaded");
+      return;
     }
-
-
 
     try {
       const res = await Api.post("/createorder/", {
-        coupon_id: selectedCouponId || null
-      })
-      const { client_secret, order_id } = res.data
-
+        coupon_id: selectedCouponId || null,
+      });
+      const { client_secret, order_id } = res.data;
 
       const result = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
-          card: elements.getElement(CardElement)
-        }
-      })
+          card: elements.getElement(CardElement),
+        },
+      });
 
       if (result.error) {
-
-        toast.error(result.error.message)
+        toast.error(result.error.message);
       } else {
-
         if (result.paymentIntent.status === "succeeded") {
-
           await Api.post("/stripe/success/", {
             payment_intent_id: result.paymentIntent.id,
-          })
-
+          });
 
           setOrderId(order_id || result.paymentIntent.id);
           setShowSuccessModal(true);
-
         }
       }
-
     } catch (err) {
-      toast.error("Payment Failed")
+      toast.error("Payment Failed");
     }
-  }
+  };
 
   const payWithRazorpay = async () => {
-
     try {
       const res = await Api.post("/razorpay/create/", {
-        coupon_id: selectedCouponId || null
-      })
-      const data = res.data
+        coupon_id: selectedCouponId || null,
+      });
+      const data = res.data;
 
       const options = {
-
         key: data.key,
         amount: data.amount,
         currency: "INR",
@@ -168,65 +158,55 @@ const OrdersCheckout = () => {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
-          })
+          });
 
           setOrderId(data.order_id);
           setShowSuccessModal(true);
         },
         prefill: {
-          name: username
+          name: username,
         },
         theme: {
           color: "#2563eb",
         },
-      }
+      };
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
-      toast.error("Razorpay payment failed")
+      toast.error("Razorpay payment failed");
     }
-
   };
 
-
-
-
   const handleCheckout = async () => {
-
     if (paymentMethod === "card") {
-      payWithStripe()
+      payWithStripe();
     } else {
-      payWithRazorpay()
+      payWithRazorpay();
     }
-  }
+  };
 
   const handleSelectCoupon = async (code) => {
-
     if (!code) {
-      setCouponDiscount(0)
-      setSelectedCouponId("")
-      return
+      setCouponDiscount(0);
+      setSelectedCouponId("");
+      return;
     }
 
     try {
       const res = await Api.post("/applycoupon/", {
-        code: code
-      })
+        code: code,
+      });
 
+      setCouponDiscount(Number(res.data.discount));
+      setSelectedCouponId(code);
 
-      setCouponDiscount(Number(res.data.discount))
-      setSelectedCouponId(code)
-
-      toast.success(`${code} applied successfully 🎉`)
-
-
+      toast.success(`${code} applied successfully 🎉`);
     } catch {
-      setCouponDiscount(0)
-      setSelectedCouponId("")
-      toast.error(err.response?.data?.error || "Invalid Coupon")
+      setCouponDiscount(0);
+      setSelectedCouponId("");
+      toast.error(err.response?.data?.error || "Invalid Coupon");
     }
-  }
-
+  };
 
   // const [addresses, setAddresses] = useState([
   //   {
@@ -255,7 +235,6 @@ const OrdersCheckout = () => {
     return <div className="text-center py-20">Loading checkout...</div>;
   }
 
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -264,29 +243,59 @@ const OrdersCheckout = () => {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+              <span className="text-xl font-bold text-gray-900">
+                LearnBridge
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-              <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
-              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+              <Link
+                to="/courses"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </Link>
+              <Link
+                to="/question-community"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Q&A Community
+              </Link>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button
+              onClick={() => navigate("/cart")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            >
               <ShoppingCart className="w-5 h-5  cursor-pointer" />
             </button>
-            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/notifications")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <Bell className="w-5 h-5" />
+              {/* Mock notification badge */}
+              <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
             </button>
-            <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button
+              onClick={() => navigate("/wishlist")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            >
               <Heart className="w-5 h-5" />
             </button>
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
+                <span className="text-sm font-medium">
+                  {isAuthenticated ? `Hi, ${username}` : "User"}
+                </span>
                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                   {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                 </div>
@@ -301,7 +310,7 @@ const OrdersCheckout = () => {
                       onClick={() => navigate("/student/login")}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
                     >
-                      <User className='w-4 h-4' />
+                      <User className="w-4 h-4" />
                       Login
                     </button>
                     <button
@@ -317,17 +326,33 @@ const OrdersCheckout = () => {
                 {/*  LOGGED IN */}
                 {isAuthenticated && (
                   <>
-                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                    <button
+                      onClick={() => navigate("/student/profile")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
+                    >
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/mycourse")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/wishlist")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Heart className="w-4 h-4" />
                       Wishlist
+                    </button>
+                    <button
+                      onClick={() => navigate("/student/coupons")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <Ticket className="w-4 h-4" />
+                      Coupons
                     </button>
                     <hr className="my-1 border-gray-100" />
                     <button
@@ -349,24 +374,98 @@ const OrdersCheckout = () => {
               </div>
             </div>
 
-            <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-            <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 font-medium"
+            >
+              Explore
+            </button>
+            <Link
+              to="/question-community"
+              className="text-gray-700 font-medium"
+            >
+              Q&A Community
+            </Link>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">
+              Live Classes
+            </Link>
             <hr className="border-gray-100" />
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => navigate("/student/login")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => navigate("/student/register")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                >
+                  Sign Up
+                </button>
               </div>
-              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {username ? username.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <span className="text-sm font-medium">
+                    {username || "User"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
@@ -378,7 +477,6 @@ const OrdersCheckout = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Addresses and Items */}
             <div className="lg:col-span-2 space-y-6">
-
               {/* Delivery Address Section */}
               {/* <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
@@ -437,7 +535,9 @@ const OrdersCheckout = () => {
               {/* Order Items Section */}
               <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-6">
-                  <h2 className="text-lg font-semibold">Order Items ({cartItems.length})</h2>
+                  <h2 className="text-lg font-semibold">
+                    Order Items ({cartItems.length})
+                  </h2>
                 </div>
 
                 <div className="space-y-6">
@@ -453,10 +553,15 @@ const OrdersCheckout = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h3 className="font-medium text-sm sm:text-base truncate pr-4" title={item.title}>
+                            <h3
+                              className="font-medium text-sm sm:text-base truncate pr-4"
+                              title={item.title}
+                            >
                               {item.title}
                             </h3>
-                            <p className="text-sm text-muted-foreground mt-1">Instructor: {item.instructor}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Instructor: {item.instructor}
+                            </p>
                           </div>
                           <div className="text-right">
                             {item.has_offer ? (
@@ -474,7 +579,6 @@ const OrdersCheckout = () => {
                               </div>
                             )}
                           </div>
-
                         </div>
                         {item.tag && (
                           <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground border border-border w-fit px-2 py-1 rounded">
@@ -487,12 +591,10 @@ const OrdersCheckout = () => {
                   ))}
                 </div>
               </div>
-
             </div>
 
             {/* Right Column - Summary & Coupons */}
             <div className="space-y-6">
-
               {/* Apply Coupon */}
               <div className="bg-card rounded-xl border border-border p-6 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
@@ -514,13 +616,14 @@ const OrdersCheckout = () => {
                 </div>
 
                 <div className="relative">
-                  <p className="text-xs text-muted-foreground mb-2">Or select from available coupons:</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Or select from available coupons:
+                  </p>
                   <select
-
                     value={selectedCouponId || ""}
                     onChange={(e) => handleSelectCoupon(e.target.value)}
-                    className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20">
-
+                    className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
                     <option value="">Select a coupon</option>
 
                     {availableCoupons.map((coupon) => (
@@ -528,11 +631,22 @@ const OrdersCheckout = () => {
                         {coupon.code}
                       </option>
                     ))}
-
                   </select>
 
                   <div className="absolute right-3 top-[2.2rem] pointer-events-none">
-                    <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <svg
+                      className="w-4 h-4 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -558,7 +672,9 @@ const OrdersCheckout = () => {
 
                   <div className="border-t border-border pt-3 mt-3 flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-primary">₹{finalTotal.toFixed(2)}</span>
+                    <span className="text-primary">
+                      ₹{finalTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
@@ -608,11 +724,13 @@ const OrdersCheckout = () => {
                   </div>
                 )}
 
-                <button onClick={handleCheckout} className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]">
+                <button
+                  onClick={handleCheckout}
+                  className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg shadow-lg shadow-blue-600/20 transition-all active:scale-[0.98]"
+                >
                   Purchase Course
                 </button>
               </div>
-
             </div>
           </div>
         </div>
@@ -729,7 +847,6 @@ const OrdersCheckout = () => {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl p-12 flex flex-col items-center text-center animate-in zoom-in-95 duration-300 relative">
-
             <div className="mb-6 relative">
               <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-2 border-green-500 shadow-sm">
@@ -738,9 +855,13 @@ const OrdersCheckout = () => {
               </div>
             </div>
 
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Order Placed Successfully!</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              Order Placed Successfully!
+            </h2>
 
-            <p className="text-gray-500 mb-4 text-sm font-medium">Your order ID is:</p>
+            <p className="text-gray-500 mb-4 text-sm font-medium">
+              Your order ID is:
+            </p>
 
             <div className="bg-gray-50 px-8 py-4 rounded-lg text-gray-600 font-mono text-lg mb-8 tracking-wider shadow-inner w-full max-w-xl mx-auto border border-gray-100">
               {orderId || "ORD1764937751995MFJ3BD02T"}
@@ -752,24 +873,23 @@ const OrdersCheckout = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
               <button
-                onClick={() => navigate('/mycourse')}
+                onClick={() => navigate("/mycourse")}
                 className="flex-1 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02]"
               >
                 View My Courses
               </button>
               <button
-                onClick={() => navigate('/courses')}
+                onClick={() => navigate("/courses")}
                 className="flex-1 px-8 py-3 bg-white border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all hover:scale-[1.02]"
               >
                 Explore Courses
               </button>
             </div>
-
           </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default OrdersCheckout
+export default OrdersCheckout;

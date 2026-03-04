@@ -34,6 +34,11 @@ const TeacherProfile = () => {
     const { username } = useSelector((state) => state.auth);
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [statsData, setStatsData] = useState({
+        total_courses: 0,
+        total_students: 0,
+        avg_rating: 0
+    });
 
     // Mock Data
     const [profileData, setProfileData] = useState({
@@ -73,7 +78,22 @@ const TeacherProfile = () => {
                 toast.error("Failed to load profile")
             }
         }
+
+        const fetchStats = async () => {
+            try {
+                const res = await Api.get("/teacher/dashboard/")
+                setStatsData({
+                    total_courses: res.data.total_courses || 0,
+                    total_students: res.data.total_students || 0,
+                    avg_rating: res.data.avg_rating || 0
+                })
+            } catch (err) {
+                console.error("Failed to load stats")
+            }
+        }
+
         fetchProfile()
+        fetchStats()
     }, [])
 
 
@@ -175,9 +195,9 @@ const TeacherProfile = () => {
 
 
     const stats = [
-        { label: 'Total Courses', value: '12', color: 'text-purple-400' },
-        { label: 'Total Students', value: '1,234', color: 'text-blue-400' },
-        { label: 'Average Rating', value: '4.8', color: 'text-yellow-400' },
+        { label: 'Total Courses', value: statsData.total_courses, color: 'text-purple-400' },
+        { label: 'Total Students', value: statsData.total_students, color: 'text-blue-400' },
+        { label: 'Average Rating', value: statsData.avg_rating ? Number(statsData.avg_rating).toFixed(1) : "0.0", color: 'text-yellow-400' },
     ];
 
     const handleInputChange = (e) => {
@@ -220,7 +240,7 @@ const TeacherProfile = () => {
         // { icon: Folder, label: 'Categories', path:'/teacher/coursecategory', active: false },
         { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
         { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-        { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+        // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
         // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
         { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
     ];
@@ -395,7 +415,7 @@ const TeacherProfile = () => {
                                 </div>
                             </div>
 
-                            {/* Bank Details Section */}
+                            {/* Bank Details Section 
                             <div className="col-span-1 md:col-span-2 pt-6 mt-2 border-t border-slate-800">
                                 <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                                     <Landmark size={20} className="text-teal-500" />
@@ -433,6 +453,7 @@ const TeacherProfile = () => {
                                     </div>
                                 </div>
                             </div>
+                            */}
 
                         </div>
                     </div>
@@ -575,7 +596,7 @@ const TeacherProfile = () => {
                                 </div>
                             </div>
 
-                            {/* Bank Details Inputs */}
+                            {/* Bank Details Inputs 
                             <div className="space-y-6 pt-6 border-t border-slate-800">
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     <Landmark size={20} className="text-teal-500" />
@@ -619,6 +640,7 @@ const TeacherProfile = () => {
                                     </div>
                                 </div>
                             </div>
+                            */}
                         </div>
 
                         {/* Modal Footer */}

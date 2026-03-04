@@ -177,7 +177,7 @@ const Courses = () => {
                         </a>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                             <button onClick={() => navigate("/courses")} className="hover:text-blue-600 transition-colors">Explore</button>
-                            <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+                            <a href="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</a>
                             <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
                         </div>
                     </div>
@@ -373,14 +373,14 @@ const Courses = () => {
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                         </div>
-                        <div className="relative flex-1 md:flex-none">
+                        {/* <div className="relative flex-1 md:flex-none">
                             <select className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
                                 <option>Most Popular</option>
                                 <option>Newest</option>
                                 <option>Highest Rated</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 

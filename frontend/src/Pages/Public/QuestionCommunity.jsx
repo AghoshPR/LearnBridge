@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Plus, Eye } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Plus, Eye, Ticket, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -12,6 +12,17 @@ const QuestionCommunity = () => {
   const [activeTab, setActiveTab] = useState('Recent');
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [editQuestionId, setEditQuestionId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteQuestionId, setDeleteQuestionId] = useState(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveDropdown(null);
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
   const [newQuestionTitle, setNewQuestionTitle] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
   const [tags, setTags] = useState([]);
@@ -35,31 +46,34 @@ const QuestionCommunity = () => {
 
 
   useEffect(() => {
-    
     fetchTags();
-    fetchCourses();
   }, [])
 
-  const fetchQuestions = async (search="") => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCourses();
+    }
+  }, [isAuthenticated])
+
+  const fetchQuestions = async (search = "") => {
     try {
-      const res = await Api.get("/qna/questions/",{
-          params: {
+      const res = await Api.get("/qna/questions/", {
+        params: {
           search: searchQuery || undefined
         }
       })
-      
-      
+
+
       setQuestions(res.data)
 
     } catch (err) {
-      toast.error("Failed to load ")
+      toast.error("Failed to load questions")
     }
   }
 
   useEffect(() => {
-  fetchQuestions();
-}, [searchQuery]);
-
+    fetchQuestions();
+  }, [searchQuery]);
 
   const fetchTags = async () => {
 
@@ -73,9 +87,9 @@ const QuestionCommunity = () => {
   }
 
   const fetchCourses = async () => {
-
+    if (!isAuthenticated) return;
     try {
-      const res = await Api.get("/courses/public/")
+      const res = await Api.get("/student/mycourses/");
       setCourses(res.data.results || res.data);
 
     } catch (err) {
@@ -84,23 +98,23 @@ const QuestionCommunity = () => {
 
   }
 
-  const handleLike = async(questionId,e)=>{
+  const handleLike = async (questionId, e) => {
 
-      e.stopPropagation()
+    e.stopPropagation()
 
-      if(!isAuthenticated){
-        toast.error("Login required")
-        navigate("/student/login")
-        return
-      }
+    if (!isAuthenticated) {
+      toast.error("Login required")
+      navigate("/student/login")
+      return
+    }
 
-      try{
+    try {
 
-        await Api.post(`/qna/questions/${questionId}/like/`)
-        fetchQuestions()
-      }catch(err){
-        toast.error("Error liking question")
-      }
+      await Api.post(`/qna/questions/${questionId}/like/`)
+      fetchQuestions()
+    } catch (err) {
+      toast.error("Error liking question")
+    }
   }
 
   const handleAddTag = () => {
@@ -119,7 +133,6 @@ const QuestionCommunity = () => {
 
   const handlePostQuestion = async () => {
 
-
     if (!isAuthenticated) {
       toast.error("Login required");
       navigate("/student/login");
@@ -131,15 +144,7 @@ const QuestionCommunity = () => {
       return;
     }
 
-    // if (!selectedCourse) {
-    //   toast.error("Please select a course");
-    //   return;
-    // }
-
-
-
     try {
-
       const tagIds = tags
         .map(tagName => {
           const found = availableTags.find(t => t.tag_name === tagName);
@@ -147,33 +152,68 @@ const QuestionCommunity = () => {
         })
         .filter(Boolean);
 
-      await Api.post("/qna/questions/create/", {
+      const payload = {
         title: newQuestionTitle,
         body: newQuestionTitle,
-        course: selectedCourse,
         tag_ids: tagIds
-      })
+      };
 
-      toast.success("Question posted successfully!");
+      if (selectedCourse) {
+        payload.course = selectedCourse;
+      }
 
-      setModalOpen(false);
-      setNewQuestionTitle('');
-      setSelectedCourse('');
-      setTags([]);
+      if (editQuestionId) {
+        await Api.patch(`/qna/questions/editquestion/${editQuestionId}/`, payload);
+        toast.success("Question updated successfully!");
+      } else {
+        await Api.post("/qna/questions/create/", payload);
+        toast.success("Question posted successfully!");
+      }
+
+      closeModal();
       fetchQuestions();
 
-
     } catch (err) {
-      toast.error("Error posting question")
+      toast.error(`Error ${editQuestionId ? 'updating' : 'posting'} question`);
     }
 
+  };
 
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditQuestionId(null);
+    setNewQuestionTitle('');
+    setSelectedCourse('');
+    setTags([]);
+  };
+
+  const handleEditClick = (question) => {
+    setEditQuestionId(question.id);
+    setNewQuestionTitle(question.title);
+    setSelectedCourse(question.course || '');
+    setTags(question.tags ? question.tags.map(t => t.tag_name) : []);
+    setModalOpen(true);
+    setActiveDropdown(null);
+  };
+
+  const handleDeleteQuestion = async () => {
+    if (deleteQuestionId === null) return;
+
+    try {
+      await Api.delete(`/qna/questions/deletequestion/${deleteQuestionId}/`);
+      toast.success("Question deleted successfully!");
+      fetchQuestions();
+      setDeleteModalOpen(false);
+      setDeleteQuestionId(null);
+    } catch (err) {
+      toast.error("Failed to delete question");
+    }
   };
 
   const formatDateTime = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
-    return date.toLocaleString(); // shows date + time
+    return date.toLocaleString();
   };
 
 
@@ -196,11 +236,17 @@ const QuestionCommunity = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button onClick={() => navigate('/student/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <ShoppingCart className="w-5 h-5" />
+              {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <Bell className="w-5 h-5" />
+              {/* <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> */}
+            </button>
+
+            <button onClick={() => navigate('/student/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+              <Heart className="w-5 h-5" />
             </button>
 
             <div className="relative group">
@@ -239,19 +285,17 @@ const QuestionCommunity = () => {
                       Profile
                     </button>
 
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/student/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
-
-                    <button className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                      <Package className="w-4 h-4" />
-                      Orders
+                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                      <Ticket className="w-4 h-4" />
+                      Coupons
                     </button>
 
                     <hr className="my-1 border-gray-100" />
@@ -283,16 +327,36 @@ const QuestionCommunity = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-            <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
+            <Link to="/question-community" className="text-gray-700 font-medium text-left">Q&A Community</Link>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium text-left">Live Classes</Link>
             <hr className="border-gray-100" />
+
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {isAuthenticated ? username?.charAt(0).toUpperCase() : "U"}
+                {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
               </div>
-              <span className="text-sm font-medium">{isAuthenticated ? username : "User"}</span>
+              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
             </div>
+
+            {isAuthenticated && (
+              <div className="flex flex-col gap-3 mt-2">
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/student/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
@@ -375,12 +439,12 @@ const QuestionCommunity = () => {
             >
               {/* Stats */}
               <div className="hidden sm:flex flex-col gap-2 min-w-[3rem] text-gray-400">
-                <div 
-                onClick={(e)=>handleLike(question.id,e)}
+                <div
+                  onClick={(e) => handleLike(question.id, e)}
 
-                className="flex items-center gap-1.5" title="Like">
-                  <ThumbsUp size={16} className={question.likes_count  > 0 ? "text-blue-500" : ""} />
-                  <span className={`text-sm font-semibold ${question.likes_count  > 0 ? "text-gray-700" : ""}`}>{question.likes_count || 0}</span>
+                  className="flex items-center gap-1.5" title="Like">
+                  <ThumbsUp size={16} className={question.likes_count > 0 ? "text-blue-500" : ""} />
+                  <span className={`text-sm font-semibold ${question.likes_count > 0 ? "text-gray-700" : ""}`}>{question.likes_count || 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5" title="Answers">
                   <MessageSquare size={16} />
@@ -419,6 +483,47 @@ const QuestionCommunity = () => {
                 </div>
               </div>
 
+              {/* Action Menu (3 Dots) */}
+              {isAuthenticated && username === question.user_name && (
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdown(activeDropdown === question.id ? null : question.id);
+                    }}
+                    className="p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-full transition-colors flex shrink-0"
+                    title="More Options"
+                  >
+                    <MoreVertical size={20} />
+                  </button>
+
+                  {activeDropdown === question.id && (
+                    <div className="absolute right-0 top-full mt-1 w-32 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-10 animate-in fade-in zoom-in duration-100">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(question);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      >
+                        <Edit size={16} /> Edit
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteQuestionId(question.id);
+                          setDeleteModalOpen(true);
+                          setActiveDropdown(null);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={16} /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Mobile Stats (only visible on extra small screens if needed, otherwise hidden) */}
               <div className="sm:hidden flex flex-col gap-3 min-w-[3rem] items-end text-xs text-gray-500 font-medium">
                 <div className="flex items-center gap-1">
@@ -439,8 +544,8 @@ const QuestionCommunity = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Ask a Question</h2>
-                <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900">{editQuestionId ? "Edit Question" : "Ask a Question"}</h2>
+                <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                   <X size={24} />
                 </button>
               </div>
@@ -468,7 +573,7 @@ const QuestionCommunity = () => {
                     >
                       <option value="">Select Course</option>
                       {courses.map(course => (
-                        <option key={course.id} value={course.id}>{course.title}</option>
+                        <option key={course.course_id || course.id} value={course.course_id || course.id}>{course.title}</option>
                       ))}
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
@@ -533,7 +638,7 @@ const QuestionCommunity = () => {
 
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
                   <button
-                    onClick={() => setModalOpen(false)}
+                    onClick={closeModal}
                     className="px-6 py-2.5 rounded-xl text-gray-600 font-bold hover:bg-gray-100 transition-colors"
                   >
                     Cancel
@@ -542,7 +647,7 @@ const QuestionCommunity = () => {
                     onClick={handlePostQuestion}
                     className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
                   >
-                    Post Question
+                    {editQuestionId ? "Save Changes" : "Post Question"}
                   </button>
                 </div>
               </div>
@@ -550,6 +655,33 @@ const QuestionCommunity = () => {
           </div>
         )
       }
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Confirm Delete</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this question? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setDeleteQuestionId(null);
+                }}
+                className="px-6 py-2.5 rounded-xl text-gray-600 font-bold hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteQuestion}
+                className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div >
   );
 };

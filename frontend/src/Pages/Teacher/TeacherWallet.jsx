@@ -16,7 +16,8 @@ import {
   Clock,
   DollarSign,
   CheckCircle2,
-  Video
+  Video,
+  Search
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -35,7 +36,7 @@ const TeacherWallet = () => {
     // { icon: Folder, label: 'Categories', path: '/teacher/coursecategory', active: false },
     { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: false },
     { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
-    { icon: Users, label: 'Students', path: '/teacher/students', active: false },
+    // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
     // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
     { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: true },
   ];
@@ -59,6 +60,22 @@ const TeacherWallet = () => {
 
   const [walletSummary, setWalletSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const filteredTransactions = transactions.filter(t =>
+    t.transaction_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.purchaser?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const currentTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
 
   const formatDate = (dateStr) => {
@@ -201,9 +218,24 @@ const TeacherWallet = () => {
 
         {/* Transaction History */}
         <div>
-          <div className="flex items-center gap-2 mb-6">
-            <Wallet className="text-purple-500" size={24} />
-            <h2 className="text-xl font-bold text-white">Transaction History</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <Wallet className="text-purple-500" size={24} />
+              <h2 className="text-xl font-bold text-white">Transaction History</h2>
+            </div>
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 pl-10 text-white focus:outline-none focus:border-purple-500 text-sm"
+              />
+              <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
+            </div>
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
@@ -221,7 +253,14 @@ const TeacherWallet = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
-                  {transactions.map((transaction) => (
+                  {currentTransactions.length === 0 && (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-8 text-center text-slate-500">
+                        No transactions found.
+                      </td>
+                    </tr>
+                  )}
+                  {currentTransactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-slate-800/30 transition-colors group">
 
                       <td className="px-6 py-4 text-sm text-slate-400 font-medium">
@@ -241,12 +280,12 @@ const TeacherWallet = () => {
                       <td className="px-6 py-4">
                         <span
                           className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${transaction.source === "course_sale"
-                              ? "bg-blue-500/10 text-blue-400"
-                              : transaction.source === "live_class"
-                                ? "bg-purple-500/10 text-purple-400"
-                                : transaction.source === "withdrawal"
-                                  ? "bg-red-500/10 text-red-400"
-                                  : "bg-gray-500/10 text-gray-400"
+                            ? "bg-blue-500/10 text-blue-400"
+                            : transaction.source === "live_class"
+                              ? "bg-purple-500/10 text-purple-400"
+                              : transaction.source === "withdrawal"
+                                ? "bg-red-500/10 text-red-400"
+                                : "bg-gray-500/10 text-gray-400"
                             }`}
                         >
                           {transaction.source === "course_sale"
@@ -265,8 +304,8 @@ const TeacherWallet = () => {
                       <td className="px-6 py-4 text-right">
                         <span
                           className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.status === "payment_completed"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : "bg-amber-500/10 text-amber-400"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : "bg-amber-500/10 text-amber-400"
                             }`}
                         >
                           {transaction.status === "payment_completed"
@@ -280,6 +319,39 @@ const TeacherWallet = () => {
               </table>
             </div>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 0 && currentTransactions.length > 0 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+              >
+                Prev
+              </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+                              ${currentPage === i + 1
+                      ? "bg-purple-600 text-white"
+                      : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                    }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>

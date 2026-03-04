@@ -22,7 +22,8 @@ import {
   X,
   Plus,
   Pencil,
-  Trash
+  Trash,
+  Search
 } from 'lucide-react';
 
 
@@ -38,16 +39,15 @@ const AdminTags = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(tags.length / itemsPerPage);
 
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  // Form State
   const [formData, setFormData] = useState({ name: '' });
   const [selectedTag, setSelectedTag] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -170,9 +170,14 @@ const AdminTags = () => {
   };
 
   // Pagination Logic
+  const filteredTags = tags.filter(tag =>
+    tag.tag_name && tag.tag_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredTags.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTags = tags.slice(indexOfFirstItem, indexOfLastItem);
+  const currentTags = filteredTags.slice(indexOfFirstItem, indexOfLastItem);
 
 
   return (
@@ -305,12 +310,29 @@ const AdminTags = () => {
             <h1 className="text-2xl font-bold text-white">Tags Management</h1>
             <p className="text-gray-400 text-sm mt-1">Manage course tags and categories</p>
           </div>
-          <button
-            onClick={handleAddClick}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 text-sm active:scale-95"
-          >
-            <Plus size={18} /> Add New Tag
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search tags..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1); // Reset to page 1 on search
+                }}
+                className="bg-[#0A0B0F] border border-gray-800 text-white text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-colors placeholder-gray-500"
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <Search size={16} className="text-gray-500" />
+              </div>
+            </div>
+            <button
+              onClick={handleAddClick}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 text-sm active:scale-95 whitespace-nowrap"
+            >
+              <Plus size={18} /> Add New Tag
+            </button>
+          </div>
         </div>
 
         {/* Tags List Container */}

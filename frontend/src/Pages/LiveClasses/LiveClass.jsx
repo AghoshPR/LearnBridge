@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ShoppingCart, Bell, User, BookOpen, Heart, LogOut, Package, Menu, X, Video, Users, Clock, Calendar, ChevronDown, CheckCircle } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, BookOpen, Heart, LogOut, Package, Menu, X, Video, Users, Clock, Calendar, ChevronDown, CheckCircle, Ticket } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
@@ -53,99 +53,99 @@ const LiveClass = () => {
   }
 
   const payForLiveClass = async () => {
-        if (isPaying) return;
+    if (isPaying) return;
 
-        try {
-            setIsPaying(true);
+    try {
+      setIsPaying(true);
 
-            const res = await Api.post(
-            "/student/liveclass/razorpay/create/",
-            { class_id: selectedClass.class_id }
+      const res = await Api.post(
+        "/student/liveclass/razorpay/create/",
+        { class_id: selectedClass.class_id }
+      );
+
+      const data = res.data;
+
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: "INR",
+        name: "LearnBridge",
+        description: selectedClass.title,
+        order_id: data.razorpay_order_id,
+
+        handler: async function (response) {
+          try {
+            await Api.post(
+              "/student/liveclass/razorpay/verify/",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                class_id: data.class_id,
+              }
             );
 
-            const data = res.data;
+            toast.success("Registration Successful ✅");
 
-            const options = {
-            key: data.key,
-            amount: data.amount,
-            currency: "INR",
-            name: "LearnBridge",
-            description: selectedClass.title,
-            order_id: data.razorpay_order_id,
 
-            handler: async function (response) {
-                try {
-                await Api.post(
-                    "/student/liveclass/razorpay/verify/",
-                    {
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    class_id: data.class_id,
-                    }
-                );
+            setIsRegisterModalOpen(false);
+            setSelectedClass(null);
 
-                toast.success("Registration Successful ✅");
 
-                
-                setIsRegisterModalOpen(false);
-                setSelectedClass(null);
+            await fetchUpcomingClasses();
 
-                
-                await fetchUpcomingClasses();
-
-                } catch (err) {
-                toast.error("Verification failed");
-                } finally {
-                setIsPaying(false);
-                }
-            },
-
-            modal: {
-                ondismiss: function () {
-                setIsPaying(false);
-                }
-            },
-
-            prefill: {
-                name: username
-            },
-
-            theme: {
-                color: "#2563eb"
-            }
-            };
-
-            const rzp = new window.Razorpay(options);
-            rzp.open();
-
-        } catch (err) {
-            toast.error("Payment failed");
+          } catch (err) {
+            toast.error("Verification failed");
+          } finally {
             setIsPaying(false);
+          }
+        },
+
+        modal: {
+          ondismiss: function () {
+            setIsPaying(false);
+          }
+        },
+
+        prefill: {
+          name: username
+        },
+
+        theme: {
+          color: "#2563eb"
         }
-        };
+      };
 
-    const handleJoinLive = async (cls) => {
-        try {
-            const res = await Api.get(
-                `/student/liveclass/room/${cls.class_id}/`
-            );
+      const rzp = new window.Razorpay(options);
+      rzp.open();
 
-            if (res.data.allowed) {
-                navigate(`/liveclass/room/${cls.class_id}`);
-            }
+    } catch (err) {
+      toast.error("Payment failed");
+      setIsPaying(false);
+    }
+  };
 
-        } catch (error) {
-            toast.error("You are not registered");
-        }
-    };
+  const handleJoinLive = async (cls) => {
+    try {
+      const res = await Api.get(
+        `/student/liveclass/room/${cls.class_id}/`
+      );
+
+      if (res.data.allowed) {
+        navigate(`/liveclass/room/${cls.class_id}`);
+      }
+
+    } catch (error) {
+      toast.error("You are not registered");
+    }
+  };
 
   const handleRegisterClick = (cls) => {
 
     if (!isAuthenticated) {
-        toast.error("Please login to register");
-        navigate("/student/login");
-        return;
+      toast.error("Please login to register");
+      navigate("/student/login");
+      return;
     }
 
     setSelectedClass(cls);
@@ -213,7 +213,7 @@ const LiveClass = () => {
                       <Heart className="w-4 h-4" /> Wishlist
                     </button>
                     <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                      <Package className="w-4 h-4" /> Coupons
+                      <Ticket className="w-4 h-4" /> Coupons
                     </button>
                     <hr className="my-1 border-gray-100" />
                     <button onClick={() => {
@@ -242,12 +242,26 @@ const LiveClass = () => {
             <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
             <Link to="/student/liveclass" className="text-blue-600 font-medium">Live Classes</Link>
             <hr className="border-gray-100" />
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                {isAuthenticated && username ? username.charAt(0).toUpperCase() : "U"}
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3">
+                <button onClick={() => navigate("/student/login")} className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>
+                <button onClick={() => navigate("/student/register")} className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">Sign Up</button>
               </div>
-              <span className="text-sm font-medium">{isAuthenticated && username ? username : "User"}</span>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {username ? username.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <span className="text-sm font-medium">{username || "User"}</span>
+                </div>
+                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
+                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
+                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button onClick={() => { dispatch(logout()); navigate("/student/login", { replace: true }); toast.success("Logged out successfully 👋"); }} className="text-red-600 font-medium text-left">Logout</button>
+              </div>
+            )}
           </div>
         )}
       </nav>
@@ -273,8 +287,8 @@ const LiveClass = () => {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${activeTab === 'live' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
           >
             Live Now <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shrink-0">
-  {liveNowClasses.length}
-</span>
+              {liveNowClasses.length}
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('past')}
@@ -316,22 +330,22 @@ const LiveClass = () => {
                     </div>
                   </div>
 
-                  
-                    {cls.is_registered ? (
-                        <button
-                            disabled
-                            className="w-full bg-green-600 text-white py-2 rounded-lg font-medium cursor-not-allowed"
-                        >
-                            Registered ✓
-                        </button>
-                        ) : (
-                        <button
-                            onClick={() => handleRegisterClick(cls)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
-                        >
-                            Register
-                        </button>
-                        )}
+
+                  {cls.is_registered ? (
+                    <button
+                      disabled
+                      className="w-full bg-green-600 text-white py-2 rounded-lg font-medium cursor-not-allowed"
+                    >
+                      Registered ✓
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleRegisterClick(cls)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+                    >
+                      Register
+                    </button>
+                  )}
 
 
                 </div>
@@ -370,23 +384,23 @@ const LiveClass = () => {
                     <Clock className="w-4 h-4 mr-2" /> {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
 
-                    {/* handle join             */}
+                  {/* handle join             */}
 
-                    {cls.is_registered ? (
-                        <button
-                            onClick={() => handleJoinLive(cls)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
-                        >
-                            Join Now
-                        </button>
-                        ) : (
-                        <button
-                            disabled
-                            className="w-full bg-gray-400 text-white py-2 rounded-lg font-medium cursor-not-allowed"
-                        >
-                            Not Registered
-                        </button>
-                        )}
+                  {cls.is_registered ? (
+                    <button
+                      onClick={() => handleJoinLive(cls)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium"
+                    >
+                      Join Now
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-gray-400 text-white py-2 rounded-lg font-medium cursor-not-allowed"
+                    >
+                      Not Registered
+                    </button>
+                  )}
 
 
                 </div>

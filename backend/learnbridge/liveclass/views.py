@@ -30,14 +30,20 @@ class TeacherLiveClassListView(APIView):
     def get(self, request):
 
 
-        teacher_profile = TeacherProfile.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(user=request.user)
+        except TeacherProfile.DoesNotExist:
+            return Response({"error": "Teacher profile not found"}, status=status.HTTP_404_NOT_FOUND)
         classes = LiveClass.objects.filter(teacher=teacher_profile).order_by("-start_time")
         serializer = LiveClassSerializer(classes, many=True, context={'request': request})
         return Response(serializer.data)
     
     def post(self,request):
 
-        teacher_profile = TeacherProfile.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(user=request.user)
+        except TeacherProfile.DoesNotExist:
+            return Response({"error": "Teacher profile not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = LiveClassSerializer(data=request.data, context={'request': request})
 
 
@@ -92,7 +98,10 @@ class TeacherLiveClassDetailView(APIView):
 
     def put(self,request,pk):
 
-        teacher_profile = TeacherProfile.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(user=request.user)
+        except TeacherProfile.DoesNotExist:
+            return Response({"error": "Teacher profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
 
@@ -114,7 +123,10 @@ class TeacherLiveClassDetailView(APIView):
 
     def delete(self,request,pk):
 
-        teacher_profile = TeacherProfile.objects.get(user=request.user)
+        try:
+            teacher_profile = TeacherProfile.objects.get(user=request.user)
+        except TeacherProfile.DoesNotExist:
+            return Response({"error": "Teacher profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
 
@@ -248,7 +260,10 @@ class VerifyLiveClassPaymentView(APIView):
         if expected_signature != razorpay_signature:
             return Response({"error": "Invalid payment signature"}, status=400)
         
-        live_class = LiveClass.objects.get(class_id=class_id)
+        try:
+            live_class = LiveClass.objects.get(class_id=class_id)
+        except LiveClass.DoesNotExist:
+            return Response({"error": "Class not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # create registration
 
@@ -263,8 +278,8 @@ class VerifyLiveClassPaymentView(APIView):
             live_class=live_class,
             amount=live_class.registration_fee,
             description=f"Live Class Registration - {live_class.title}",
-            student=request.user
-
+            student=request.user,
+            razorpay_payment_id=razorpay_payment_id
         )
 
         return Response({"detail": "Registration successful"})

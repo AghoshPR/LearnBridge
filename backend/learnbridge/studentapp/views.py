@@ -25,12 +25,21 @@ class StudentProfile(APIView):
 
         user = request.user
 
+        total_enrolled = Enrollment.objects.filter(user=user).count()
+        completed = Enrollment.objects.filter(user=user, status='completed').count()
+        in_progress = Enrollment.objects.filter(user=user, status='in_progress').count()
+
         return Response({
             "username": user.username,
             "email": user.email,
             "phone": user.phone,
             "address": user.address,
             "profile_image": user.profile_image.url if user.profile_image else None,
+            "stats": {
+                "enrolled": total_enrolled,
+                "completed": completed,
+                "in_progress": in_progress,
+            }
         })
 
     def patch(self, request):
@@ -165,3 +174,26 @@ class StudentLessonVideoView(APIView):
         return Response({
             "signed_url": signed_url
         })
+
+class CourseEnrollmentStatusView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, course_id):
+        try:
+            enrollment = Enrollment.objects.get(user=request.user, course_id=course_id)
+            return Response({"status": enrollment.status})
+        except Enrollment.DoesNotExist:
+            return Response({"error": "Not enrolled"}, status=404)
+
+    def post(self, request, course_id):
+        try:
+            enrollment = Enrollment.objects.get(user=request.user, course_id=course_id)
+            if enrollment.status == "in_progress":
+                enrollment.status = "completed"
+            else:
+                enrollment.status = "in_progress"
+            enrollment.save()
+            return Response({"status": enrollment.status})
+        except Enrollment.DoesNotExist:
+            return Response({"error": "Not enrolled"}, status=404)

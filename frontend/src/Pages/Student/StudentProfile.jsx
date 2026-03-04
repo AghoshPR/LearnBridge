@@ -45,7 +45,12 @@ const StudentProfile = () => {
     email: '',
     phone: '',
     address: '',
-    avatar: null
+    avatar: null,
+    stats: {
+      enrolled: 0,
+      completed: 0,
+      in_progress: 0
+    }
   });
 
 
@@ -65,7 +70,7 @@ const StudentProfile = () => {
         phone: res.data.phone || "",
         address: res.data.address || "",
         avatar: res.data.profile_image || null,
-
+        stats: res.data.stats || { enrolled: 0, completed: 0, in_progress: 0 }
       })
 
     } catch (err) {
@@ -122,9 +127,9 @@ const StudentProfile = () => {
   if (loading) return <div className="p-10">Loading...</div>;
 
   const stats = [
-    { label: 'Enrolled Courses', value: '12', color: 'text-blue-600' },
-    { label: 'Completed', value: '8', color: 'text-green-600' },
-    { label: 'In Progress', value: '4', color: 'text-orange-500' },
+    { label: 'Enrolled Courses', value: profileData.stats?.enrolled || 0, color: 'text-blue-600' },
+    { label: 'Completed', value: profileData.stats?.completed || 0, color: 'text-green-600' },
+    { label: 'In Progress', value: profileData.stats?.in_progress || 0, color: 'text-orange-500' },
   ];
 
   const handleInputChange = (e) => {
@@ -155,13 +160,18 @@ const StudentProfile = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button onClick={() => navigate('/student/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <ShoppingCart className="w-5 h-5" />
+              {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
             <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <Bell className="w-5 h-5" />
+              {/* <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
 
+            <button onClick={() => navigate('/student/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+              <Heart className="w-5 h-5" />
+            </button>
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
@@ -218,7 +228,7 @@ const StudentProfile = () => {
                       My Courses
                     </button>
 
-                    <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button onClick={() => navigate("/student/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
@@ -275,7 +285,7 @@ const StudentProfile = () => {
               <div className="flex flex-col gap-3 mt-2">
                 <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
                 <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
+                <button onClick={() => navigate("/student/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
                 <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
                 <button
                   onClick={() => {

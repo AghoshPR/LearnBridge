@@ -6,6 +6,7 @@ from teacherapp.models import TeacherProfile
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
+    courses_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = User
         fields = [
@@ -14,6 +15,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "email",
             "date_joined",
             "is_active",
+            "courses_count",
         ]
 
 
