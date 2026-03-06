@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from promotions.models import *
 from courses.models import *
+from studentapp.models import Enrollment
 from django.utils import timezone
 from django.db.models import *
 from decimal import Decimal
@@ -24,6 +25,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         source="course.price",
         max_digits=10, decimal_places=2, read_only=True
     )
+    is_enrolled = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
@@ -38,6 +40,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             "original_price",
             "final_price",
             "has_offer",
+            "is_enrolled",
 
         ]
 
@@ -83,6 +86,12 @@ class CartItemSerializer(serializers.ModelSerializer):
         ).filter(
             Q(course=course) | Q(category=course.category)
         ).exists()
+
+    def get_is_enrolled(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        return Enrollment.objects.filter(user=request.user, course=obj.course).exists()
 
 
 class CartSerializer(serializers.ModelSerializer):

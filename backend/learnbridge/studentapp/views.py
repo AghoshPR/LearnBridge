@@ -22,41 +22,47 @@ class StudentProfile(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        try:
+            user = request.user
 
-        user = request.user
+            total_enrolled = Enrollment.objects.filter(user=user).count()
+            completed = Enrollment.objects.filter(
+                user=user, status='completed').count()
+            in_progress = Enrollment.objects.filter(
+                user=user, status='in_progress').count()
 
-        total_enrolled = Enrollment.objects.filter(user=user).count()
-        completed = Enrollment.objects.filter(user=user, status='completed').count()
-        in_progress = Enrollment.objects.filter(user=user, status='in_progress').count()
-
-        return Response({
-            "username": user.username,
-            "email": user.email,
-            "phone": user.phone,
-            "address": user.address,
-            "profile_image": user.profile_image.url if user.profile_image else None,
-            "stats": {
-                "enrolled": total_enrolled,
-                "completed": completed,
-                "in_progress": in_progress,
-            }
-        })
+            return Response({
+                "username": user.username,
+                "email": user.email,
+                "phone": user.phone,
+                "address": user.address,
+                "profile_image": user.profile_image.url if user.profile_image else None,
+                "stats": {
+                    "enrolled": total_enrolled,
+                    "completed": completed,
+                    "in_progress": in_progress,
+                }
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request):
+        try:
+            user = request.user
+            user.phone = request.data.get("phone", user.phone)
+            user.address = request.data.get("address", user.address)
 
-        user = request.user
-        user.phone = request.data.get("phone", user.phone)
-        user.address = request.data.get("address", user.address)
+            if "profile_image" in request.FILES:
+                user.profile_image = request.FILES["profile_image"]
 
-        if "profile_image" in request.FILES:
-            user.profile_image = request.FILES["profile_image"]
+            user.save()
 
-        user.save()
-
-        return Response({
-            "message": "Profile updated successfully",
-            "profile_image": user.profile_image.url if user.profile_image else None
-        }, status=status.HTTP_200_OK)
+            return Response({
+                "message": "Profile updated successfully",
+                "profile_image": user.profile_image.url if user.profile_image else None
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WishlistListView(APIView):
@@ -64,10 +70,12 @@ class WishlistListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        items = Wishlist.objects.filter(user=request.user)
-        serializer = WishlistSerializer(items, many=True)
-        return Response(serializer.data)
+        try:
+            items = Wishlist.objects.filter(user=request.user)
+            serializer = WishlistSerializer(items, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WishlistAddView(APIView):
@@ -75,19 +83,24 @@ class WishlistAddView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        try:
+            course_id = request.data.get("course_id")
+            try:
+                course = Course.objects.get(id=course_id)
+            except Course.DoesNotExist:
+                return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        course_id = request.data.get("course_id")
-        course = Course.objects.get(id=course_id)
+            obj, created = Wishlist.objects.get_or_create(
+                user=request.user,
+                course=course
+            )
 
-        obj, created = Wishlist.objects.get_or_create(
-            user=request.user,
-            course=course
-        )
+            if not created:
+                return Response({"detail": "Already in wishlist"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not created:
-            return Response({"detail": "Already in wishlist"}, status=400)
-
-        return Response({"detail": "Added to wishlist"}, status=201)
+            return Response({"detail": "Added to wishlist"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WishlistRemoveView(APIView):
@@ -95,10 +108,12 @@ class WishlistRemoveView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, course_id):
-
-        Wishlist.objects.filter(
-            user=request.user, course_id=course_id).delete()
-        return Response({"detail": "Removed from wishlist"}, status=204)
+        try:
+            Wishlist.objects.filter(
+                user=request.user, course_id=course_id).delete()
+            return Response({"detail": "Removed from wishlist"}, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class MyCourseView(APIView):
@@ -106,10 +121,12 @@ class MyCourseView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        enrollments = Enrollment.objects.filter(user=request.user)
-        serializer = MyCourseSerializer(enrollments, many=True)
-        return Response(serializer.data)
+        try:
+            enrollments = Enrollment.objects.filter(user=request.user)
+            serializer = MyCourseSerializer(enrollments, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # course video view
@@ -119,20 +136,21 @@ class StudentCourseLessonsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, course_id):
+        try:
+            enrolled = Enrollment.objects.filter(
+                user=request.user,
+                course_id=course_id
+            ).exists()
 
-        enrolled = Enrollment.objects.filter(
-            user=request.user,
-            course_id=course_id
+            if not enrolled:
+                return Response({"error": "Not enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
-        ).exists()
+            lessons = Lesson.objects.filter(course_id=course_id)
+            serializer = StudentLessonSerializer(lessons, many=True)
 
-        if not enrolled:
-            return Response({"error": "Not enrolled"}, status=403)
-
-        lessons = Lesson.objects.filter(course_id=course_id)
-        serializer = StudentLessonSerializer(lessons, many=True)
-
-        return Response(serializer.data)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class StudentLessonVideoView(APIView):
@@ -140,40 +158,42 @@ class StudentLessonVideoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, lesson_id):
-
         try:
+            try:
+                lesson = Lesson.objects.select_related(
+                    "course").get(id=lesson_id)
+            except Lesson.DoesNotExist:
+                return Response(
+                    {"error": "Lesson not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            lesson = Lesson.objects.select_related("course").get(id=lesson_id)
+            # checking enrollment
+            enrolled = Enrollment.objects.filter(
+                user=request.user,
+                course=lesson.course
+            ).exists()
 
-        except Lesson.DoesNotExist:
-            return Response(
-                {"error": "Lesson not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            if not enrolled:
+                return Response(
+                    {"error": "Not enrolled in this course"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
-    # checking enrollment
-        enrolled = Enrollment.objects.filter(
-            user=request.user,
-            course=lesson.course
-        ).exists()
+            if not lesson.video_key:
+                return Response(
+                    {"error": "Video not uploaded"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-        if not enrolled:
-            return Response(
-                {"error": "Not enrolled in this course"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            signed_url = generate_signed_url(lesson.video_key)
 
-        if not lesson.video_key:
-            return Response(
-                {"error": "Video not uploaded"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({
+                "signed_url": signed_url
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        signed_url = generate_signed_url(lesson.video_key)
-
-        return Response({
-            "signed_url": signed_url
-        })
 
 class CourseEnrollmentStatusView(APIView):
 
@@ -181,14 +201,18 @@ class CourseEnrollmentStatusView(APIView):
 
     def get(self, request, course_id):
         try:
-            enrollment = Enrollment.objects.get(user=request.user, course_id=course_id)
+            enrollment = Enrollment.objects.get(
+                user=request.user, course_id=course_id)
             return Response({"status": enrollment.status})
         except Enrollment.DoesNotExist:
-            return Response({"error": "Not enrolled"}, status=404)
+            return Response({"error": "Not enrolled"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, course_id):
         try:
-            enrollment = Enrollment.objects.get(user=request.user, course_id=course_id)
+            enrollment = Enrollment.objects.get(
+                user=request.user, course_id=course_id)
             if enrollment.status == "in_progress":
                 enrollment.status = "completed"
             else:
@@ -196,4 +220,6 @@ class CourseEnrollmentStatusView(APIView):
             enrollment.save()
             return Response({"status": enrollment.status})
         except Enrollment.DoesNotExist:
-            return Response({"error": "Not enrolled"}, status=404)
+            return Response({"error": "Not enrolled"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

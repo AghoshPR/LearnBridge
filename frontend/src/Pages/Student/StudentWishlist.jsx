@@ -65,7 +65,7 @@ const StudentWishlist = () => {
     }
   }
 
-  const totalValue = wishlistItems.reduce((acc, item) => acc + item.price, 0);
+  const totalValue = wishlistItems.reduce((acc, item) => acc + (parseFloat(item.price) || 0), 0).toFixed(2);
 
   if (loading) {
     return (
@@ -94,7 +94,7 @@ const StudentWishlist = () => {
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+              <a href="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</a>
               <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
             </div>
           </div>
@@ -259,7 +259,7 @@ const StudentWishlist = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <button className="border px-4 py-2 rounded-lg flex gap-2 items-center">
+                    <button onClick={()=>navigate('/cart')} className="border px-4 py-2 rounded-lg flex gap-2 items-center cursor-pointer">
                       <ShoppingBag size={16} /> Go to Cart
                     </button>
                     <button

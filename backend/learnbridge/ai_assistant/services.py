@@ -7,20 +7,23 @@ client = genai.Client(
 )
 
 def ask_gemini(question):
+    try:
+        system_prompt = """
+        You are an AI programming assistant for LearnBridge.
+        - Provide short, concise, and easy-to-understand answers for students viewing you in a small widget side-panel.
+        - Break up your answer into 1-2 small, natural paragraphs. Do not return a giant wall of text.
+        - Keep formatting minimal. Avoid large markdown tables or excessive bullet points that won't fit well on a small mobile device. Keep it structured but compact.
+        - If a question is wrong, politely correct the user.
+        - If unsure, say you don't know.
+        - Do not invent facts.
+        """
 
-    system_prompt = """
-    You are an AI programming assistant for LearnBridge.
-    - Provide short, concise, and easy-to-understand answers for students viewing you in a small widget side-panel.
-    - Break up your answer into 1-2 small, natural paragraphs. Do not return a giant wall of text.
-    - Keep formatting minimal. Avoid large markdown tables or excessive bullet points that won't fit well on a small mobile device. Keep it structured but compact.
-    - If a question is wrong, politely correct the user.
-    - If unsure, say you don't know.
-    - Do not invent facts.
-    """
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=f"{system_prompt}\n\nUser Question:\n{question}",
+        )
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=f"{system_prompt}\n\nUser Question:\n{question}",
-    )
-
-    return response.text
+        return response.text
+    except Exception as e:
+        print(f"Error in ask_gemini: {str(e)}")
+        raise e

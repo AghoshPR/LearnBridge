@@ -26,27 +26,27 @@ class SubmitTeacherProfileView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
+        try:
+            user = request.user
 
-        user = request.user
+            if user.role != 'teacher':
+                return Response(
+                    {'error': 'Only teacher can submit profile'}, status=status.HTTP_403_FORBIDDEN)
 
-        print("USER:", request.user)
-        print("AUTH:", request.user.is_authenticated)
+            if hasattr(user, 'teacher_profile'):
+                return Response(
+                    {'error': 'Profile already submitted'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user.role != 'teacher':
-            return Response(
-                {'error': 'Only teacher can submit profile'}, status=403)
+            serializer = TeacherProfileSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=user)
+                return Response({
+                    "message": "Profile submitted successfully. Waiting for admin approval"
+                }, status=status.HTTP_201_CREATED)
 
-        if hasattr(user, 'teacher_profile'):
-            return Response(
-                {'error': 'Profile already submitted'}, status=400)
-
-        serializer = TeacherProfileSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=user)
-
-        return Response({
-            "message": "Profile sumbitted successfully. Waiting for admin approval"
-        })
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TeacherProfileView(APIView):
@@ -54,99 +54,107 @@ class TeacherProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         try:
+            try:
+                profile = request.user.teacher_profile
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Profile not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            profile = request.user.teacher_profile
-
-        except TeacherProfile.DoesNotExist:
-            return Response(
-                {"error": "Profile not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = TeacherProfileSerializer(profile)
-
-        return Response(serializer.data)
+            serializer = TeacherProfileSerializer(profile)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request):
+        try:
+            profile, created = TeacherProfile.objects.get_or_create(
+                user=request.user
+            )
 
-        profile, created = TeacherProfile.objects.get_or_create(
-            user=request.user
-        )
+            serializer = TeacherProfileSerializer(
+                profile,
+                data=request.data,
+                partial=True
+            )
 
-        serializer = TeacherProfileSerializer(
-            profile,
-            data=request.data,
-            partial=True
-        )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "Profile updated successfully"},
+                    status=status.HTTP_200_OK
+                )
 
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(
-            {"message": "Profile updated successfully"},
-            status=status.HTTP_200_OK
-        )
-
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TeacherDashboardDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        if user.role != 'teacher':
-            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
-        
-        # Total courses created by teacher
-        teacher_courses = Course.objects.filter(teacher=user)
-        total_courses = teacher_courses.count()
+        try:
+            user = request.user
+            if user.role != 'teacher':
+                return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Total distinct students enrolled in teacher's courses
-        total_students = Enrollment.objects.filter(course__teacher=user).values('user').distinct().count()
+            # Total courses created by teacher
+            teacher_courses = Course.objects.filter(teacher=user)
+            total_courses = teacher_courses.count()
 
-        # Total Live Classes scheduled by teacher
-        teacher_live_classes = LiveClass.objects.filter(teacher__user=user)
-        live_classes_count = teacher_live_classes.count()
+            # Total distinct students enrolled in teacher's courses
+            total_students = Enrollment.objects.filter(
+                course__teacher=user).values('user').distinct().count()
 
-        # Average course rating for teacher's courses
-        avg_rating_agg = CourseReview.objects.filter(course__teacher=user).aggregate(Avg('rating'))
-        avg_rating = round(avg_rating_agg['rating__avg'] or 0.0, 1)
+            # Total Live Classes scheduled by teacher
+            teacher_live_classes = LiveClass.objects.filter(teacher__user=user)
+            live_classes_count = teacher_live_classes.count()
 
-        # Top 3 courses based on enrollments / revenue
-        top_courses_qs = teacher_courses.annotate(
-            student_count=Count('enrollments')
-        ).order_by('-student_count')[:3]
+            # Average course rating for teacher's courses
+            avg_rating_agg = CourseReview.objects.filter(
+                course__teacher=user).aggregate(Avg('rating'))
+            avg_rating = round(avg_rating_agg['rating__avg'] or 0.0, 1)
 
-        top_courses = []
-        for c in top_courses_qs:
-            revenue = sum([e.course.price for e in c.enrollments.all()])
-            rating = round(c.reviews.aggregate(Avg('rating'))['rating__avg'] or 0.0, 1)
-            top_courses.append({
-                "id": c.id,
-                "title": c.title,
-                "student_count": c.student_count,
-                "revenue": revenue,
-                "rating": rating
+            # Top 3 courses based on enrollments / revenue
+            top_courses_qs = teacher_courses.annotate(
+                student_count=Count('enrollments')
+            ).order_by('-student_count')[:3]
+
+            top_courses = []
+            for c in top_courses_qs:
+                revenue = sum([e.course.price for e in c.enrollments.all()])
+                rating = round(c.reviews.aggregate(
+                    Avg('rating'))['rating__avg'] or 0.0, 1)
+                top_courses.append({
+                    "id": c.id,
+                    "title": c.title,
+                    "student_count": c.student_count,
+                    "revenue": revenue,
+                    "rating": rating
+                })
+
+            # Upcoming live classes (start time > now)
+            upcoming_qs = teacher_live_classes.filter(
+                start_time__gt=timezone.now()).order_by('start_time')[:2]
+            upcoming_classes = []
+            for cls in upcoming_qs:
+                upcoming_classes.append({
+                    "id": cls.class_id,
+                    "title": cls.title,
+                    "start_time": cls.start_time,
+                    "registered_count": cls.registrations.count()
+                })
+
+            return Response({
+                "total_courses": total_courses,
+                "total_students": total_students,
+                "live_classes_count": live_classes_count,
+                "avg_rating": avg_rating,
+                "top_courses": top_courses,
+                "upcoming_classes": upcoming_classes
             })
-
-        # Upcoming live classes (start time > now)
-        upcoming_qs = teacher_live_classes.filter(start_time__gt=timezone.now()).order_by('start_time')[:2]
-        upcoming_classes = []
-        for cls in upcoming_qs:
-            upcoming_classes.append({
-                "id": cls.class_id,
-                "title": cls.title,
-                "start_time": cls.start_time,
-                "registered_count": cls.registrations.count()
-            })
-
-        return Response({
-            "total_courses": total_courses,
-            "total_students": total_students,
-            "live_classes_count": live_classes_count,
-            "avg_rating": avg_rating,
-            "top_courses": top_courses,
-            "upcoming_classes": upcoming_classes
-        })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

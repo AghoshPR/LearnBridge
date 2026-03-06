@@ -25,25 +25,25 @@ class PendingTeachersView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
+        try:
+            profiles = TeacherProfile.objects.filter(status='pending')
 
-        profiles = TeacherProfile.objects.filter(status='pending')
+            data = []
 
-        data = []
+            for profile in profiles:
+                data.append({
+                    "id": profile.id,
+                    "name": profile.user.username,
+                    "email": profile.user.email,
+                    "teacher_type": profile.teacher_type,
+                    "subjects": profile.subjects,
+                    "experience": profile.years_of_experience or "Fresher",
+                    "applied_at": profile.applied_at
+                })
 
-        for profile in profiles:
-
-            data.append({
-
-                "id": profile.id,
-                "name": profile.user.username,
-                "email": profile.user.email,
-                "teacher_type": profile.teacher_type,
-                "subjects": profile.subjects,
-                "experience": profile.years_of_experience or "Fresher",
-                "applied_at": profile.applied_at
-            })
-
-        return Response(data)
+            return Response(data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ----------admin approve and reject ----------#
@@ -56,41 +56,38 @@ class AdminTeacherRejectView(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request, teacher_id):
-
-        reason = request.data.get("reason")
-
-        if not reason:
-
-            return Response(
-                {"error": "Rejection reason is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
+            reason = request.data.get("reason")
 
-            profile = TeacherProfile.objects.select_related(
-                "user").get(id=teacher_id)
+            if not reason:
+                return Response(
+                    {"error": "Rejection reason is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except TeacherProfile.DoesNotExist:
+            try:
+                profile = TeacherProfile.objects.select_related(
+                    "user").get(id=teacher_id)
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Teacher not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Send rejection email
+            send_teacher_rejection_email(
+                email=profile.user.email,
+                name=profile.user.username,
+                reason=reason
+            )
+            profile.user.delete()
 
             return Response(
-                {"error": "Teacher not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"message": "Teacher rejected and email sent successfully"},
+                status=status.HTTP_200_OK
             )
-
-        # Send rejection email
-
-        send_teacher_rejection_email(
-            email=profile.user.email,
-            name=profile.user.username,
-            reason=reason
-        )
-        profile.user.delete()
-
-        return Response(
-            {"message": "Teacher rejected and email sent successfully"},
-            status=status.HTTP_200_OK
-        )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ApproveTeacherView(APIView):
@@ -98,79 +95,77 @@ class ApproveTeacherView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
+        try:
+            profiles = TeacherProfile.objects.select_related(
+                "user").filter(status="approved", is_deleted=False)
 
-        profiles = TeacherProfile.objects.select_related(
-            "user").filter(status="approved", is_deleted=False)
+            data = []
 
-        data = []
+            for profile in profiles:
+                teacher = profile.user
 
-        for profile in profiles:
+                courses_count = Course.objects.filter(
+                    teacher=teacher,
+                    is_deleted=False
+                ).count()
 
-            teacher = profile.user
+                students_count = Enrollment.objects.filter(
+                    course__teacher=teacher
+                ).count()
 
-            courses_count = Course.objects.filter(
-                teacher=teacher,
-                is_deleted=False
-            ).count()
+                avg_rating = CourseReview.objects.filter(
+                    course__teacher=teacher
+                ).aggregate(avg=Avg("rating"))["avg"] or 0
 
-            students_count = Enrollment.objects.filter(
-                course__teacher=teacher
-            ).count()
+                data.append({
+                    "id": profile.id,
+                    "name": profile.user.username,
+                    'email': profile.user.email,
+                    "subjects": profile.subjects,
+                    "courses_count": courses_count,
+                    "students_count": students_count,
+                    "rating": round(avg_rating, 1),
+                    "status": profile.user.status,
+                    "is_blocked": profile.user.status == "blocked"
 
-            avg_rating = CourseReview.objects.filter(
-                course__teacher=teacher
-            ).aggregate(avg=Avg("rating"))["avg"] or 0
-
-            data.append({
-
-                "id": profile.id,
-                "name": profile.user.username,
-                'email': profile.user.email,
-                "subjects": profile.subjects,
-                "courses_count": courses_count,
-                "students_count": students_count,
-                "rating": round(avg_rating, 1),
-                "status": profile.user.status,
-                "is_blocked": profile.user.status == "blocked"
-
-            })
-        return Response(data)
+                })
+            return Response(data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def post(self, request, id):
-
         try:
+            try:
+                profile = TeacherProfile.objects.select_related('user').get(id=id)
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Teacher profile not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            profile = TeacherProfile.objects.select_related('user').get(id=id)
+            if profile.status != 'pending':
+                return Response(
+                    {"error": "Teacher Already processed"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except TeacherProfile.DoesNotExist:
+            if not profile.user.is_active:
+                return Response(
+                    {"error": "Teacher has not verified OTP"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            return Response(
-                {"error": "Teacher profile not found"},
-                status=404
-            )
+            profile.status = 'approved'
+            profile.save()
 
-        if profile.status != 'pending':
+            profile.user.status = 'active'
+            profile.user.save()
 
-            return Response(
-                {"error": "Teacher Already processed"},
-                status=400
-            )
-
-        if not profile.user.is_active:
-            return Response(
-                {"error": "Teacher has not verified OTP"},
-                status=400
-            )
-
-        profile.status = 'approved'
-        profile.save()
-
-        profile.user.status = 'active'
-        profile.user.save()
-
-        return Response({
-            "message": "Teacher approved successfully"
-        })
+            return Response({
+                "message": "Teacher approved successfully"
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class BlockTeacherView(APIView):
@@ -178,22 +173,22 @@ class BlockTeacherView(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request, id):
-
         try:
-            profile = TeacherProfile.objects.select_related("user").get(id=id)
+            try:
+                profile = TeacherProfile.objects.select_related("user").get(id=id)
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Teacher profile not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            profile.user.status = "blocked"
+            profile.user.save()
 
-        except TeacherProfile.DoesNotExist:
-
-            return Response(
-                {"error": "Teacher profile not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        profile.user.status = "blocked"
-        profile.user.save()
-
-        return Response({
-            "message": "Teacher Blocked Successfully"
-        })
+            return Response({
+                "message": "Teacher Blocked Successfully"
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UnBlockTeacherView(APIView):
@@ -201,23 +196,23 @@ class UnBlockTeacherView(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request, id):
-
         try:
+            try:
+                profile = TeacherProfile.objects.select_related("user").get(id=id)
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Teacher profile not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            profile = TeacherProfile.objects.select_related("user").get(id=id)
+            profile.user.status = "active"
+            profile.user.save()
 
-        except TeacherProfile.DoesNotExist:
-            return Response(
-                {"error": "Teacher profile not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        profile.user.status = "active"
-        profile.user.save()
-
-        return Response({
-            "message": "Teacher unblocked successfully"
-        })
+            return Response({
+                "message": "Teacher unblocked successfully"
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # AdminUsers
@@ -227,20 +222,23 @@ class AdminCreateUser(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request):
+        try:
+            serializer = AdminCreateUserSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
 
-        serializer = AdminCreateUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+                return Response(
+                    {
+                        "message": "User create successfully",
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
 
-        return Response(
-            {
-                "message": "User create successfully",
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-
-            }, status=status.HTTP_201_CREATED
-        )
+                    }, status=status.HTTP_201_CREATED
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminUsers(APIView):
@@ -251,27 +249,29 @@ class AdminUsers(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
+        try:
+            search = request.GET.get("search", "")
 
-        search = request.GET.get("search", "")
+            users = User.objects.filter(
+                role="student", is_deleted=False
+            ).annotate(
+                courses_count=Count('enrollments')
+            ).order_by("-date_joined")
 
-        users = User.objects.filter(
-            role="student", is_deleted=False
-        ).annotate(
-            courses_count=Count('enrollments')
-        ).order_by("-date_joined")
+            if search:
+                users = users.filter(
+                    Q(username__icontains=search) |
+                    Q(email__icontains=search)
+                )
 
-        if search:
-            users = users.filter(
-                Q(username__icontains=search) |
-                Q(email__icontains=search)
-            )
+            paginator = AdminUserPagination()
 
-        paginator = AdminUserPagination()
+            page = paginator.paginate_queryset(users, request)
+            serializer = AdminUserSerializer(page, many=True)
 
-        page = paginator.paginate_queryset(users, request)
-        serializer = AdminUserSerializer(page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+            return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class BlockUser(APIView):
@@ -281,36 +281,30 @@ class BlockUser(APIView):
     permission_classes = [IsAdmin]
 
     def patch(self, request, user_id):
-
         try:
+            try:
+                user = User.objects.get(id=user_id, role="student")
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            user = User.objects.get(id=user_id, role="student")
+            if user.status == "blocked":
+                return Response(
+                    {"error": "User already blocked"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except User.DoesNotExist:
-            return Response({"error": "Usernot found"}, status=404)
+            user.is_active = False
+            user.status = "blocked"
+            user.save()
 
-        # if user.is_superuser:
-        #     return Response(
-        #         {"error": "Superuser cannot be blocked"},
-        #         status=status.HTTP_403_FORBIDDEN
-        #     )
+            return Response({
+                "message": "User blocked successfully",
+                "id": user.id,
+                "status": user.status
 
-        if user.status == "blocked":
-            return Response(
-                {"error": "User already blocked"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user.is_active = False
-        user.status = "blocked"
-        user.save()
-
-        return Response({
-            "message": "User blocked successfully",
-            "id": user.id,
-            "status": user.status
-
-        }, status=status.HTTP_200_OK)
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UnBlockUser(APIView):
@@ -320,33 +314,32 @@ class UnBlockUser(APIView):
     permission_classes = [IsAdmin]
 
     def patch(self, request, user_id):
-
         try:
+            try:
+                user = User.objects.get(id=user_id, role="student")
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-            user = User.objects.get(id=user_id, role="student")
+            if user.status != "blocked":
+                return Response(
+                    {"error": "User is not blocked"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            user.is_active = True
+            user.status = "active"
+            user.save()
 
-        if user.status != "blocked":
-
-            return Response(
-                {"error": "User is not blocked"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user.is_active = True
-        user.status = "active"
-        user.save()
-
-        return Response({
-            "message": "User Unblocked Successfully",
-            "id": user.id,
-            "status": user.status
-        }, status=status.HTTP_200_OK)
+            return Response({
+                "message": "User Unblocked Successfully",
+                "id": user.id,
+                "status": user.status
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class DeleteUserView(APIView):
@@ -354,14 +347,18 @@ class DeleteUserView(APIView):
 
     def delete(self, request, user_id):
         try:
-            user = User.objects.get(id=user_id, role="student")
+            try:
+                user = User.objects.get(id=user_id, role="student")
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
             user.is_deleted = True
             user.is_active = False
             user.save()
 
             return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminCreateTeacher(APIView):
@@ -369,15 +366,17 @@ class AdminCreateTeacher(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request):
-
-        serializers = AdminCreateTeacherSerializer(data=request.data)
-        serializers.is_valid(raise_exception=True)
-        serializers.save()
-
-        return Response(
-            {"message": "Teacher created and approved successfully"},
-            status=status.HTTP_201_CREATED
-        )
+        try:
+            serializers = AdminCreateTeacherSerializer(data=request.data)
+            if serializers.is_valid():
+                serializers.save()
+                return Response(
+                    {"message": "Teacher created and approved successfully"},
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminViewTeacherRegistartion:
@@ -389,11 +388,16 @@ class AdminTeacherDeleteView(APIView):
     permission_classes = [IsAdmin]
 
     def delete(self, request, id):
-
         try:
-            profile = TeacherProfile.objects.get(id=id)
+            try:
+                profile = TeacherProfile.objects.get(id=id)
+            except TeacherProfile.DoesNotExist:
+                return Response(
+                    {"error": "Teacher not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
             user = profile.user
-
             profile.is_deleted = True
             profile.save()
 
@@ -406,11 +410,8 @@ class AdminTeacherDeleteView(APIView):
                 {"message": "Teacher Deleted Successfully"},
                 status=status.HTTP_200_OK
             )
-        except TeacherProfile.DoesNotExist:
-            return Response(
-                {"error": "Teacher not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminPendingTeacherDetailView(APIView):
@@ -418,55 +419,59 @@ class AdminPendingTeacherDetailView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request, id):
+        try:
+            try:
+                profile = TeacherProfile.objects.get(id=id, status="pending")
+            except TeacherProfile.DoesNotExist:
+                return Response({"error": "Pending teacher profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        profile = get_object_or_404(
-            TeacherProfile, id=id,
-            status="pending"
-
-        )
-
-        serializer = AdminTeacherProfileDetailSerializer(profile)
-        return Response(serializer.data)
+            serializer = AdminTeacherProfileDetailSerializer(profile)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class AdminDashboardStatsView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-        total_users = User.objects.filter(role="student", is_deleted=False).count()
-        active_courses = Course.objects.filter(status="published", is_deleted=False).count()
-        pending_teachers = TeacherProfile.objects.filter(status="pending").count()
-        qna_posts = Question.objects.filter(status="active").count()
+        try:
+            total_users = User.objects.filter(role="student", is_deleted=False).count()
+            active_courses = Course.objects.filter(status="published", is_deleted=False).count()
+            pending_teachers = TeacherProfile.objects.filter(status="pending").count()
+            qna_posts = Question.objects.filter(status="active").count()
 
-        # Recent Users
-        recent_users = User.objects.filter(role="student", is_deleted=False).order_by("-date_joined")[:5]
-        recent_users_data = [
-            {
-                "id": u.id,
-                "username": u.username,
-                "email": u.email,
-                "date_joined": u.date_joined
-            } for u in recent_users
-        ]
+            # Recent Users
+            recent_users = User.objects.filter(role="student", is_deleted=False).order_by("-date_joined")[:5]
+            recent_users_data = [
+                {
+                    "id": u.id,
+                    "username": u.username,
+                    "email": u.email,
+                    "date_joined": u.date_joined
+                } for u in recent_users
+            ]
 
-        # Recent Courses
-        recent_courses = Course.objects.filter(is_deleted=False).order_by("-created_at")[:5]
-        recent_courses_data = [
-            {
-                "id": c.id,
-                "title": c.title,
-                "teacher": c.teacher.username,
-                "status": c.status,
-                "created_at": c.created_at
-            } for c in recent_courses
-        ]
+            # Recent Courses
+            recent_courses = Course.objects.filter(is_deleted=False).order_by("-created_at")[:5]
+            recent_courses_data = [
+                {
+                    "id": c.id,
+                    "title": c.title,
+                    "teacher": c.teacher.username,
+                    "status": c.status,
+                    "created_at": c.created_at
+                } for c in recent_courses
+            ]
 
-        return Response({
-            "stats": {
-                "total_users": total_users,
-                "active_courses": active_courses,
-                "pending_teachers": pending_teachers,
-                "qna_posts": qna_posts
-            },
-            "recent_users": recent_users_data,
-            "recent_courses": recent_courses_data
-        })
+            return Response({
+                "stats": {
+                    "total_users": total_users,
+                    "active_courses": active_courses,
+                    "pending_teachers": pending_teachers,
+                    "qna_posts": qna_posts
+                },
+                "recent_users": recent_users_data,
+                "recent_courses": recent_courses_data
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

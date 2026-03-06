@@ -66,7 +66,7 @@ class StudentCouponSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "code",
-            "dicount_type",
+            "discount_type",
             "discount_value",
             "valid_from",
             "valid_till",
@@ -74,7 +74,7 @@ class StudentCouponSerializer(serializers.ModelSerializer):
             "user_usage_count"
         ]
 
-    def get_user_count(self, obj):
+    def get_user_usage_count(self, obj):
 
         request = self.context.get("request")
 

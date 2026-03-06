@@ -25,18 +25,19 @@ class TeacherRegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
-        serializer = RegisterTeacherSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user = serializer.save()
-
-        send_otp(user.email)
-
-        return Response({
-            "message": "OTP sent. Please verify. Waiting for admin approval after verification",
-            "email": user.email
-        })
+        try:
+            serializer = RegisterTeacherSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                send_otp(user.email)
+                return Response({
+                    "message": "OTP sent. Please verify. Waiting for admin approval after verification",
+                    "email": user.email
+                }, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginView(APIView):
@@ -45,49 +46,52 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        try:
+            serializer = LoginSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.validated_data
 
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
+                if not user.is_active:
+                    return Response(
+                        {"error": "Account not verified or deactivated"},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
 
-        if not user.is_active:
-            return Response(
-                {"error": "Account not verified or deactivated"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+                if user.status == "blocked":
+                    return Response(
+                        {"error": "Your account is blocked. Contact admin."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
 
-        if user.status == "blocked":
-            return Response(
-                {"error": "Your account is blocked. Contact admin."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+                refresh = RefreshToken.for_user(user)
 
-        refresh = RefreshToken.for_user(user)
+                response = Response({
+                    "message": "Login successful",
+                    "role": user.role,
+                    "username": user.username
+                })
 
-        response = Response({
-            "message": "Login successful",
-            "role": user.role,
-            "username": user.username
-        })
+                response.set_cookie(
+                    key="access_token",
+                    value=str(refresh.access_token),
+                    httponly=True,
+                    secure=False,
+                    samesite="Lax"
+                )
 
-        response.set_cookie(
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    secure=False,
+                    samesite="Lax"
+                )
 
-            key="access_token",
-            value=str(refresh.access_token),
-            httponly=True,
-            secure=False,
-            samesite="Lax"
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=str(refresh),
-            httponly=True,
-            secure=False,
-            samesite="Lax"
-        )
-
-        return response
+                return response
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class StudentRegisterView(APIView):
@@ -97,21 +101,24 @@ class StudentRegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        try:
+            serializer = RegisterStudentSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
 
-        serializer = RegisterStudentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+                user.is_active = False
+                user.save()
 
-        user = serializer.save()
+                send_otp(user.email)
 
-        user.is_active = False
-        user.save()
-
-        send_otp(user.email)
-
-        return Response({
-            "message": "OTP send to email",
-            "email": user.email
-        })
+                return Response({
+                    "message": "OTP send to email",
+                    "email": user.email
+                }, status=status.HTTP_201_CREATED)
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class VerifyOTPView(APIView):
@@ -120,61 +127,64 @@ class VerifyOTPView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email")
-        otp = request.data.get("otp")
-
-        cached_otp = cache.get(f"otp:{email}")
-
-        if not cached_otp:
-            return Response(
-                {"error": "OTP expired or not found"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if cached_otp != otp:
-            return Response(
-                {"error": "Invalid OTP"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
-            user = User.objects.get(email=email)
-            user.is_active = True
-            user.save()
-            cache.delete(f"otp:{email}")
-        except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"},
-                status=status.HTTP_404_NOT_FOUND
+            email = request.data.get("email")
+            otp = request.data.get("otp")
+
+            cached_otp = cache.get(f"otp:{email}")
+
+            if not cached_otp:
+                return Response(
+                    {"error": "OTP expired or not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if cached_otp != otp:
+                return Response(
+                    {"error": "Invalid OTP"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                user = User.objects.get(email=email)
+                user.is_active = True
+                user.save()
+                cache.delete(f"otp:{email}")
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            refresh = RefreshToken.for_user(user)
+
+            response = Response(
+                {
+                    "message": "Account verified successfully",
+                    "role": user.role
+                },
+                status=status.HTTP_200_OK
             )
 
-        refresh = RefreshToken.for_user(user)
+            response.set_cookie(
+                key="access_token",
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=False,      # True in production
+                samesite="Lax"
+            )
 
-        response = Response(
-            {
-                "message": "Account verified successfully",
-                "role": user.role
-            },
-            status=status.HTTP_200_OK
-        )
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite="Lax"
+            )
 
-        response.set_cookie(
-            key="access_token",
-            value=str(refresh.access_token),
-            httponly=True,
-            secure=False,      # True in production
-            samesite="Lax"
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=str(refresh),
-            httponly=True,
-            secure=False,
-            samesite="Lax"
-        )
-
-        return response
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ResendOTPView(APIView):
@@ -183,22 +193,23 @@ class ResendOTPView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
+        try:
+            email = request.data.get('email')
 
-        email = request.data.get('email')
+            if not User.objects.filter(email=email).exists():
+                return Response(
+                    {"error": "User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
-        if not User.objects.filter(email=email).exists():
+            send_otp(email)
 
             return Response(
-                {"error": "User not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"message": "OTP resent successfully"},
+                status=status.HTTP_200_OK
             )
-
-        send_otp(email)
-
-        return Response(
-            {"message": "OTP resent successfully"},
-            status=status.HTTP_200_OK
-        )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ForgotPasswordView(APIView):
@@ -207,21 +218,22 @@ class ForgotPasswordView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
-
-        email = request.data.get("email")
-
         try:
+            email = request.data.get("email")
 
-            User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=404)
+            try:
+                User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        send_otp(email)
+            send_otp(email)
 
-        return Response({
-            "message": "OTP send for password reset",
-            "email": email
-        })
+            return Response({
+                "message": "OTP send for password reset",
+                "email": email
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ResetPasswordView(APIView):
@@ -230,35 +242,34 @@ class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
-        email = request.data.get("email")
-        password = request.data.get("password")
-        confirm_password = request.data.get("confirm_password")
-
-        if password != confirm_password:
-
-            return Response(
-                {"error": "Password do not match"},
-                status=status.HTTP_400_BAD_REQUEST
-
-            )
-
         try:
-            user = User.objects.get(email=email)
+            email = request.data.get("email")
+            password = request.data.get("password")
+            confirm_password = request.data.get("confirm_password")
 
-        except User.DoesNotExist:
+            if password != confirm_password:
+                return Response(
+                    {"error": "Password do not match"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            user.password = make_password(password)
+            user.save()
+
             return Response(
-                {"error": "User not found"},
-                status=status.HTTP_404_NOT_FOUND
+                {"message": "Password reset successful"},
+                status=status.HTTP_200_OK
             )
-
-        user.password = make_password(password)
-        user.save()
-
-        return Response(
-            {"message": "Password reset successful"},
-            status=status.HTTP_200_OK
-        )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Admin Login
@@ -270,61 +281,61 @@ class AdminLogin(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
-        email = request.data.get('email')
-        password = request.data.get('password')
-
         try:
-            user = User.objects.get(email=email)
+            email = request.data.get('email')
+            password = request.data.get('password')
 
-        except User.DoesNotExist:
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "Invalid credentials"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            return Response(
-                {"error": "Invalid credetials"},
-                status=400
+            if not user.is_superuser:
+                return Response(
+                    {"error": "Not admin account"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            user = authenticate(
+                username=user.username,
+                password=password
             )
 
-        if not user.is_superuser:
-            return Response(
-                {"error": "Not admin account"},
-                status=403
+            if not user:
+                return Response(
+                    {"error": "Invalid credentials"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            refresh = RefreshToken.for_user(user)
+
+            response = Response({
+                "message": "Admin Login successful",
+                "role": "admin"
+            })
+
+            response.set_cookie(
+                key="access_token",
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=False,
+                samesite="Lax"
             )
 
-        user = authenticate(
-            username=user.username,
-            password=password
-        )
-
-        if not user:
-            return Response(
-                {"error": "Invalid credentials"},
-                status=400
+            response.set_cookie(
+                key="refresh_token",
+                value=str(refresh),
+                httponly=True,
+                secure=False,
+                samesite="Lax"
             )
 
-        refresh = RefreshToken.for_user(user)
-
-        response = Response({
-            "message": "Admin Login successful",
-            "role": "admin"
-        })
-
-        response.set_cookie(
-            key="access_token",
-            value=str(refresh.access_token),
-            httponly=True,
-            secure=False,
-            samesite="Lax"
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=str(refresh),
-            httponly=True,
-            secure=False,
-            samesite="Lax"
-        )
-
-        return response
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Teacher Login
@@ -335,144 +346,40 @@ class TeacherLogin(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-
-        email = request.data.get("email")
-        password = request.data.get("password")
-
         try:
-            user = User.objects.get(email=email)
+            email = request.data.get("email")
+            password = request.data.get("password")
 
-        except User.DoesNotExist:
-            return Response({"error": "Invalid Credentials"}, status=400)
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user.role != "teacher":
-            return Response({"error": "Not a teacher account"}, status=403)
+            if user.role != "teacher":
+                return Response({"error": "Not a teacher account"}, status=status.HTTP_403_FORBIDDEN)
 
-        if not user.is_active:
-            return Response({"error": "Account not verified"}, status=403)
+            if not user.is_active:
+                return Response({"error": "Account not verified"}, status=status.HTTP_403_FORBIDDEN)
 
-        user = authenticate(username=user.username, password=password)
+            user = authenticate(username=user.username, password=password)
 
-        if not user:
-            return Response({"error": "Invalid credentials"}, status=400)
+            if not user:
+                return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
+            try:
+                TeacherProfile.objects.get(user=user)
+            except TeacherProfile.DoesNotExist:
+                return Response({"error": "Teacher Profile not found"}, status=status.HTTP_403_FORBIDDEN)
 
-            TeacherProfile.objects.get(user=user)
-
-        except TeacherProfile.DoesNotExist:
-            return Response({"error": "Teacher Profile not found"}, status=403)
-
-        if user.status == "blocked":
-            return Response({"error": "Account is blocked"}, status=403)
-
-        refresh = RefreshToken.for_user(user)
-
-        response = Response({
-            "message": "Teacher login successful",
-            "role": "teacher",
-            "username": user.username
-
-        })
-
-        response.set_cookie(
-            key="access_token",
-            value=str(refresh.access_token),
-            httponly=True,
-            samesite="Lax"
-
-        )
-
-        response.set_cookie(
-            key="refresh_token",
-            value=str(refresh),
-            httponly=True,
-            samesite="Lax"
-        )
-
-        return response
-
-
-# Google Authentication
-
-class GoogleLoginView(APIView):
-    authentication_classes = [CsrfExemptSessionAuthentication]
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        token = request.data.get("token")
-        role = request.data.get("role", "student")
-
-        if not token:
-            return Response(
-                {"error": "Token not provided"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-
-            idinfo = id_token.verify_oauth2_token(
-                token,
-                requests.Request(),
-                settings.GOOGLE_CLIENT_ID
-            )
-
-            email = idinfo.get("email")
-            name = idinfo.get("name", "")
-
-            if not email:
-                return Response(
-                    {"error": "Email not found"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            if not idinfo.get("email_verified"):
-                return Response(
-                    {"error": "Google email not verified"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            first_name = ""
-            last_name = ""
-
-            if name:
-                parts = name.split(" ", 1)
-                first_name = parts[0]
-                if len(parts) > 1:
-                    last_name = parts[1]
-
-            user, created = User.objects.get_or_create(
-                email=email,
-                defaults={
-                    "username": email.split("@")[0],
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "role": role,
-                    "is_active": True,
-                }
-            )
-
-            #  Role mismatch protection
-            if user.role != role:
-                return Response(
-                    {"error": f"This email is registered as {user.role}"},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-
-            #  Blocked user protection
             if user.status == "blocked":
-                return Response(
-                    {"error": "Account is blocked"},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return Response({"error": "Account is blocked"}, status=status.HTTP_403_FORBIDDEN)
 
-            #  Generate JWT tokens
             refresh = RefreshToken.for_user(user)
 
             response = Response({
-                "message": "Google login successful",
-                "role": user.role,
-                "username": user.username,
+                "message": "Teacher login successful",
+                "role": "teacher",
+                "username": user.username
             })
 
             response.set_cookie(
@@ -490,12 +397,115 @@ class GoogleLoginView(APIView):
             )
 
             return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        except ValueError:
-            return Response(
-                {"error": "Invalid Google token"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
+# Google Authentication
+
+class GoogleLoginView(APIView):
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            token = request.data.get("token")
+            role = request.data.get("role", "student")
+
+            if not token:
+                return Response(
+                    {"error": "Token not provided"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                idinfo = id_token.verify_oauth2_token(
+                    token,
+                    requests.Request(),
+                    settings.GOOGLE_CLIENT_ID
+                )
+
+                email = idinfo.get("email")
+                name = idinfo.get("name", "")
+
+                if not email:
+                    return Response(
+                        {"error": "Email not found"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                if not idinfo.get("email_verified"):
+                    return Response(
+                        {"error": "Google email not verified"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                first_name = ""
+                last_name = ""
+
+                if name:
+                    parts = name.split(" ", 1)
+                    first_name = parts[0]
+                    if len(parts) > 1:
+                        last_name = parts[1]
+
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={
+                        "username": email.split("@")[0],
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "role": role,
+                        "is_active": True,
+                    }
+                )
+
+                # Role mismatch protection
+                if user.role != role:
+                    return Response(
+                        {"error": f"This email is registered as {user.role}"},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                # Blocked user protection
+                if user.status == "blocked":
+                    return Response(
+                        {"error": "Account is blocked"},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                # Generate JWT tokens
+                refresh = RefreshToken.for_user(user)
+
+                response = Response({
+                    "message": "Google login successful",
+                    "role": user.role,
+                    "username": user.username,
+                })
+
+                response.set_cookie(
+                    key="access_token",
+                    value=str(refresh.access_token),
+                    httponly=True,
+                    samesite="Lax"
+                )
+
+                response.set_cookie(
+                    key="refresh_token",
+                    value=str(refresh),
+                    httponly=True,
+                    samesite="Lax"
+                )
+
+                return response
+
+            except ValueError:
+                return Response(
+                    {"error": "Invalid Google token"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LogoutView(APIView):
@@ -506,17 +516,19 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get("refresh_token")
 
-        refresh_token = request.COOKIES.get("refresh_token")
+            if refresh_token:
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except TokenError:
+                    pass
 
-        if refresh_token:
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except TokenError:
-                pass
-
-        response = Response({"message": "Logged out successfully"})
-        response.delete_cookie("access_token")
-        response.delete_cookie("refresh_token")
-        return response
+            response = Response({"message": "Logged out successfully"})
+            response.delete_cookie("access_token")
+            response.delete_cookie("refresh_token")
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

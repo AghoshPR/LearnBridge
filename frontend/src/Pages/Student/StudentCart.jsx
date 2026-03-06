@@ -109,6 +109,20 @@ const StudentCart = () => {
 
   const discount = subtotal - totalAfterDiscount
 
+  const handleCheckout = () => {
+    const enrolledItems = cartItems.filter(item => item.is_enrolled);
+
+    if (enrolledItems.length > 0) {
+      const titles = enrolledItems.map(item => item.title).join(", ");
+      toast.error(`Course already purchased: ${titles}`, {
+        description: "Please remove already purchased courses from your cart to proceed."
+      });
+      return;
+    }
+
+    navigate('/checkout');
+  };
+
 
 
   return (
@@ -123,7 +137,7 @@ const StudentCart = () => {
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+              <a href="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</a>
               <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
             </div>
           </div>
@@ -138,7 +152,7 @@ const StudentCart = () => {
               {/* <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
 
-            <button onClick={() => navigate('/student/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
               <Heart className="w-5 h-5" />
             </button>
 
@@ -264,7 +278,14 @@ const StudentCart = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight">{item.title}</h3>
-                    <p className="text-sm text-gray-500 mb-2">By {item.instructor}</p>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <p className="text-sm text-gray-500">By {item.instructor}</p>
+                      {item.is_enrolled && (
+                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full border border-red-200 uppercase">
+                          Purchased
+                        </span>
+                      )}
+                    </div>
                     {item.tag && (
                       <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded mb-2 border border-gray-200">
                         {item.tag}
@@ -357,9 +378,10 @@ const StudentCart = () => {
 
 
 
-              <button onClick={() => navigate('/checkout')} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
+              <button onClick={handleCheckout} className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3">
                 Proceed to Checkout
               </button>
+
               <button
                 onClick={() => navigate('/courses')}
                 className="w-full py-3.5 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-sm"

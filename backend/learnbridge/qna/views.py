@@ -8,6 +8,7 @@ from rest_framework.permissions import *
 from teacherapp.models import *
 from django.db.models import *
 from django.shortcuts import get_object_or_404
+from .pagination import QuestionPagination
 
 
 # admin tag view
@@ -18,10 +19,12 @@ class AdminTagListView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-
-        tags = Tag.objects.filter(is_active=True).order_by("-created_at")
-        serializer = AdminTagSerializer(tags, many=True)
-        return Response(serializer.data)
+        try:
+            tags = Tag.objects.filter(is_active=True).order_by("-created_at")
+            serializer = AdminTagSerializer(tags, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminTagCreateView(APIView):
@@ -29,16 +32,17 @@ class AdminTagCreateView(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request):
-
-        serializer = AdminTagSerializer(data=request.data)
-        if serializer.is_valid():
-
-            serializer.save()
-            return Response(
-                {"message": "Tag created successfully"},
-                status=status.HTTP_201_CREATED
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = AdminTagSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "Tag created successfully"},
+                    status=status.HTTP_201_CREATED
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminTagUpdateView(APIView):
@@ -88,29 +92,34 @@ class QuestionListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        try:
+            search = request.GET.get("search", "").strip()
 
-        search = request.GET.get("search", "").strip()
+            questions = Question.objects.filter(
+                status="active"
+            ).select_related(
+                "user"
+            ).prefetch_related(
+                "tags"
+            )
 
-        questions = Question.objects.filter(
-            status="active"
-        ).select_related(
-            "user"
-        ).prefetch_related(
-            "tags"
-        )
+            if search:
+                questions = questions.filter(
+                    Q(title__icontains=search) |
+                    Q(body__icontains=search) |
+                    Q(tags__tag_name__icontains=search)
+                ).distinct()
 
-        if search:
-            questions = questions.filter(
-                Q(title__icontains=search) |
-                Q(body__icontains=search) |
-                Q(tags__tag_name__icontains=search)
-            ).distinct()
+            questions = questions.order_by("-created_at")
 
-        questions = questions.order_by("-created_at")
+            paginator = QuestionPagination()
+            page = paginator.paginate_queryset(questions, request)
+            
+            serializer = QuestionListSerializer(page, many=True)
 
-        serializer = QuestionListSerializer(questions, many=True)
-
-        return Response(serializer.data)
+            return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Question Create
@@ -120,19 +129,19 @@ class QuestionCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        try:
+            serializer = QuestionCreateSerializer(data=request.data)
 
-        serializer = QuestionCreateSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(
+                    {"message": "Question posted successfully"},
+                    status=status.HTTP_201_CREATED
+                )
 
-        if serializer.is_valid():
-
-            serializer .save(user=request.user)
-            return Response(
-
-                {"message": "Question posted successfully"},
-                status=status.HTTP_201_CREATED
-            )
-
-        return Response(serializer.errors, status=400)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class QuestionDetailView(APIView):
@@ -150,8 +159,6 @@ class QuestionDetailView(APIView):
 
         except Question.DoesNotExist:
             return Response({"error": "Not Found"}, status=404)
-    
-    
 
         # view counting
 
@@ -180,7 +187,6 @@ class QuestionDetailView(APIView):
 
         serializer = QuestionDetailedSerializer(question)
         return Response(serializer.data)
-    
 
 
 class QuestionLikeToggleView(APIView):
@@ -214,7 +220,7 @@ class QuestionLikeToggleView(APIView):
 
 
 class QuestionUpdateView(APIView):
-    
+
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
@@ -237,6 +243,7 @@ class QuestionUpdateView(APIView):
             return Response(serializer.data, status=200)
 
         return Response(serializer.errors, status=400)
+
 
 class QuestionDeleteView(APIView):
     permission_classes = [IsAuthenticated]
@@ -261,11 +268,13 @@ class AnswerListView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-
-        answers = Answer.objects.filter(question_id=pk).select_related(
-            "user").prefetch_related("replies")
-        serializer = AnswerSerializer(answers, many=True)
-        return Response(serializer.data)
+        try:
+            answers = Answer.objects.filter(question_id=pk).select_related(
+                "user").prefetch_related("replies")
+            serializer = AnswerSerializer(answers, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AnswerCreateView(APIView):
@@ -273,13 +282,15 @@ class AnswerCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
+        try:
+            serializer = AnswerCreateSerializer(data=request.data)
 
-        serializer = AnswerCreateSerializer(data=request.data)
-
-        if serializer.is_valid():
-
-            serializer.save(user=request.user, question_id=pk)
-            return Response({"message": "Answer posted successfully"})
+            if serializer.is_valid():
+                serializer.save(user=request.user, question_id=pk)
+                return Response({"message": "Answer posted successfully"})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AnswerUpdateDeleteView(APIView):
@@ -315,18 +326,19 @@ class ReplyCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
+        try:
+            serializer = ReplyCreateSerializer(data=request.data)
 
-        serializer = ReplyCreateSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user, answer_id=pk)
+                return Response(
+                    {"message": "Reply posted successfully"},
+                    status=status.HTTP_201_CREATED
+                )
 
-        if serializer.is_valid():
-
-            serializer.save(user=request.user, answer_id=pk)
-            return Response(
-                {"message": "Reply posted successfully"},
-                status=status.HTTP_201_CREATED
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ReplyUpdateDeleteView(APIView):
@@ -358,10 +370,12 @@ class ReplyUpdateDeleteView(APIView):
 class PublicTagListView(APIView):
 
     def get(self, request):
-
-        tags = Tag.objects.filter(is_active=True)
-        serializer = AdminTagSerializer(tags, many=True)
-        return Response(serializer.data)
+        try:
+            tags = Tag.objects.filter(is_active=True)
+            serializer = AdminTagSerializer(tags, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Teacher QA side
@@ -370,30 +384,35 @@ class TeacherQuestionListView(APIView):
     permission_classes = [IsTeacher]
 
     def get(self, request):
-        search = request.GET.get("search", "").strip()
+        try:
+            search = request.GET.get("search", "").strip()
 
-        questions = Question.objects.filter(
-            status="active",
-            course__teacher=request.user
-        ).select_related("user", "course").prefetch_related("tags")
+            questions = Question.objects.filter(
+                status="active",
+                course__teacher=request.user
+            ).select_related("user", "course").prefetch_related("tags")
 
-        if search:
-            questions = questions.filter(
-                Q(title__icontains=search) |
-                Q(body__icontains=search) |
-                Q(tags__tag_name__icontains=search)
-            ).distinct()
+            if search:
+                questions = questions.filter(
+                    Q(title__icontains=search) |
+                    Q(body__icontains=search) |
+                    Q(tags__tag_name__icontains=search)
+                ).distinct()
 
-        questions = questions.order_by("-created_at")
-        serializer = TeacherQuestionSerializer(questions, many=True)
-        return Response(serializer.data)
+            questions = questions.order_by("-created_at")
+            serializer = TeacherQuestionSerializer(questions, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class TeacherAnswerCreateView(APIView):
     permission_classes = [IsTeacher]
 
     def post(self, request, pk):
         try:
-            question = Question.objects.get(pk=pk, course__teacher=request.user)
+            question = Question.objects.get(
+                pk=pk, course__teacher=request.user)
         except Question.DoesNotExist:
             return Response({"error": "Question not found or unauthorized"}, status=404)
 
@@ -401,36 +420,42 @@ class TeacherAnswerCreateView(APIView):
         if serializer.is_valid():
             serializer.save(user=request.user, question_id=pk)
             return Response({"message": "Answer posted successfully"}, status=status.HTTP_201_CREATED)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminQuestionListView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-        status_filter = request.GET.get('status', 'all')
-        if status_filter == 'reported':
-            questions = Question.objects.filter(status='reported')
-        else:
-            questions = Question.objects.exclude(status='deleted')
-            
-        questions = questions.select_related('user').order_by('-created_at')
-        
-        data = []
-        for q in questions:
-            data.append({
-                "id": q.id,
-                "question": q.title,
-                "author": q.user.username,
-                "answers": q.answers.count() if hasattr(q, 'answers') else 0,
-                "views": q.views_count,
-                "status": q.status,
-                "date": q.created_at.strftime("%Y-%m-%d"),
-                "reports": 1 if q.status == 'reported' else 0,
-                "reason": "Reported by community" if q.status == 'reported' else "",
-            })
-            
-        return Response(data)
+        try:
+            status_filter = request.GET.get('status', 'all')
+            if status_filter == 'reported':
+                questions = Question.objects.filter(status='reported')
+            else:
+                questions = Question.objects.exclude(status='deleted')
+
+            questions = questions.select_related(
+                'user').order_by('-created_at')
+
+            data = []
+            for q in questions:
+                data.append({
+                    "id": q.id,
+                    "question": q.title,
+                    "author": q.user.username,
+                    "answers": q.answers.count() if hasattr(q, 'answers') else 0,
+                    "views": q.views_count,
+                    "status": q.status,
+                    "date": q.created_at.strftime("%Y-%m-%d"),
+                    "reports": 1 if q.status == 'reported' else 0,
+                    "reason": "Reported by community" if q.status == 'reported' else "",
+                })
+
+            return Response(data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class AdminQuestionActionView(APIView):
     permission_classes = [IsAdmin]
@@ -443,7 +468,7 @@ class AdminQuestionActionView(APIView):
             return Response({"message": "Question deleted successfully"})
         except Question.DoesNotExist:
             return Response({"error": "Question not found"}, status=404)
-            
+
     def post(self, request, pk):
         # Approve / Restore question
         try:

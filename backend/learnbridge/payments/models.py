@@ -43,6 +43,7 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    coupon = models.ForeignKey('promotions.Coupon', null=True, blank=True, on_delete=models.SET_NULL)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount_amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0)

@@ -217,7 +217,9 @@ const StudentCoupons = () => {
                   <tr key={coupon.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-blue-600">{coupon.code}</td>
                     <td className="px-6 py-4 font-medium text-blue-600">{coupon.valid_till}</td>
-                    <td className="px-6 py-4 text-gray-600">{coupon.max_uses_per_user}</td>
+                    <td className="px-6 py-4 text-gray-600">
+                      {coupon.max_uses_per_user > 0 ? coupon.max_uses_per_user - (coupon.user_usage_count || 0) : "Unlimited"}
+                    </td>
                   </tr>
                 ))}
                 {coupons.length === 0 && (

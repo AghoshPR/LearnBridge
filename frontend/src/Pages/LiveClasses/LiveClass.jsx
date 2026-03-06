@@ -85,7 +85,7 @@ const LiveClass = () => {
               }
             );
 
-            toast.success("Registration Successful ✅");
+            toast.success("Registration Successful! ");
 
 
             setIsRegisterModalOpen(false);
