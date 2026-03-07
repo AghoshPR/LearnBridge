@@ -39,7 +39,14 @@ const QuestionCommunity = () => {
   const [courses, setCourses] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
 
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    count: 0,
+    next: null,
+    previous: null
+  });
 
 
 
@@ -55,25 +62,43 @@ const QuestionCommunity = () => {
     }
   }, [isAuthenticated])
 
-  const fetchQuestions = async (search = "") => {
+  const fetchQuestions = async (page = 1) => {
     try {
       const res = await Api.get("/qna/questions/", {
         params: {
-          search: searchQuery || undefined
+          search: searchQuery || undefined,
+          page: page
         }
-      })
+      });
 
 
-      setQuestions(res.data)
+      if (res.data.results) {
+        setQuestions(res.data.results);
+        setPaginationInfo({
+          count: res.data.count,
+          next: res.data.next,
+          previous: res.data.previous
+        });
+        setTotalPages(Math.ceil(res.data.count / 10));
+      } else {
+        setQuestions(res.data);
+      }
 
     } catch (err) {
-      toast.error("Failed to load questions")
+      toast.error("Failed to load questions");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchQuestions();
+    setCurrentPage(1);
+    fetchQuestions(1);
   }, [searchQuery]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    fetchQuestions(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchTags = async () => {
 
@@ -111,7 +136,7 @@ const QuestionCommunity = () => {
     try {
 
       await Api.post(`/qna/questions/${questionId}/like/`)
-      fetchQuestions()
+      fetchQuestions(currentPage);
     } catch (err) {
       toast.error("Error liking question")
     }
@@ -171,7 +196,7 @@ const QuestionCommunity = () => {
       }
 
       closeModal();
-      fetchQuestions();
+      fetchQuestions(currentPage);
 
     } catch (err) {
       toast.error(`Error ${editQuestionId ? 'updating' : 'posting'} question`);
@@ -202,7 +227,7 @@ const QuestionCommunity = () => {
     try {
       await Api.delete(`/qna/questions/deletequestion/${deleteQuestionId}/`);
       toast.success("Question deleted successfully!");
-      fetchQuestions();
+      fetchQuestions(currentPage);
       setDeleteModalOpen(false);
       setDeleteQuestionId(null);
     } catch (err) {
@@ -536,6 +561,94 @@ const QuestionCommunity = () => {
             </div>
           ))}
         </div>
+
+        {/* Pagination Controls */}
+        {paginationInfo.count > 10 && (
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-gray-100 pt-8">
+            <div className="text-sm text-gray-500 font-medium">
+              Showing <span className="text-gray-900">{(currentPage - 1) * 10 + 1}</span> to{" "}
+              <span className="text-gray-900">{Math.min(currentPage * 10, paginationInfo.count)}</span> of{" "}
+              <span className="text-gray-900">{paginationInfo.count}</span> questions
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!paginationInfo.previous}
+                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${!paginationInfo.previous
+                  ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
+                  }`}
+              >
+                <ChevronRight size={20} className="rotate-180" />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNumber = i + 1;
+                  // Show current page, first, last, and pages around current
+                  if (
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all ${currentPage === pageNumber
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                          : "bg-white text-gray-600 border border-gray-200 hover:border-blue-500 hover:text-blue-600"
+                          }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  } else if (
+                    pageNumber === currentPage - 2 ||
+                    pageNumber === currentPage + 2
+                  ) {
+                    return <span key={pageNumber} className="px-1 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!paginationInfo.next}
+                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${!paginationInfo.next
+                  ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
+                  }`}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {questions.length === 0 && (
+          <div className="py-20 text-center">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+              <MessageSquare size={40} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No questions found</h3>
+            <p className="text-gray-500 max-w-xs mx-auto">
+              {searchQuery
+                ? `We couldn't find any questions matching "${searchQuery}"`
+                : "Be the first one to ask a question in this community!"}
+            </p>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="mt-6 text-blue-600 font-semibold hover:text-blue-700 underline underline-offset-4"
+              >
+                Clear search
+              </button>
+            )}
+          </div>
+        )}
       </main >
 
       {/* Ask Question Modal */}

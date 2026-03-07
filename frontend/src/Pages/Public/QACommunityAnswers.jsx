@@ -589,7 +589,7 @@ const QACommunityAnswers = () => {
                   </div>
 
                   {/* Right: Helpful Actions */}
-                  <div className="flex flex-row sm:flex-col items-center gap-4 sm:min-w-[3rem] order-1 sm:order-2 mb-2 sm:mb-0 border-b sm:border-b-0 sm:border-l border-gray-100 pb-2 sm:pb-0 sm:pl-4">
+                  {/* <div className="flex flex-row sm:flex-col items-center gap-4 sm:min-w-[3rem] order-1 sm:order-2 mb-2 sm:mb-0 border-b sm:border-b-0 sm:border-l border-gray-100 pb-2 sm:pb-0 sm:pl-4">
                     <div className="flex items-center gap-2 sm:flex-col sm:gap-1 group cursor-pointer">
                       <ThumbsUp size={18} className="text-gray-400 group-hover:text-green-500 transition-colors" />
                       <span className="text-xs text-gray-500">helpful</span>
@@ -598,7 +598,7 @@ const QACommunityAnswers = () => {
                       <ThumbsDown size={18} className="text-gray-400 group-hover:text-red-500 transition-colors" />
                       <span className="text-xs text-gray-500 text-center leading-tight">Not helpful</span>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             ))}

@@ -115,9 +115,12 @@ class QuestionListView(APIView):
             paginator = QuestionPagination()
             page = paginator.paginate_queryset(questions, request)
             
-            serializer = QuestionListSerializer(page, many=True)
+            if page is not None:
+                serializer = QuestionListSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
 
-            return paginator.get_paginated_response(serializer.data)
+            serializer = QuestionListSerializer(questions, many=True)
+            return Response(serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

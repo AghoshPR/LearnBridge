@@ -36,11 +36,17 @@ const Home = () => {
             .catch((err) => console.log(err));
 
         Api.get("/qna/questions/")
-            .then((res) => setQuestions(res.data.slice(0, 3)))
+            .then((res) => {
+                const data = res.data.results || res.data;
+                setQuestions(Array.isArray(data) ? data.slice(0, 3) : []);
+            })
             .catch((err) => console.log(err));
 
         Api.get("/qna/public-tags/")
-            .then((res) => setPopularTags(res.data.slice(0, 4)))
+            .then((res) => {
+                const data = res.data.results || res.data;
+                setPopularTags(Array.isArray(data) ? data.slice(0, 4) : []);
+            })
             .catch((err) => console.log(err));
     }, []);
 
@@ -334,14 +340,17 @@ const Home = () => {
                             <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">Latest from Q&A Community</h2>
                             <p className="text-gray-600">Get help from our community of learners and experts</p>
                         </div>
-                        <button className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-white border border-blue-200 px-4 py-2 rounded-lg hover:shadow-md transition-all">
+                        <button
+                            onClick={() => navigate('/question-community')}
+                            className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-white border border-blue-200 px-4 py-2 rounded-lg hover:shadow-md transition-all"
+                        >
                             Ask Question
                         </button>
                     </div>
 
                     <div className="flex flex-col gap-4">
                         {questions.map((q, idx) => (
-                            <div key={q.id} onClick={() => navigate('/question-community')} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex gap-6 cursor-pointer">
+                            <div key={q.id} onClick={() => navigate(`/question-community/${q.id}`)} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex gap-6 cursor-pointer">
                                 <div className="hidden md:flex flex-col items-center gap-2 text-gray-500 min-w-[3rem]">
                                     <div className="flex flex-col items-center">
                                         <ThumbsUp className="w-5 h-5" />

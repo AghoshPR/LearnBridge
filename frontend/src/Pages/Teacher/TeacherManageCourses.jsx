@@ -245,10 +245,15 @@ const TeacherManageCourses = () => {
 
   const handleAddLesson = async () => {
 
-    if (!lessonTitle || !lessonDuration || !videoFile) {
+    if (!lessonTitle || !lessonDuration || !videoFile || lessonDescription) {
       toast.error("All fields required");
       return;
     }
+
+    if (!videoFile.type.startsWith("video/")) {
+    toast.error("Only video files are allowed");
+    return;
+  }
 
     const formData = new FormData()
 
