@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import Api from '../Services/Api';
 import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner"
+import { Spinner } from "@/components/ui/Spinner"
 import {
   LayoutDashboard,
   User,
