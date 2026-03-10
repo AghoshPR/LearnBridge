@@ -113,13 +113,15 @@ const AdminOffer = () => {
   }
 
   const handleSubmit = async (e) => {
-
     e.preventDefault()
 
     try {
-      const payload = { ...formData };
-
-
+      // Clean up data before sending
+      const payload = {
+        ...formData,
+        discount_value: parseFloat(formData.discount_value) || 0,
+        max_uses: parseInt(formData.max_uses) || 0,
+      };
 
       if (payload.apply_type === "Category") {
         payload.course = null;
@@ -131,10 +133,10 @@ const AdminOffer = () => {
         await Api.put(`/offers/update/${editingId}/`, payload)
         toast.success("Offer updated successfully")
       } else {
-
         await Api.post("/offers/create/", payload)
         toast.success("Offer created successfully")
       }
+
       setIsModalOpen(false)
       setEditingId(null)
       fetchOffers()
@@ -142,17 +144,18 @@ const AdminOffer = () => {
     } catch (err) {
       if (err.response?.data) {
         const errors = err.response.data;
-
-        Object.keys(errors).forEach((key) => {
-          errors[key].forEach((message) => {
-            toast.error(message);
+        if (typeof errors === 'object') {
+          Object.keys(errors).forEach(key => {
+            const messages = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+            messages.forEach(msg => toast.error(`${key}: ${msg}`));
           });
-        });
+        } else {
+          toast.error("Validation failed");
+        }
       } else {
         toast.error("Something went wrong");
       }
     }
-
   }
 
   const handleEdit = (offer) => {

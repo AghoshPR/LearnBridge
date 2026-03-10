@@ -17,6 +17,8 @@ from django.conf import settings
 import requests as py_requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.exceptions import TokenError
+from authapp.tasks import send_otp_task
+
 
 
 class TeacherRegisterView(APIView):
@@ -104,12 +106,17 @@ class StudentRegisterView(APIView):
         try:
             serializer = RegisterStudentSerializer(data=request.data)
             if serializer.is_valid():
-                user = serializer.save()
 
+                user = serializer.save()
                 user.is_active = False
                 user.save()
 
-                send_otp(user.email)
+                try:
+                    send_otp(user.email)
+                except Exception as e:
+                    print("OTP Sending Failed:", e)
+
+               
 
                 return Response({
                     "message": "OTP send to email",
@@ -202,7 +209,10 @@ class ResendOTPView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            send_otp(email)
+            try:
+                send_otp(email)
+            except Exception as e:
+                print("OTP Sending Failed:", e)
 
             return Response(
                 {"message": "OTP resent successfully"},

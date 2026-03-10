@@ -70,7 +70,7 @@ const CourseVideos = () => {
   const [aiMessages, setAiMessages] = useState([
     {
       sender: "ai",
-      text: "Hi! I'm your AI learning assistant. Ask me anything about this lesson!"
+      text: "Hi! I'm your AI learning assistant. How can I help you today?"
     }
   ]);
 
@@ -327,7 +327,7 @@ const CourseVideos = () => {
       const res = await Api.post(`/student/courses/${courseId}/status/`);
       setCourseStatus(res.data.status);
       if (res.data.status === 'completed') {
-        toast.success("Course marked as completed! 🎉");
+        toast.success("Course marked as completed!");
       } else {
         toast.success("Course marked as in progress.");
       }
@@ -835,8 +835,8 @@ const CourseVideos = () => {
                   <button
                     onClick={toggleCourseStatus}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${courseStatus === 'completed'
-                        ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                      ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                       }`}
                   >
                     <CheckCircle className={`w-4 h-4 ${courseStatus === 'completed' ? 'text-green-500' : 'text-gray-400'}`} />
@@ -905,7 +905,7 @@ const CourseVideos = () => {
                     AI Learning Assistant
                   </h3>
                   <p className="text-[10px] text-gray-500">
-                    Always here to help
+                    Clear your doubts instantly
                   </p>
                 </div>
               </div>
@@ -953,7 +953,7 @@ const CourseVideos = () => {
                   <input
                     type="text"
                     value={aiInput}
-                    placeholder="Ask about this lesson..."
+                    placeholder="Message AI Assistant..."
                     onChange={(e) => setAiInput(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleAskAI()

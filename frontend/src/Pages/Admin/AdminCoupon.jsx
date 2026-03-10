@@ -91,13 +91,20 @@ const AdminCoupon = () => {
     e.preventDefault()
 
     try {
+      // Clean up data before sending
+      const payload = {
+        ...formData,
+        discount_value: parseFloat(formData.discount_value) || 0,
+        min_purchase_amount: parseFloat(formData.min_purchase_amount) || 0,
+        max_uses: parseInt(formData.max_uses) || 0,
+        max_uses_per_user: parseInt(formData.max_uses_per_user) || 1,
+      };
 
       if (editingId) {
-
-        await Api.put(`/coupons/update/${editingId}/`, formData)
+        await Api.put(`/coupons/update/${editingId}/`, payload)
         toast.success("Coupon updated")
       } else {
-        await Api.post("/coupons/create/", formData)
+        await Api.post("/coupons/create/", payload)
         toast.success("Coupon Created")
       }
 
@@ -107,11 +114,16 @@ const AdminCoupon = () => {
       fetchCoupons()
 
     } catch (err) {
-
       if (err.response?.data) {
-        Object.values(err.response.data).flat().forEach(msg => {
-          toast.error(msg)
-        })
+        const errors = err.response.data;
+        if (typeof errors === 'object') {
+          Object.keys(errors).forEach(key => {
+            const messages = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
+            messages.forEach(msg => toast.error(`${key}: ${msg}`));
+          });
+        } else {
+          toast.error("Validation failed");
+        }
       } else {
         toast.error("something went wrong")
       }

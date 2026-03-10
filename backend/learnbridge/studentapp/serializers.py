@@ -6,8 +6,9 @@ from studentapp.models import *
 
 class StudentProfileSerializer(serializers.ModelSerializer):
 
-    class Meta:
+    
 
+    class Meta:
         model = User
         fields = [
             "username",
@@ -16,8 +17,19 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "address",
             "profile_image"
         ]
-
         read_only_fields = ["username", "email"]
+
+    def validate_phone(self, value):
+        if not value:
+            return value
+
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must contain only digits.")
+
+        if len(value) != 10:
+            raise serializers.ValidationError("Phone number must be exactly 10 digits.")
+
+        return value
 
 
 class WishlistSerializer(serializers.ModelSerializer):

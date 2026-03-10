@@ -1,13 +1,12 @@
 import random
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from datetime import datetime
 
 
-OTP_EXPIRY = 60
+OTP_EXPIRY = 60  # 1 minutes
 
 
 def send_otp(email):
@@ -25,7 +24,7 @@ def send_otp(email):
     from_email = settings.DEFAULT_FROM_EMAIL
     to = [email]
 
-    text_content = f"Your LearnBridge OTP is {otp}. It is valid for 5 minutes."
+    text_content = f"Your LearnBridge OTP is {otp}. It is valid for 1 minutes."
 
     html_content = render_to_string(
         "emails/otp_email.html",
@@ -43,4 +42,5 @@ def send_otp(email):
     )
 
     email_msg.attach_alternative(html_content, "text/html")
-    email_msg.send()
+    result = email_msg.send()
+    print("Email send result:", result)

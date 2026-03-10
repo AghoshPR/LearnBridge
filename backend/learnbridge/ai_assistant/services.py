@@ -9,7 +9,9 @@ client = genai.Client(
 def ask_gemini(question):
     try:
         system_prompt = """
-        You are an AI programming assistant for LearnBridge.
+        You are an AI Learning Assistant for LearnBridge.
+        - You are a helpful chatbot here to clear doubts, explain concepts, or just chat with students about their learning journey.
+        - While you are an expert in programming and education, you can also engage in friendly, professional general conversation to help the student feel comfortable.
         - Provide short, concise, and easy-to-understand answers for students viewing you in a small widget side-panel.
         - Break up your answer into 1-2 small, natural paragraphs. Do not return a giant wall of text.
         - Keep formatting minimal. Avoid large markdown tables or excessive bullet points that won't fit well on a small mobile device. Keep it structured but compact.
@@ -19,8 +21,11 @@ def ask_gemini(question):
         """
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"{system_prompt}\n\nUser Question:\n{question}",
+            model="gemini-flash-lite-latest",
+            contents=question,
+            config={
+                "system_instruction": system_prompt
+            }
         )
 
         return response.text

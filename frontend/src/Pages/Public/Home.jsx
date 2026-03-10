@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Clock } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, Code, Database, PenTool, Layout, TrendingUp, Camera, ThumbsUp, MessageSquare, Menu, X, ChevronRight, LogOut, Heart, BookOpen, Package, Clock, CheckCircle } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -290,7 +290,7 @@ const Home = () => {
                             <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-2">Trending Courses</h2>
                             <p className="text-gray-600">Most popular courses this month</p>
                         </div>
-                        <button className="text-sm font-semibold text-gray-500 hover:text-blue-600 flex items-center gap-1 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <button onClick={() => navigate("/courses")} className="text-sm font-semibold text-gray-500 hover:text-blue-600 flex items-center gap-1 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                             View All <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -324,6 +324,38 @@ const Home = () => {
                                         <span className="text-xl font-bold text-blue-600">
                                             {course.has_offer ? `₹${Number(course.final_price).toFixed(2)}` : `₹${course.original_price}`}
                                         </span>
+
+                                        {isAuthenticated && course.is_purchased ? (
+                                            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
+                                                <CheckCircle className="w-3.5 h-3.5" />
+                                                Purchased
+                                            </span>
+                                        ) : (
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        Api.post("/student/cart/add/", { course_id: course.id })
+                                                            .then(() => toast.success("Added to cart!"))
+                                                            .catch((err) => toast.error(err.response?.data?.detail || "Failed to add to cart"));
+                                                    }}
+                                                    className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+                                                >
+                                                    <ShoppingCart className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        Api.post("/student/wishlist/toggle/", { course_id: course.id })
+                                                            .then(() => toast.success("Wishlist updated!"))
+                                                            .catch((err) => toast.error(err.response?.data?.detail || "Failed to update wishlist"));
+                                                    }}
+                                                    className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-300"
+                                                >
+                                                    <Heart className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -342,7 +374,7 @@ const Home = () => {
                         </div>
                         <button
                             onClick={() => navigate('/question-community')}
-                            className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-white border border-blue-200 px-4 py-2 rounded-lg hover:shadow-md transition-all"
+                            className="text-sm font-semibold text-blue-600 hover:text-blue-700 bg-white border border-blue-200 px-4 py-2 rounded-lg hover:shadow-md transition-all cursor-pointer"
                         >
                             Ask Question
                         </button>

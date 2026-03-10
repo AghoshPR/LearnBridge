@@ -519,6 +519,9 @@ class TeacherLessonCreateView(APIView):
             try:
                 video_key = upload_video(video, course_id)
             except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print("FULL ERROR:", str(e))
                 return Response(
                     {"error": "Video upload failed"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -659,7 +662,7 @@ class TeacherLessonDetailView(APIView):
 
 class PublicCourseListView(APIView):
 
-    authentication_classes = [PublicAuthentication]
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -683,7 +686,7 @@ class PublicCourseListView(APIView):
 
             paginator = CoursePagination()
             page = paginator.paginate_queryset(courses, request)
-            serializer = PublicCourseSerializer(page, many=True)
+            serializer = PublicCourseSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -691,7 +694,7 @@ class PublicCourseListView(APIView):
 
 class PublicCategoryListView(APIView):
 
-    authentication_classes = [PublicAuthentication]
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -708,10 +711,7 @@ class PublicCategoryListView(APIView):
 
 class PublicCourseDetailView(APIView):
 
-    authentication_classes = [
-        CookieJWTAuthentication,
-        CsrfExemptSessionAuthentication,
-    ]
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request, pk):

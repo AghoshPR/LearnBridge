@@ -49,18 +49,17 @@ class StudentProfile(APIView):
     def patch(self, request):
         try:
             user = request.user
-            user.phone = request.data.get("phone", user.phone)
-            user.address = request.data.get("address", user.address)
+            serializer = StudentProfileSerializer(user, data=request.data, partial=True)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    "message": "Profile updated successfully",
+                    "profile_image": user.profile_image.url if user.profile_image else None
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            if "profile_image" in request.FILES:
-                user.profile_image = request.FILES["profile_image"]
-
-            user.save()
-
-            return Response({
-                "message": "Profile updated successfully",
-                "profile_image": user.profile_image.url if user.profile_image else None
-            }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

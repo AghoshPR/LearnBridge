@@ -127,10 +127,12 @@ EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_PORT = config("EMAIL_PORT", cast=int)
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", cast=bool)
 
-EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER").strip()
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD").strip()
 
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL").strip()
+
+EMAIL_USE_SSL = False # Explicitly set to False for port 587
 
 
 # Database
@@ -258,3 +260,9 @@ CHANNEL_LAYERS = {
 # AI - Assistant
 
 GEMINI_API_KEY = config("GEMINI_API_KEY")
+
+# celery
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

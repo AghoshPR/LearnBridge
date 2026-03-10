@@ -86,6 +86,7 @@ const StudentProfile = () => {
   //   Save Profile
 
   const handleSave = async () => {
+    if (!validateForm()) return;
 
     try {
 
@@ -112,7 +113,8 @@ const StudentProfile = () => {
       fetchProfile();
 
     } catch (err) {
-      toast.error("Update failed")
+      const msg = err.response?.data?.phone?.[0] || "Update failed";
+      toast.error(msg);
     }
   }
 
@@ -134,7 +136,19 @@ const StudentProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "phone") {
+      if (!/^\d*$/.test(value)) return;
+      if (value.length > 10) return;
+    }
     setProfileData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    if (profileData.phone && profileData.phone.length !== 10) {
+      toast.error("Phone number must be exactly 10 digits");
+      return false;
+    }
+    return true;
   };
 
 
@@ -451,7 +465,7 @@ const StudentProfile = () => {
                   <label className="text-gray-700 text-sm font-semibold">Name</label>
                   <input
                     type="text"
-                    name="name"
+                    name="username"
                     value={profileData.username}
                     onChange={handleInputChange}
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-400"
@@ -463,6 +477,7 @@ const StudentProfile = () => {
                   <input
                     type="email"
                     name="email"
+                    readOnly
                     value={profileData.email}
                     onChange={handleInputChange}
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-400"
@@ -474,6 +489,8 @@ const StudentProfile = () => {
                   <input
                     type="tel"
                     name="phone"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     placeholder="Enter phone number"
                     value={profileData.phone}
                     onChange={handleInputChange}

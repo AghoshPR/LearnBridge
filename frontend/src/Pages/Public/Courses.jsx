@@ -17,7 +17,8 @@ import {
     LogOut,
     BookOpen,
     Package,
-    Ticket
+    Ticket,
+    CheckCircle
 } from "lucide-react";
 import Api from '../Services/Api';
 
@@ -463,32 +464,36 @@ const Courses = () => {
                                     )}
                                 </div>
 
-                                <div className="flex gap-2">
+                                {isAuthenticated && course.is_purchased ? (
+                                    <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Purchased
+                                    </span>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => handleAddToCart(e, course.id)}
+                                            className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+                                        >
+                                            <ShoppingCart className="w-5 h-5" />
+                                        </button>
 
-
-                                    <button
-                                        onClick={(e) => handleAddToCart(e, course.id)}
-                                        className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
-                                    >
-                                        <ShoppingCart className="w-5 h-5" />
-                                    </button>
-
-                                    <button
-                                        onClick={(e) => handleWishlistToggle(e, course.id)}
-                                        className={`p-2 rounded-full transition
-                                ${wishlistIds.includes(course.id)
-                                                ? "bg-red-100 text-red-500"
-                                                : "bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500"
-                                            }
-                            `}
-                                    >
-                                        <Heart
-                                            className={`w-4 h-4 ${wishlistIds.includes(course.id) ? "fill-red-500" : ""
-                                                }`}
-                                        />
-                                    </button>
-
-                                </div>
+                                        <button
+                                            onClick={(e) => handleWishlistToggle(e, course.id)}
+                                            className={`p-2 rounded-full transition
+                                    ${wishlistIds.includes(course.id)
+                                                    ? "bg-red-100 text-red-500"
+                                                    : "bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500"
+                                                }
+                                `}
+                                        >
+                                            <Heart
+                                                className={`w-4 h-4 ${wishlistIds.includes(course.id) ? "fill-red-500" : ""
+                                                    }`}
+                                            />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

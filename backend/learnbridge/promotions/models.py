@@ -52,7 +52,7 @@ class Offer(models.Model):
     max_uses = models.PositiveIntegerField(default=0)
     used_count = models.PositiveIntegerField(default=0)
 
-    is_active = models.BooleanField(True)
+    is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -84,7 +84,7 @@ class Coupon(models.Model):
 
     used_count = models.PositiveIntegerField(default=0)
 
-    is_active = models.BooleanField()
+    is_active = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

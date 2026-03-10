@@ -245,7 +245,7 @@ const TeacherManageCourses = () => {
 
   const handleAddLesson = async () => {
 
-    if (!lessonTitle || !lessonDuration || !videoFile || lessonDescription) {
+    if (!lessonTitle || !lessonDuration || !videoFile) {
       toast.error("All fields required");
       return;
     }

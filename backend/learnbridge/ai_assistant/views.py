@@ -24,8 +24,15 @@ class AskGeminiView(APIView):
             return Response({"answer": answer})
 
         except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                return Response(
+                    {"error": "AI Assistant is currently at its free-tier limit. Please try again in a few minutes."},
+                    status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+            
             return Response(
-                {"error": str(e)},
+                {"error": "An error occurred while processing your request."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
