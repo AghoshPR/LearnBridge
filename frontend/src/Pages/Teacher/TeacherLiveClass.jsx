@@ -121,7 +121,7 @@ const TeacherLiveClass = () => {
   const now = new Date();
 
   const upcomingClassesFiltered = filteredClasses.filter(
-    cls => new Date(cls.start_time) >= now
+    cls => cls.status === 'scheduled'
   );
 
   const totalPagesUpcoming = Math.ceil(upcomingClassesFiltered.length / itemsPerPage);
@@ -131,7 +131,7 @@ const TeacherLiveClass = () => {
   );
 
   const pastClassesFiltered = filteredClasses.filter(
-    cls => new Date(cls.start_time) < now
+    cls => cls.status === 'completed' || cls.status === 'cancelled' || new Date(cls.start_time) < now
   );
 
   const totalPagesPast = Math.ceil(pastClassesFiltered.length / itemsPerPage);
@@ -226,50 +226,17 @@ const TeacherLiveClass = () => {
 
   const handleSave = async () => {
 
-    if (!formData.title.trim()) {
-      toast.error("Title is required");
+    if (!formData.title?.trim() ||
+      !formData.subject?.trim() ||
+      !formData.date ||
+      !formData.time ||
+      formData.durationHr === "" ||
+      formData.durationMin === "" ||
+      formData.fee === "" ||
+      !formData.description?.trim()) {
+      toast.error("All fields are required");
       return;
     }
-
-    if (!formData.subject.trim()) {
-      toast.error("Subject is required");
-      return;
-    }
-
-    if (!formData.date || !formData.time) {
-      toast.error("Date and time are required");
-      return;
-    }
-
-
-    if (formData.fee && parseFloat(formData.fee) < 0) {
-      toast.error("Registration fee cannot be negative");
-      return;
-    }
-
-    const startDateTime = new Date(`${formData.date}T${formData.time}`);
-
-    if (startDateTime < new Date()) {
-      toast.error("Cannot schedule class in the past");
-      return;
-    }
-
-
-
-
-    if (thumbnailFile && thumbnailFile.size > 2 * 1024 * 1024) {
-      toast.error("Thumbnail must be less than 2MB");
-      return;
-    }
-
-    if (thumbnailFile && !thumbnailFile.type.startsWith("image/")) {
-      toast.error("Only image files are allowed");
-      return;
-    }
-
-
-
-
 
     const durationMinutes =
       (parseInt(formData.durationHr || 0) * 60) +
@@ -278,11 +245,32 @@ const TeacherLiveClass = () => {
     if (durationMinutes <= 0) {
       toast.error("Duration must be greater than 0");
       return;
-
     }
 
     if (durationMinutes > 480) {
       toast.error("Class duration cannot exceed 8 hours");
+      return;
+    }
+
+    if (formData.fee && parseFloat(formData.fee) < 0) {
+      toast.error("Registration fee cannot be negative");
+      return;
+    }
+
+    const startDateTime = new Date(`${formData.date}T${formData.time}`);
+
+    if (!isEditMode && startDateTime < new Date()) {
+      toast.error("Cannot schedule class in the past");
+      return;
+    }
+
+    if (thumbnailFile && thumbnailFile.size > 2 * 1024 * 1024) {
+      toast.error("Thumbnail must be less than 2MB");
+      return;
+    }
+
+    if (thumbnailFile && !thumbnailFile.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
       return;
     }
 
@@ -590,11 +578,7 @@ const TeacherLiveClass = () => {
                       <Edit2 size={16} className="text-slate-500" />
                       Edit
                     </button>
-                    <button
-                      onClick={() => handleDelete(cls.class_id)}
-                      className="p-2 bg-white text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors shadow-sm">
-                      <Trash2 size={16} />
-                    </button>
+                    {/* Trash icon removed as per requirement */}
                   </div>
                 </div>
               ))}
@@ -817,16 +801,20 @@ const TeacherLiveClass = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1.5">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
-                  >
-                    <option value="scheduled">Scheduled</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-
-                  </select>
+                  {isEditMode ? (
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
+                    >
+                      <option value="scheduled">Scheduled</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  ) : (
+                    <div className="w-full px-4 py-2.5 border border-gray-100 bg-gray-50 rounded-lg text-gray-500 font-medium">
+                      Scheduled
+                    </div>
+                  )}
                 </div>
               </div>
 

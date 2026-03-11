@@ -249,10 +249,20 @@ RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
 
 ASGI_APPLICATION = "LearnBridge.asgi.application"
 
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+
+#     },
+# }
+
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(config("REDIS_HOST", default="127.0.0.1"), 6379)],
+        },
     },
 }
 
@@ -263,6 +273,6 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 # celery
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

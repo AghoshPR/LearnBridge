@@ -35,7 +35,7 @@ class LiveClassSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "End time must be after start time.")
 
-        if start < timezone.now():
+        if not self.instance and start < timezone.now():
             raise serializers.ValidationError(
                 "Cannot schedule class in the past.")
 

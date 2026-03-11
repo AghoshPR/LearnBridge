@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import viteLogo from '../../frontend/src/assets/learnbridge-logo.png'
 import './App.css'
 import StudentLogin from './Pages/Auth/StudentLogin'
 import StudentRegister from './Pages/Auth/StudentRegister'
