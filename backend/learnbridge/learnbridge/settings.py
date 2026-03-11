@@ -1,7 +1,7 @@
 
 
 from pathlib import Path
-from decouple import config
+from decouple import config,Csv
 from datetime import timedelta
 
 import cloudinary
@@ -14,10 +14,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = False
