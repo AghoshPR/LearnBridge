@@ -372,6 +372,8 @@ class ReplyUpdateDeleteView(APIView):
 
 class PublicTagListView(APIView):
 
+    permission_classes = [AllowAny]
+
     def get(self, request):
         try:
             tags = Tag.objects.filter(is_active=True)

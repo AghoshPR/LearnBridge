@@ -518,6 +518,39 @@ class GoogleLoginView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class RefreshTokenView(APIView):
+
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [AllowAny]
+
+    def post(self,request):
+
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if not refresh_token:
+            return Response({"error":"No refresh toekn"},status=401)
+        
+        try:
+
+            refresh = RefreshToken(refresh_token)
+
+            response = Response({"message":"Token refreshed"})
+
+            response.set_cookie(
+                key="access_token",
+                value=str(refresh.access_token),
+                httponly=True,
+                samesite="Lax"
+
+            )
+
+            return response
+
+        except TokenError:
+            return Response({"error":"Invalid refresh"},status=401)
+
+
+
 class LogoutView(APIView):
     authentication_classes = [
         CookieJWTAuthentication,

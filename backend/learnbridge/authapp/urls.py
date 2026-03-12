@@ -36,6 +36,8 @@ urlpatterns = [
     # admin login/logout
     path('admin/login/', AdminLogin.as_view()),
 
+    path("refresh/", RefreshTokenView.as_view()),
+
 
 
     # GooleAuth
