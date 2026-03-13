@@ -12,26 +12,17 @@ urlpatterns = [
     path('admin/courses/toggle/<int:pk>/', AdminCourseToggleStatus.as_view()),
     path('admin/lessons/<int:course_id>/', AdminLessonView.as_view()),
 
-
-
-
     # admin category
-
 
     path('admin/categories/', AdminCategoryView.as_view()),
     path('admin/categories/<int:pk>/', AdminCategoryView.as_view()),
     path('admin/categories/toggle/<int:pk>/',
          AdminCategoryToggleStatus.as_view()),
 
-
-
-
     # Teacher Category
 
     path('categories/', TeacherCategoryView.as_view()),
     path('categories/<int:pk>/', TeacherCategoryView.as_view()),
-
-
 
     # Teacher Create Course
 
@@ -78,9 +69,6 @@ urlpatterns = [
     path("comments/like/<int:comment_id>/", ToggleCommentLikeView.as_view()),
 
     path("reviews/<int:course_id>/", CourseReviewView.as_view()),
-
-
-
 
 
 ]

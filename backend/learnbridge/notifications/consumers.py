@@ -25,7 +25,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"[NotificationConsumer] Connect error: {e}")
             await self.close()
-                
 
     async def disconnect(self, close_code):
         try:

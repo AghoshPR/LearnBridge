@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import *
 from .models import *
 from rest_framework.response import Response
+from rest_framework import status
 
 
 # Create your views here.
@@ -16,7 +17,7 @@ class LiveClassMessagesView(APIView):
             start = (page - 1) * limit
             end = start + limit
 
-            # Fetch latest messages first, then slice
+            
             messages = LiveClassMessage.objects.filter(
                 live_class_id=class_id
             ).select_related("user").order_by("-created_at")[start:end]
@@ -41,4 +42,3 @@ class LiveClassMessagesView(APIView):
             })
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

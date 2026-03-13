@@ -33,7 +33,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             print(f"Error in ChatConsumer connect: {e}")
             await self.close()
 
-    
     @database_sync_to_async
     def check_user_access(self):
         try:
@@ -57,9 +56,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         try:
             import json
             data = json.loads(text_data)
-            
+
             msg_type = data.get("type")
-            
+
             # Handle WebRTC signaling
             if msg_type in ["offer", "answer", "candidate", "join"]:
                 await self.channel_layer.group_send(
@@ -71,7 +70,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     }
                 )
                 return
-                
+
             # Handle regular chat
             message = data.get("message")
             if message:

@@ -47,12 +47,12 @@ class AdminWalletTransactionsView(APIView):
 
                     admin_share = int(
                         (t.amount * Decimal("0.20")
-                        ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+                         ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
                     )
 
                     teacher_share = int(
                         (t.amount * Decimal("0.80")
-                        ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+                         ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
                     )
 
                     if t.source == "course_fee" and t.course:
@@ -212,7 +212,8 @@ class TeacherWalletTrasactionsView(APIView):
             for t in transactions:
                 try:
                     if t.source == "course_sale" and t.course:
-                        enrollment = t.course.enrollments.order_by("-id").first()
+                        enrollment = t.course.enrollments.order_by(
+                            "-id").first()
                         purchaser = enrollment.user.username if enrollment else None
 
                     elif t.source == "live_class" and t.live_class:
@@ -235,7 +236,8 @@ class TeacherWalletTrasactionsView(APIView):
 
                     })
                 except Exception as inner_e:
-                    print(f"Error processing teacher transaction {t.id}: {inner_e}")
+                    print(
+                        f"Error processing teacher transaction {t.id}: {inner_e}")
                     continue
 
             return Response(data)

@@ -114,7 +114,7 @@ class QuestionListView(APIView):
 
             paginator = QuestionPagination()
             page = paginator.paginate_queryset(questions, request)
-            
+
             if page is not None:
                 serializer = QuestionListSerializer(page, many=True)
                 return paginator.get_paginated_response(serializer.data)

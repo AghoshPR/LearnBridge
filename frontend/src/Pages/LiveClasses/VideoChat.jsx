@@ -30,9 +30,9 @@ const RemoteVideo = ({ stream, name, isVideoOn }) => {
         ref={videoRef}
         autoPlay
         playsInline
-        className={`w-full h-full object-cover transition-opacity duration-500 ${stream && isVideoOn ? "opacity-100" : "opacity-0"}`}
+        className={`w-full h-full object-cover transition-opacity duration-500 ${stream ? "opacity-100" : "opacity-0"}`}
       />
-      {(!stream || !isVideoOn) && (
+      {!stream && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-800 rounded-full flex items-center justify-center text-white text-3xl md:text-4xl font-bold shadow-inner">
             {name?.charAt(0).toUpperCase() || "P"}
@@ -197,7 +197,19 @@ const VideoChat = () => {
 
         pc.ontrack = (event) => {
           console.log("Track received from", peerId, event.track.kind);
-          setRemoteStreams((prev) => ({ ...prev, [peerId]: event.streams[0] }));
+
+          setRemoteStreams((prev) => ({
+            ...prev,
+            [peerId]: event.streams[0],
+          }));
+
+          setParticipants((prev) => ({
+            ...prev,
+            [peerId]: {
+              ...prev[peerId],
+              isVideoOn: true,
+            },
+          }));
         };
 
         pc.onnegotiationneeded = async () => {

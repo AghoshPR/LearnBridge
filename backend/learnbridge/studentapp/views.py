@@ -49,8 +49,9 @@ class StudentProfile(APIView):
     def patch(self, request):
         try:
             user = request.user
-            serializer = StudentProfileSerializer(user, data=request.data, partial=True)
-            
+            serializer = StudentProfileSerializer(
+                user, data=request.data, partial=True)
+
             if serializer.is_valid():
                 serializer.save()
                 return Response({

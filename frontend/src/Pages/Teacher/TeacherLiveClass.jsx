@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import ReactCrop from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import React, { useEffect, useState, useRef } from "react";
+import ReactCrop from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -18,12 +18,12 @@ import {
   Trash2,
   Plus,
   X,
-  Search
-} from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import Api from '../Services/Api';
-import { logout } from '../../Store/authSlice';
+  Search,
+} from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Api from "../Services/Api";
+import { logout } from "../../Store/authSlice";
 
 async function getCroppedImg(imageElement, crop) {
   const canvas = document.createElement("canvas");
@@ -46,7 +46,7 @@ async function getCroppedImg(imageElement, crop) {
     0,
     0,
     crop.width,
-    crop.height
+    crop.height,
   );
 
   return new Promise((resolve) => {
@@ -78,66 +78,66 @@ const TeacherLiveClass = () => {
   // Form state
   const [formData, setFormData] = useState({
     id: null,
-    title: '',
-    subject: '',
-    date: '',
-    time: '',
-    durationHr: '',
-    durationMin: '',
-    fee: '',
-    status: 'scheduled',
-    description: ''
+    title: "",
+    subject: "",
+    date: "",
+    time: "",
+    durationHr: "",
+    durationMin: "",
+    fee: "",
+    status: "scheduled",
+    description: "",
   });
 
   useEffect(() => {
-    fetchClasses()
-  }, [])
+    fetchClasses();
+  }, []);
 
   const fetchClasses = async () => {
-
     try {
-
-      const res = await Api.get("/teacher/liveclass/")
-      setClasses(res.data)
-
+      const res = await Api.get("/teacher/liveclass/");
+      setClasses(res.data);
     } catch {
-      toast.error("failed to fetch classes")
+      toast.error("failed to fetch classes");
     }
-
-
-
-  }
+  };
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPageUpcoming, setCurrentPageUpcoming] = useState(1);
   const [currentPagePast, setCurrentPagePast] = useState(1);
   const itemsPerPage = 5;
 
-  const filteredClasses = classes.filter(cls =>
-    cls.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    cls.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredClasses = classes.filter(
+    (cls) =>
+      cls.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      cls.subject?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const now = new Date();
 
   const upcomingClassesFiltered = filteredClasses.filter(
-    cls => cls.status === 'scheduled'
+    (cls) => cls.status === "scheduled",
   );
 
-  const totalPagesUpcoming = Math.ceil(upcomingClassesFiltered.length / itemsPerPage);
+  const totalPagesUpcoming = Math.ceil(
+    upcomingClassesFiltered.length / itemsPerPage,
+  );
   const currentUpcoming = upcomingClassesFiltered.slice(
     (currentPageUpcoming - 1) * itemsPerPage,
-    currentPageUpcoming * itemsPerPage
+    currentPageUpcoming * itemsPerPage,
   );
 
   const pastClassesFiltered = filteredClasses.filter(
-    cls => cls.status === 'completed' || cls.status === 'cancelled' || new Date(cls.start_time) < now
+    (cls) =>
+      cls.status === "completed" ||
+      cls.status === "cancelled" ||
+      new Date(cls.start_time) < now,
   );
 
   const totalPagesPast = Math.ceil(pastClassesFiltered.length / itemsPerPage);
   const currentPast = pastClassesFiltered.slice(
     (currentPagePast - 1) * itemsPerPage,
-    currentPagePast * itemsPerPage
+    currentPagePast * itemsPerPage,
   );
 
   const handleLogout = async () => {
@@ -163,54 +163,48 @@ const TeacherLiveClass = () => {
     setCompletedCrop(null);
     setCrop();
 
-    if (mode === 'edit' && cls) {
-
+    if (mode === "edit" && cls) {
       const start = new Date(cls.start_time);
       const totalMinutes = cls.duration_minutes || 0;
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
-
 
       setIsEditMode(true);
 
       setFormData({
         id: cls.class_id,
         title: cls.title,
-        subject: cls.subject || '',
+        subject: cls.subject || "",
         date: start.toISOString().split("T")[0],
         time: start.toTimeString().slice(0, 5),
         durationHr: hours.toString(),
         durationMin: minutes.toString(),
         fee: cls.registration_fee,
         status: cls.status,
-        description: cls.description
+        description: cls.description,
       });
 
       if (cls.thumbnail) {
         setThumbnailPreview(
           cls.thumbnail.startsWith("http")
             ? cls.thumbnail
-            : `http://localhost:8000${cls.thumbnail}`
+            : `http://localhost:8000${cls.thumbnail}`,
         );
       }
-
     } else {
       setIsEditMode(false);
       setFormData({
         id: null,
-        title: '',
-        subject: '',
-        date: '',
-        time: '',
-        durationHr: '',
-        durationMin: '',
-        fee: '',
-        status: 'scheduled',
-        description: ''
+        title: "",
+        subject: "",
+        date: "",
+        time: "",
+        durationHr: "",
+        durationMin: "",
+        fee: "",
+        status: "scheduled",
+        description: "",
       });
-
-
-
     }
 
     setIsModalOpen(true);
@@ -220,27 +214,24 @@ const TeacherLiveClass = () => {
     setIsModalOpen(false);
   };
 
-
-
-
-
   const handleSave = async () => {
-
-    if (!formData.title?.trim() ||
+    if (
+      !formData.title?.trim() ||
       !formData.subject?.trim() ||
       !formData.date ||
       !formData.time ||
       formData.durationHr === "" ||
       formData.durationMin === "" ||
       formData.fee === "" ||
-      !formData.description?.trim()) {
+      !formData.description?.trim()
+    ) {
       toast.error("All fields are required");
       return;
     }
 
     const durationMinutes =
-      (parseInt(formData.durationHr || 0) * 60) +
-      parseInt(formData.durationMin || 0)
+      parseInt(formData.durationHr || 0) * 60 +
+      parseInt(formData.durationMin || 0);
 
     if (durationMinutes <= 0) {
       toast.error("Duration must be greater than 0");
@@ -274,13 +265,9 @@ const TeacherLiveClass = () => {
       return;
     }
 
-
     const endDateTime = new Date(
-      startDateTime.getTime() + durationMinutes * 60000
-    )
-
-
-
+      startDateTime.getTime() + durationMinutes * 60000,
+    );
 
     const payload = new FormData();
     payload.append("title", formData.title);
@@ -306,28 +293,24 @@ const TeacherLiveClass = () => {
     }
 
     try {
-
       if (isEditMode) {
-        await Api.put(
-          `/teacher/liveclass/${formData.id}/`, payload, {
+        await Api.put(`/teacher/liveclass/${formData.id}/`, payload, {
           headers: {
             "Content-Type": "multipart/form-data",
-          }
-        }
-        )
-        toast.success("Class updated successfully")
+          },
+        });
+        toast.success("Class updated successfully");
       } else {
         await Api.post("/teacher/liveclass/", payload, {
           headers: {
             "Content-Type": "multipart/form-data",
-          }
-        })
-        toast.success("Class scheduled successfully!")
+          },
+        });
+        toast.success("Class scheduled successfully!");
       }
 
-      fetchClasses()
-      closeModal()
-
+      fetchClasses();
+      closeModal();
     } catch (err) {
       console.error("API Error Response:", err.response?.data);
       const data = err.response?.data;
@@ -347,15 +330,7 @@ const TeacherLiveClass = () => {
 
       toast.error(errMsg);
     }
-
-
-
-
-
-
   };
-
-
 
   const handleDelete = (id) => {
     setClassToDelete(id);
@@ -382,17 +357,35 @@ const TeacherLiveClass = () => {
     setClassToDelete(null);
   };
 
-
-
   const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard', active: false },
-    { icon: User, label: 'My Profile', path: '/teacher/profile', active: false },
-    { icon: BookOpen, label: 'My Courses', path: '/teacher/courses', active: false },
-    { icon: Video, label: 'Live Classes', path: '/teacher/liveclass', active: true },
-    { icon: MessageSquare, label: 'Q&A', path: '/teacher/qa', active: false },
+    {
+      icon: LayoutDashboard,
+      label: "Dashboard",
+      path: "/teacher/dashboard",
+      active: false,
+    },
+    {
+      icon: User,
+      label: "My Profile",
+      path: "/teacher/profile",
+      active: false,
+    },
+    {
+      icon: BookOpen,
+      label: "My Courses",
+      path: "/teacher/courses",
+      active: false,
+    },
+    {
+      icon: Video,
+      label: "Live Classes",
+      path: "/teacher/liveclass",
+      active: true,
+    },
+    { icon: MessageSquare, label: "Q&A", path: "/teacher/qa", active: false },
     // { icon: Users, label: 'Students', path: '/teacher/students', active: false },
     // { icon: BarChart2, label: 'Analytics', path: '/teacher/analytics', active: false },
-    { icon: Wallet, label: 'Wallet', path: '/teacher/wallet', active: false },
+    { icon: Wallet, label: "Wallet", path: "/teacher/wallet", active: false },
   ];
 
   return (
@@ -404,9 +397,15 @@ const TeacherLiveClass = () => {
           className="p-2 bg-slate-800 rounded-lg text-white shadow-lg"
         >
           <div className="space-y-1.5">
-            <span className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-white ${isSidebarOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            <span
+              className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? "rotate-45 translate-y-2" : ""}`}
+            ></span>
+            <span
+              className={`block w-6 h-0.5 bg-white ${isSidebarOpen ? "opacity-0" : ""}`}
+            ></span>
+            <span
+              className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? "-rotate-45 -translate-y-2" : ""}`}
+            ></span>
           </div>
         </button>
       </div>
@@ -420,7 +419,9 @@ const TeacherLiveClass = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
         <div className="p-6 flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
             <BookOpen size={24} className="text-white" />
@@ -435,12 +436,20 @@ const TeacherLiveClass = () => {
             <button
               key={index}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
-                ? 'bg-purple-600 shadow-lg shadow-purple-900/40 text-white'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
+                item.active
+                  ? "bg-purple-600 shadow-lg shadow-purple-900/40 text-white"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+              }`}
             >
-              <item.icon size={20} className={item.active ? 'text-white' : 'text-slate-500 group-hover:text-white'} />
+              <item.icon
+                size={20}
+                className={
+                  item.active
+                    ? "text-white"
+                    : "text-slate-500 group-hover:text-white"
+                }
+              />
               <span className="font-medium text-sm">{item.label}</span>
             </button>
           ))}
@@ -451,11 +460,15 @@ const TeacherLiveClass = () => {
             <div className="bg-slate-900 p-3 rounded-[10px] flex items-center justify-between group-hover:bg-slate-800 transition-colors relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/20 text-lg">
-                  {username ? username.charAt(0).toUpperCase() : 'T'}
+                  {username ? username.charAt(0).toUpperCase() : "T"}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">{username || 'Teacher'}</span>
-                  <span className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-wide">Instructor</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    {username || "Teacher"}
+                  </span>
+                  <span className="text-[10px] text-slate-400 mt-1 font-medium uppercase tracking-wide">
+                    Instructor
+                  </span>
                 </div>
               </div>
               <button
@@ -475,11 +488,15 @@ const TeacherLiveClass = () => {
         <div className="max-w-6xl mx-auto mt-12 md:mt-0">
           <header className="flex flex-col sm:flex-row justify-between sm:items-start mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Live Classes</h1>
-              <p className="text-slate-400">Schedule and manage your live teaching sessions</p>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Live Classes
+              </h1>
+              <p className="text-slate-400">
+                Schedule and manage your live teaching sessions
+              </p>
             </div>
             <button
-              onClick={() => openModal('add')}
+              onClick={() => openModal("add")}
               className="px-4 py-2 bg-purple-500 hover:bg-purple-600 border border-purple-400/20 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors whitespace-nowrap"
             >
               <Plus size={18} />
@@ -489,7 +506,10 @@ const TeacherLiveClass = () => {
 
           {/* Search Bar */}
           <div className="relative mb-8">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
+            <Search
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"
+              size={20}
+            />
             <input
               type="text"
               placeholder="Search live classes..."
@@ -511,30 +531,32 @@ const TeacherLiveClass = () => {
             </div>
 
             <div className="space-y-4">
-
               {currentUpcoming.length === 0 && (
-                <p className="text-slate-400 text-sm">No upcoming classes found.</p>
+                <p className="text-slate-400 text-sm">
+                  No upcoming classes found.
+                </p>
               )}
 
               {currentUpcoming.map((cls) => (
-                <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-5 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div
+                  key={cls.class_id}
+                  className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-5 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-bold text-white">{cls.title} - {cls.subject && (
-                        <span className="text-slate-400 text-sm mb-2">
-                          {cls.subject}
-                        </span>
-                      )}</h3>
+                      <h3 className="text-lg font-bold text-white">
+                        {cls.title} -{" "}
+                        {cls.subject && (
+                          <span className="text-slate-400 text-sm mb-2">
+                            {cls.subject}
+                          </span>
+                        )}
+                      </h3>
 
                       <span className="px-5 py-1  bg-purple-500/10 text-purple-400 rounded-full text-xs font-bold border border-purple-500/20">
                         {cls.status}
                       </span>
-
-
                     </div>
-
-
-
 
                     <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-300">
                       <div className="flex items-center gap-1.5">
@@ -543,7 +565,10 @@ const TeacherLiveClass = () => {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock size={14} className="text-purple-400" />
-                        {new Date(cls.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(cls.start_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Users size={14} className="text-green-400" />
@@ -553,26 +578,26 @@ const TeacherLiveClass = () => {
                       <div className="flex items-center gap-1.5">
                         <Clock size={14} className="text-yellow-400" />
                         {cls.duration_minutes >= 60
-                          ? `${Math.floor(cls.duration_minutes / 60)}h ${cls.duration_minutes % 60
-                          }m`
+                          ? `${Math.floor(cls.duration_minutes / 60)}h ${
+                              cls.duration_minutes % 60
+                            }m`
                           : `${cls.duration_minutes}m`}
                       </div>
-
-
-
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 mt-4 md:mt-0">
                     <button
-                      onClick={() => navigate(`/liveclass/room/${cls.class_id}`)}
-
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+                      onClick={() =>
+                        navigate(`/liveclass/room/${cls.class_id}`)
+                      }
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
+                    >
                       <Video size={16} />
                       Start Class
                     </button>
                     <button
-                      onClick={() => openModal('edit', cls)}
+                      onClick={() => openModal("edit", cls)}
                       className="px-4 py-2 bg-white text-slate-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-bold shadow-sm"
                     >
                       <Edit2 size={16} className="text-slate-500" />
@@ -589,7 +614,9 @@ const TeacherLiveClass = () => {
               <div className="flex justify-center items-center gap-2 mt-6">
                 <button
                   disabled={currentPageUpcoming === 1}
-                  onClick={() => setCurrentPageUpcoming(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPageUpcoming((prev) => Math.max(prev - 1, 1))
+                  }
                   className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
                 >
                   Prev
@@ -599,17 +626,22 @@ const TeacherLiveClass = () => {
                     key={i}
                     onClick={() => setCurrentPageUpcoming(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                ${currentPageUpcoming === i + 1
-                        ? "bg-purple-600 text-white"
-                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                      }`}
+                                ${
+                                  currentPageUpcoming === i + 1
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                }`}
                   >
                     {i + 1}
                   </button>
                 ))}
                 <button
                   disabled={currentPageUpcoming === totalPagesUpcoming}
-                  onClick={() => setCurrentPageUpcoming(prev => Math.min(prev + 1, totalPagesUpcoming))}
+                  onClick={() =>
+                    setCurrentPageUpcoming((prev) =>
+                      Math.min(prev + 1, totalPagesUpcoming),
+                    )
+                  }
                   className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
                 >
                   Next
@@ -628,23 +660,32 @@ const TeacherLiveClass = () => {
               )}
 
               {currentPast.map((cls) => (
-                <div key={cls.class_id} className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-4 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div
+                  key={cls.class_id}
+                  className="bg-[#1a1f34] border border-slate-800/50 rounded-xl p-4 hover:border-slate-700 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 flex-shrink-0">
                       <Video size={20} className="text-purple-400" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white mb-1">{cls.title}</h3>
+                      <h3 className="text-base font-bold text-white mb-1">
+                        {cls.title}
+                      </h3>
                       <p className="text-slate-400 text-sm">{cls.subject}</p>
                     </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 md:gap-8">
-                    <div className="text-sm font-medium text-slate-400">{new Date(cls.start_time).toLocaleString()}</div>
+                    <div className="text-sm font-medium text-slate-400">
+                      {new Date(cls.start_time).toLocaleString()}
+                    </div>
 
-                    <div className="text-sm font-medium text-purple-400">{cls.registered_count} attended</div>
+                    <div className="text-sm font-medium text-purple-400">
+                      {cls.registered_count} attended
+                    </div>
                     <span className="px-4 py-1.5 bg-transparent text-white-500 rounded-full text-xs font-bold border border-slate-700 capitalize">
-                      {cls.status === 'scheduled' ? 'completed' : cls.status}
+                      {cls.status === "scheduled" ? "completed" : cls.status}
                     </span>
                   </div>
                 </div>
@@ -656,7 +697,9 @@ const TeacherLiveClass = () => {
               <div className="flex justify-center items-center gap-2 mt-6">
                 <button
                   disabled={currentPagePast === 1}
-                  onClick={() => setCurrentPagePast(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPagePast((prev) => Math.max(prev - 1, 1))
+                  }
                   className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
                 >
                   Prev
@@ -666,17 +709,22 @@ const TeacherLiveClass = () => {
                     key={i}
                     onClick={() => setCurrentPagePast(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                ${currentPagePast === i + 1
-                        ? "bg-purple-600 text-white"
-                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                      }`}
+                                ${
+                                  currentPagePast === i + 1
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                                }`}
                   >
                     {i + 1}
                   </button>
                 ))}
                 <button
                   disabled={currentPagePast === totalPagesPast}
-                  onClick={() => setCurrentPagePast(prev => Math.min(prev + 1, totalPagesPast))}
+                  onClick={() =>
+                    setCurrentPagePast((prev) =>
+                      Math.min(prev + 1, totalPagesPast),
+                    )
+                  }
                   className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-sm disabled:opacity-50 hover:bg-slate-800 transition-colors"
                 >
                   Next
@@ -694,7 +742,7 @@ const TeacherLiveClass = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 sm:p-6 border-b border-gray-100 shrink-0">
               <h2 className="text-xl font-bold text-gray-900">
-                {isEditMode ? 'Edit Live Class' : 'Schedule New Class'}
+                {isEditMode ? "Edit Live Class" : "Schedule New Class"}
               </h2>
               <button
                 onClick={closeModal}
@@ -708,21 +756,29 @@ const TeacherLiveClass = () => {
             <div className="p-5 sm:p-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Class Title *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Class Title *
+                  </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                     placeholder=""
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Subject/Course *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Subject/Course *
+                  </label>
                   <input
                     type="text"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subject: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                     placeholder=""
                   />
@@ -731,20 +787,28 @@ const TeacherLiveClass = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="relative">
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Date *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Date *
+                  </label>
                   <input
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, date: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                   />
                 </div>
                 <div className="relative">
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Time *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Time *
+                  </label>
                   <input
                     type="time"
                     value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, time: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                   />
                 </div>
@@ -752,26 +816,43 @@ const TeacherLiveClass = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Duration</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Duration
+                  </label>
                   <div className="flex gap-2">
                     <select
                       value={formData.durationHr}
-                      onChange={(e) => setFormData({ ...formData, durationHr: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, durationHr: e.target.value })
+                      }
                       className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
                     >
-                      <option value="" disabled>Hr</option>
-                      {[...Array(13).keys()].map(h => (
-                        <option key={`hr-${h}`} value={h}>{h} hr</option>
+                      <option value="" disabled>
+                        Hr
+                      </option>
+                      {[...Array(13).keys()].map((h) => (
+                        <option key={`hr-${h}`} value={h}>
+                          {h} hr
+                        </option>
                       ))}
                     </select>
                     <select
                       value={formData.durationMin}
-                      onChange={(e) => setFormData({ ...formData, durationMin: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          durationMin: e.target.value,
+                        })
+                      }
                       className="w-1/2 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
                     >
-                      <option value="" disabled>Min</option>
-                      {Array.from({ length: 60 }, (_, i) => i).map(m => (
-                        <option key={`min-${m}`} value={m}>{m} min</option>
+                      <option value="" disabled>
+                        Min
+                      </option>
+                      {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                        <option key={`min-${m}`} value={m}>
+                          {m} min
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -790,21 +871,29 @@ const TeacherLiveClass = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Registration Amount (₹)</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Registration Amount (₹)
+                  </label>
                   <input
                     type="number"
                     value={formData.fee}
-                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fee: e.target.value })
+                    }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800"
                     placeholder="e.g. 200"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1.5">Status</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                    Status
+                  </label>
                   {isEditMode ? (
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, status: e.target.value })
+                      }
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
                     >
                       <option value="scheduled">Scheduled</option>
@@ -849,7 +938,11 @@ const TeacherLiveClass = () => {
                         alt="Crop preview"
                         src={thumbnailPreview}
                         crossOrigin="anonymous"
-                        style={{ maxHeight: "300px", width: "auto", objectFit: "contain" }}
+                        style={{
+                          maxHeight: "300px",
+                          width: "auto",
+                          objectFit: "contain",
+                        }}
                       />
                     </ReactCrop>
                   </div>
@@ -857,12 +950,20 @@ const TeacherLiveClass = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">Description</label>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                  Description
+                </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full h-24 p-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-800"
-                  placeholder={!isEditMode ? "" : "Describe what will be covered in this class..."}
+                  placeholder={
+                    !isEditMode
+                      ? ""
+                      : "Describe what will be covered in this class..."
+                  }
                 ></textarea>
               </div>
 
@@ -877,7 +978,7 @@ const TeacherLiveClass = () => {
                   onClick={handleSave}
                   className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-bold transition-colors text-sm hover:bg-blue-700"
                 >
-                  {isEditMode ? 'Update Class' : 'Schedule Class'}
+                  {isEditMode ? "Update Class" : "Schedule Class"}
                 </button>
               </div>
             </div>
@@ -889,8 +990,13 @@ const TeacherLiveClass = () => {
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 relative">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Confirm Delete</h2>
-            <p className="text-gray-600 mb-6">Are you sure you want to delete this class? This action cannot be undone.</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Confirm Delete
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this class? This action cannot be
+              undone.
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={cancelDelete}

@@ -4,6 +4,8 @@ from channels.db import database_sync_to_async
 from .models import LiveClass, LiveClassRegistration
 
 # WebSocket handler class
+
+
 class LiveClassConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
@@ -12,7 +14,8 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
             self.room_group_name = f"liveclass_{self.class_id}"
             self.user = self.scope["user"]
 
-            print(f"[LiveClassConsumer] Connecting: User={self.user}, ClassID={self.class_id}")
+            print(
+                f"[LiveClassConsumer] Connecting: User={self.user}, ClassID={self.class_id}")
 
             if not self.user.is_authenticated:
                 print("[LiveClassConsumer] Rejecting: User not authenticated")
@@ -21,7 +24,8 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
 
             is_allowed = await self.is_user_allowed()
             if not is_allowed:
-                print(f"[LiveClassConsumer] Rejecting: User {self.user.id} not allowed in class {self.class_id}")
+                print(
+                    f"[LiveClassConsumer] Rejecting: User {self.user.id} not allowed in class {self.class_id}")
                 await self.close()
                 return
 
@@ -31,7 +35,8 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
             )
 
             await self.accept()
-            print(f"[LiveClassConsumer] Accepted: User {self.user.id} joined {self.room_group_name}")
+            print(
+                f"[LiveClassConsumer] Accepted: User {self.user.id} joined {self.room_group_name}")
         except Exception as e:
             print(f"[LiveClassConsumer] Connection Error: {e}")
             await self.close()
@@ -53,11 +58,13 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, close_code):
         try:
-            print(f"[LiveClassConsumer] Disconnecting: User={self.user.id if self.user.is_authenticated else 'Anon'} ({self.user.username if self.user.is_authenticated else 'Anon'}), Code={close_code}")
-            
+            print(
+                f"[LiveClassConsumer] Disconnecting: User={self.user.id if self.user.is_authenticated else 'Anon'} ({self.user.username if self.user.is_authenticated else 'Anon'}), Code={close_code}")
+
             # Notify others that this peer is leaving
             if hasattr(self, 'peer_id') and hasattr(self, 'room_group_name'):
-                print(f"[LiveClassConsumer] Broadcasting leave for peer: {self.peer_id}")
+                print(
+                    f"[LiveClassConsumer] Broadcasting leave for peer: {self.peer_id}")
                 try:
                     await self.channel_layer.group_send(
                         self.room_group_name,
@@ -93,9 +100,10 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
             # Handle Chat Messages
             if "message" in content and not msg_type:
                 message_text = content["message"]
-                print(f"[LiveClassConsumer] Chat received from {self.user.username}")
+                print(
+                    f"[LiveClassConsumer] Chat received from {self.user.username}")
                 await self.save_live_message(message_text)
-                
+
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -108,7 +116,8 @@ class LiveClassConsumer(AsyncJsonWebsocketConsumer):
 
             # Handle WebRTC Signals
             if msg_type in ["offer", "answer", "candidate", "join", "join_ack", "leave", "media-toggle"]:
-                print(f"[LiveClassConsumer] Signal: {msg_type} from {self.user.username} (peer: {getattr(self, 'peer_id', 'unknown')})")
+                print(
+                    f"[LiveClassConsumer] Signal: {msg_type} from {self.user.username} (peer: {getattr(self, 'peer_id', 'unknown')})")
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {

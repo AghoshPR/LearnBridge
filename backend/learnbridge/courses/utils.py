@@ -10,8 +10,6 @@ s3 = boto3.client(
 )
 
 
-
-
 def upload_video(file, course_id):
     key = f"courses/{course_id}/videos/{uuid4()}_{file.name}"
 

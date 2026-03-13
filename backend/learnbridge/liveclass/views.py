@@ -1,3 +1,4 @@
+from .pagination import LiveClassPagination
 from django.shortcuts import render
 
 # Create your views here.
@@ -139,9 +140,6 @@ class TeacherLiveClassDetailView(APIView):
 # student side
 
 
-from .pagination import LiveClassPagination
-
-
 class StudentUpCommingLiveClassesView(APIView):
 
     def get(self, request):
@@ -165,15 +163,18 @@ class StudentLiveNowClassesView(APIView):
     def get(self, request):
         try:
             now = timezone.now()
-            
+
             # Base filter: currently happening
-            query = Q(status="scheduled") & Q(start_time__lte=now) & Q(end_time__gte=now)
-            
+            query = Q(status="scheduled") & Q(
+                start_time__lte=now) & Q(end_time__gte=now)
+
             # If user is authenticated, also show classes they are registered for (if scheduled)
             if request.user.is_authenticated:
-                query |= Q(status="scheduled") & Q(registrations__user=request.user)
-            
-            classes = LiveClass.objects.filter(query).distinct().order_by("start_time")
+                query |= Q(status="scheduled") & Q(
+                    registrations__user=request.user)
+
+            classes = LiveClass.objects.filter(
+                query).distinct().order_by("start_time")
 
             paginator = LiveClassPagination()
             page = paginator.paginate_queryset(classes, request)
@@ -189,7 +190,8 @@ class StudentPastLiveClassesView(APIView):
         try:
             now = timezone.now()
             classes = LiveClass.objects.filter(
-                Q(status="completed") | Q(status="cancelled") | Q(end_time__lt=now)
+                Q(status="completed") | Q(
+                    status="cancelled") | Q(end_time__lt=now)
             ).order_by("-start_time")
 
             paginator = LiveClassPagination()

@@ -15,7 +15,7 @@ urlpatterns = [
     path('public-tags/', PublicTagListView.as_view()),
     path('questions/', QuestionListView.as_view()),
     path('questions/create/', QuestionCreateView.as_view()),
-    
+
     path('questions/editquestion/<int:pk>/', QuestionUpdateView.as_view()),
     path('questions/deletequestion/<int:pk>/', QuestionDeleteView.as_view()),
     path('questions/<int:pk>/', QuestionDetailView.as_view()),
@@ -40,8 +40,9 @@ urlpatterns = [
 
     path('teacher/questions/', TeacherQuestionListView.as_view()),
     path('teacher/answer/<int:pk>/', TeacherAnswerCreateView.as_view()),
-    
+
     # admin qna
     path('admin/questions/', AdminQuestionListView.as_view()),
-    path('admin/questions/<int:pk>/action/', AdminQuestionActionView.as_view()),
+    path('admin/questions/<int:pk>/action/',
+         AdminQuestionActionView.as_view()),
 ]

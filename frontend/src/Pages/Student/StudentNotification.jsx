@@ -30,30 +30,22 @@ const StudentNotification = () => {
   const { isAuthenticated, username } = useSelector((state) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-
   const { notifications, setNotifications } = useNotifications();
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
-
   const fetchNotifications = async () => {
-  try {
-    const res = await Api.get("/notification/");
-    setNotifications(res.data); // updates global state
-  } catch (error) {
-    toast.error(
-      error.response?.data?.error ||
-      error.message ||
-      "Something went wrong"
-    );
-  }
-};
-
-
-
-  
+    try {
+      const res = await Api.get("/notification/");
+      setNotifications(res.data); // updates global state
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || error.message || "Something went wrong",
+      );
+    }
+  };
 
   const markAsRead = async (id) => {
     try {
@@ -106,9 +98,24 @@ const StudentNotification = () => {
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link to="/courses" className="hover:text-blue-600 transition-colors">Explore</Link>
-              <Link to="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
-              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+              <Link
+                to="/courses"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </Link>
+              <Link
+                to="/question-community"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Q&A Community
+              </Link>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
             </div>
           </div>
 
@@ -126,7 +133,10 @@ const StudentNotification = () => {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-gray-100"></span>
             </button>
-            <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
+            <button
+              onClick={() => navigate("/wishlist")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            >
               <Heart className="w-5 h-5" />
             </button>
 
@@ -227,15 +237,34 @@ const StudentNotification = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <Link to="/courses" className="text-gray-700 font-medium">Explore</Link>
-            <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+            <Link to="/courses" className="text-gray-700 font-medium">
+              Explore
+            </Link>
+            <Link
+              to="/question-community"
+              className="text-gray-700 font-medium"
+            >
+              Q&A Community
+            </Link>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">
+              Live Classes
+            </Link>
             <hr className="border-gray-100" />
 
             {!isAuthenticated ? (
               <div className="flex flex-col gap-3">
-                <button onClick={() => navigate("/student/login")} className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>
-                <button onClick={() => navigate("/student/register")} className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm">Sign Up</button>
+                <button
+                  onClick={() => navigate("/student/login")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => navigate("/student/register")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+                >
+                  Sign Up
+                </button>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -243,13 +272,44 @@ const StudentNotification = () => {
                   <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {username ? username.charAt(0).toUpperCase() : "U"}
                   </div>
-                  <span className="text-sm font-medium">{username || "User"}</span>
+                  <span className="text-sm font-medium">
+                    {username || "User"}
+                  </span>
                 </div>
-                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
-                <button onClick={() => { dispatch(logout()); navigate("/student/login", { replace: true }); toast.success("Logged out successfully 👋"); }} className="text-red-600 font-medium text-left">Logout</button>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>

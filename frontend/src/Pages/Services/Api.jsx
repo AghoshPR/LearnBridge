@@ -12,11 +12,10 @@ Api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    
     const auth = JSON.parse(localStorage.getItem("auth"));
 
     if (
-      auth?.isAuthenticated &&   
+      auth?.isAuthenticated &&
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url.includes("/auth/refresh/")
@@ -27,7 +26,6 @@ Api.interceptors.response.use(
         await Api.post("/auth/refresh/");
         return Api(originalRequest);
       } catch (err) {
-
         localStorage.removeItem("auth");
 
         toast.error("Session expired. Please login again.");
@@ -41,7 +39,7 @@ Api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default Api;

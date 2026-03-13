@@ -15,7 +15,8 @@ urlpatterns = [
     path("courses/<int:course_id>/lessons/",
          StudentCourseLessonsView.as_view()),
     path("lessons/<int:lesson_id>/video/", StudentLessonVideoView.as_view()),
-    path("courses/<int:course_id>/status/", CourseEnrollmentStatusView.as_view()),
+    path("courses/<int:course_id>/status/",
+         CourseEnrollmentStatusView.as_view()),
 
 
 ]

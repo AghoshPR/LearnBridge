@@ -1,14 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Search, ShoppingCart, Bell, User, Menu, X, LogOut, Heart, BookOpen, Package,
-  Trash2, ShoppingBag, ArrowLeft, Ticket
-} from 'lucide-react';
-import Logo from '../../assets/learnbridge-logo.png';
-import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../../Store/authSlice';
-import { useNavigate, Link } from 'react-router-dom';
+  Search,
+  ShoppingCart,
+  Bell,
+  User,
+  Menu,
+  X,
+  LogOut,
+  Heart,
+  BookOpen,
+  Package,
+  Trash2,
+  ShoppingBag,
+  ArrowLeft,
+  Ticket,
+} from "lucide-react";
+import Logo from "../../assets/learnbridge-logo.png";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../../Store/authSlice";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import Api from '../Services/Api';
+import Api from "../Services/Api";
 
 const StudentWishlist = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,48 +36,42 @@ const StudentWishlist = () => {
     setIsDeleteModalOpen(true);
   };
 
-
-
-
-
-  const [wishlistItems, setWishlistItems] = useState([])
+  const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-    fetchWishlist()
-  }, [])
+    fetchWishlist();
+  }, []);
 
   const fetchWishlist = async () => {
     try {
-      const res = await Api.get("/student/wishlist")
-      setWishlistItems(res.data)
+      const res = await Api.get("/student/wishlist");
+      setWishlistItems(res.data);
     } catch (err) {
-      toast.error("Failed to load wishlist")
+      toast.error("Failed to load wishlist");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
+  };
 
   const confirmDelete = async () => {
     try {
-      await Api.delete(`/student/wishlist/remove/${itemToDelete.course}/`)
+      await Api.delete(`/student/wishlist/remove/${itemToDelete.course}/`);
       toast.success("Removed from wishlist");
-      setWishlistItems(prev =>
-        prev.filter(item => item.course !== itemToDelete.course)
+      setWishlistItems((prev) =>
+        prev.filter((item) => item.course !== itemToDelete.course),
       );
-
     } catch {
-      toast.error("Failed to remove")
+      toast.error("Failed to remove");
     } finally {
-      setIsDeleteModalOpen(false)
-      setItemToDelete(null)
-
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
     }
-  }
+  };
 
-  const totalValue = wishlistItems.reduce((acc, item) => acc + (parseFloat(item.price) || 0), 0).toFixed(2);
+  const totalValue = wishlistItems
+    .reduce((acc, item) => acc + (parseFloat(item.price) || 0), 0)
+    .toFixed(2);
 
   if (loading) {
     return (
@@ -77,12 +83,7 @@ const StudentWishlist = () => {
     );
   }
 
-
   return (
-
-
-
-
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col">
       {/* Navbar (Copied from Home.jsx) */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
@@ -90,32 +91,60 @@ const StudentWishlist = () => {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+              <span className="text-xl font-bold text-gray-900">
+                LearnBridge
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-              <a href="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+              <Link
+                to="/courses"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </Link>
+              <a
+                href="/question-community"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Q&A Community
+              </a>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/student/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/cart")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <ShoppingCart className="w-5 h-5" />
               {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
-            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/notifications")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <Bell className="w-5 h-5" />
               {/* <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
 
-            <button onClick={() => navigate('/student/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-blue-600 bg-blue-50 relative">
+            <button
+              onClick={() => navigate("/student/wishlist")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-blue-600 bg-blue-50 relative"
+            >
               <Heart className="w-5 h-5" />
             </button>
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
+                <span className="text-sm font-medium">
+                  {isAuthenticated ? `Hi, ${username}` : "User"}
+                </span>
 
                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                   {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
@@ -130,7 +159,7 @@ const StudentWishlist = () => {
                       onClick={() => navigate("/student/login")}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
                     >
-                      <User className='w-4 h-4' />
+                      <User className="w-4 h-4" />
                       Login
                     </button>
                     <button
@@ -145,19 +174,31 @@ const StudentWishlist = () => {
 
                 {isAuthenticated && (
                   <>
-                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                    <button
+                      onClick={() => navigate("/student/profile")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
+                    >
                       <User className="w-4 h-4" />
                       Profile
                     </button>
-                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/mycourse")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
-                    <button onClick={() => navigate("/student/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/student/wishlist")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
-                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/student/coupons")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Ticket className="w-4 h-4" />
                       Coupons
                     </button>
@@ -178,8 +219,15 @@ const StudentWishlist = () => {
               </div>
             </div>
 
-            <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -187,24 +235,55 @@ const StudentWishlist = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
-            <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 font-medium text-left"
+            >
+              Explore
+            </button>
+            <a href="#" className="text-gray-700 font-medium">
+              Q&A Community
+            </a>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">
+              Live Classes
+            </Link>
             <hr className="border-gray-100" />
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
               </div>
-              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
+              <span className="text-sm font-medium">
+                {isAuthenticated ? username : "Guest"}
+              </span>
             </div>
 
             {isAuthenticated && (
               <div className="flex flex-col gap-3 mt-2">
-                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                <button onClick={() => navigate("/student/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/student/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
                 <button
                   onClick={() => {
                     dispatch(logout());
@@ -231,8 +310,11 @@ const StudentWishlist = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* ITEMS */}
             <div className="flex-1 space-y-4">
-              {wishlistItems.map(item => (
-                <div key={item.id} className="bg-white p-4 rounded-xl flex gap-6 border">
+              {wishlistItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white p-4 rounded-xl flex gap-6 border"
+                >
                   <img
                     src={item.thumbnail}
                     alt={item.title}
@@ -259,7 +341,10 @@ const StudentWishlist = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <button onClick={()=>navigate('/cart')} className="border px-4 py-2 rounded-lg flex gap-2 items-center cursor-pointer">
+                    <button
+                      onClick={() => navigate("/cart")}
+                      className="border px-4 py-2 rounded-lg flex gap-2 items-center cursor-pointer"
+                    >
                       <ShoppingBag size={16} /> Go to Cart
                     </button>
                     <button
@@ -289,9 +374,6 @@ const StudentWishlist = () => {
         )}
       </main>
 
-
-
-
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -300,9 +382,15 @@ const StudentWishlist = () => {
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trash2 className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Remove from Wishlist?</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Remove from Wishlist?
+              </h3>
               <p className="text-gray-500 mb-6">
-                Are you sure you want to remove <span className="font-semibold text-gray-900">"{itemToDelete?.title}"</span> from your wishlist?
+                Are you sure you want to remove{" "}
+                <span className="font-semibold text-gray-900">
+                  "{itemToDelete?.title}"
+                </span>{" "}
+                from your wishlist?
               </p>
 
               <div className="flex gap-3">
@@ -325,6 +413,6 @@ const StudentWishlist = () => {
       )}
     </div>
   );
-}
+};
 
 export default StudentWishlist;

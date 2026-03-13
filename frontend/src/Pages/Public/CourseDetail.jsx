@@ -109,8 +109,8 @@ const CourseDetail = () => {
                             <span className="text-xl font-bold text-gray-900">LearnBridge</span>
                         </div>
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <a href="#" className="hover:text-blue-600 transition-colors">Explore</a>
-                            <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
+                            <Link to = "/courses" className="hover:text-blue-600 transition-colors">Explore</Link>
+                            <Link to = "/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</Link>
                             <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
                         </div>
                     </div>

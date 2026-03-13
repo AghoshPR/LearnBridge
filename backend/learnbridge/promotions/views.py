@@ -17,7 +17,8 @@ class AdminOfferListView(APIView):
 
     def get(self, request):
         try:
-            offers = Offer.objects.filter(is_deleted=False).order_by("-created_at")
+            offers = Offer.objects.filter(
+                is_deleted=False).order_by("-created_at")
             serializer = OfferSerializer(offers, many=True)
             return Response(serializer.data)
         except Exception as e:
@@ -51,7 +52,8 @@ class AdminOfferUpdateView(APIView):
             except Offer.DoesNotExist:
                 return Response({"error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            serializers = OfferSerializer(offer, data=request.data, partial=True)
+            serializers = OfferSerializer(
+                offer, data=request.data, partial=True)
             if serializers.is_valid():
                 serializers.save()
                 return Response(serializers.data)
@@ -107,7 +109,7 @@ class AdminCouponCreateView(APIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -123,12 +125,13 @@ class AdminCouponUpdateView(APIView):
                 coupon = Coupon.objects.get(pk=pk)
             except Coupon.DoesNotExist:
                 return Response({"error": "Coupon not found"}, status=status.HTTP_404_NOT_FOUND)
-            
-            serializer = CouponSerializer(coupon, data=request.data, partial=True)
+
+            serializer = CouponSerializer(
+                coupon, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -174,7 +177,8 @@ class StudentCouponListView(APIView):
                 if c.max_uses_per_user == 0:
                     valid_coupons.append(c)
                 else:
-                    user_uses = CouponUsage.objects.filter(coupon=c, user=request.user).count()
+                    user_uses = CouponUsage.objects.filter(
+                        coupon=c, user=request.user).count()
                     if user_uses < c.max_uses_per_user:
                         valid_coupons.append(c)
 
@@ -200,7 +204,7 @@ class ApplyCouponView(APIView):
 
             if not code:
                 return Response({"error": "Coupon code required"}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             try:
                 coupon = Coupon.objects.get(code__iexact=code, is_active=True)
             except Coupon.DoesNotExist:
@@ -210,19 +214,21 @@ class ApplyCouponView(APIView):
 
             if coupon.max_uses and coupon.used_count >= coupon.max_uses:
                 return Response({"error": "Coupon usage limit reached"}, status=status.HTTP_400_BAD_REQUEST)
-                
+
             if coupon.max_uses_per_user:
-                user_uses = CouponUsage.objects.filter(coupon=coupon, user=user).count()
+                user_uses = CouponUsage.objects.filter(
+                    coupon=coupon, user=user).count()
                 if user_uses >= coupon.max_uses_per_user:
                     return Response({"error": "You have reached your usage limit for this coupon"}, status=status.HTTP_400_BAD_REQUEST)
 
             # cart
             cart = getattr(request.user, 'cart', None)
             if not cart:
-                 return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
 
             cart_serializer = CartSerializer(cart)
-            cart_total = Decimal(str(cart_serializer.data.get("total_amount", "0")))
+            cart_total = Decimal(
+                str(cart_serializer.data.get("total_amount", "0")))
 
             if cart_total < coupon.min_purchase_amount:
                 return Response({
@@ -231,7 +237,8 @@ class ApplyCouponView(APIView):
 
             # Calculate discount
             if coupon.discount_type == "percentage":
-                discount = cart_total * Decimal(str(coupon.discount_value)) / 100
+                discount = cart_total * \
+                    Decimal(str(coupon.discount_value)) / 100
             else:
                 discount = Decimal(str(coupon.discount_value))
 

@@ -29,7 +29,8 @@ class Question(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, null=True, blank=True)
     title = models.CharField(max_length=255)
     body = models.TextField()
     tags = models.ManyToManyField(Tag, through="QuestionTag")

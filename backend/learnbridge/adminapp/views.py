@@ -17,7 +17,6 @@ from studentapp.models import *
 from qna.models import Question
 
 
-
 # admin teacher approve requests
 
 class PendingTeachersView(APIView):
@@ -136,7 +135,8 @@ class ApproveTeacherView(APIView):
     def post(self, request, id):
         try:
             try:
-                profile = TeacherProfile.objects.select_related('user').get(id=id)
+                profile = TeacherProfile.objects.select_related(
+                    'user').get(id=id)
             except TeacherProfile.DoesNotExist:
                 return Response(
                     {"error": "Teacher profile not found"},
@@ -175,7 +175,8 @@ class BlockTeacherView(APIView):
     def post(self, request, id):
         try:
             try:
-                profile = TeacherProfile.objects.select_related("user").get(id=id)
+                profile = TeacherProfile.objects.select_related(
+                    "user").get(id=id)
             except TeacherProfile.DoesNotExist:
                 return Response(
                     {"error": "Teacher profile not found"},
@@ -198,7 +199,8 @@ class UnBlockTeacherView(APIView):
     def post(self, request, id):
         try:
             try:
-                profile = TeacherProfile.objects.select_related("user").get(id=id)
+                profile = TeacherProfile.objects.select_related(
+                    "user").get(id=id)
             except TeacherProfile.DoesNotExist:
                 return Response(
                     {"error": "Teacher profile not found"},
@@ -396,7 +398,7 @@ class AdminTeacherDeleteView(APIView):
                     {"error": "Teacher not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
-            
+
             user = profile.user
             profile.is_deleted = True
             profile.save()
@@ -430,18 +432,23 @@ class AdminPendingTeacherDetailView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class AdminDashboardStatsView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
         try:
-            total_users = User.objects.filter(role="student", is_deleted=False).count()
-            active_courses = Course.objects.filter(status="published", is_deleted=False).count()
-            pending_teachers = TeacherProfile.objects.filter(status="pending").count()
+            total_users = User.objects.filter(
+                role="student", is_deleted=False).count()
+            active_courses = Course.objects.filter(
+                status="published", is_deleted=False).count()
+            pending_teachers = TeacherProfile.objects.filter(
+                status="pending").count()
             qna_posts = Question.objects.filter(status="active").count()
 
             # Recent Users
-            recent_users = User.objects.filter(role="student", is_deleted=False).order_by("-date_joined")[:5]
+            recent_users = User.objects.filter(
+                role="student", is_deleted=False).order_by("-date_joined")[:5]
             recent_users_data = [
                 {
                     "id": u.id,
@@ -452,7 +459,8 @@ class AdminDashboardStatsView(APIView):
             ]
 
             # Recent Courses
-            recent_courses = Course.objects.filter(is_deleted=False).order_by("-created_at")[:5]
+            recent_courses = Course.objects.filter(
+                is_deleted=False).order_by("-created_at")[:5]
             recent_courses_data = [
                 {
                     "id": c.id,

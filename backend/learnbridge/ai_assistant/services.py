@@ -6,6 +6,7 @@ client = genai.Client(
     api_key=settings.GEMINI_API_KEY,
 )
 
+
 def ask_gemini(question):
     try:
         system_prompt = """

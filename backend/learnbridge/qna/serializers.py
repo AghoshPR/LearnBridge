@@ -42,7 +42,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             question.tags.set(tag_ids)
 
         return question
-    
+
     def update(self, instance, validated_data):
         tag_ids = validated_data.pop("tag_ids", None)
 
@@ -156,7 +156,8 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 class TeacherQuestionSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="user.username", read_only=True)
     tags = AdminTagSerializer(many=True, read_only=True)
-    answers_count = serializers.IntegerField(source="answers.count", read_only=True)
+    answers_count = serializers.IntegerField(
+        source="answers.count", read_only=True)
     course = serializers.CharField(source="course.title", read_only=True)
     upvotes = serializers.IntegerField(source="likes_count", read_only=True)
 

@@ -1,7 +1,7 @@
 
 
 from pathlib import Path
-from decouple import config,Csv
+from decouple import config, Csv
 from datetime import timedelta
 
 import cloudinary
@@ -88,7 +88,6 @@ CORS_ALLOWED_ORIGINS = config(
 ).split(",")
 
 
-
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
     default="http://localhost:5173,http://127.0.0.1:5173"
@@ -130,7 +129,7 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD").strip()
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL").strip()
 
-EMAIL_USE_SSL = False # Explicitly set to False for port 587
+EMAIL_USE_SSL = False  # Explicitly set to False for port 587
 
 
 # Database
@@ -187,6 +186,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 
 REST_FRAMEWORK = {
@@ -271,6 +272,8 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 # celery
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
+CELERY_BROKER_URL = config(
+    "CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+

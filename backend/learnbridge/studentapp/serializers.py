@@ -6,8 +6,6 @@ from studentapp.models import *
 
 class StudentProfileSerializer(serializers.ModelSerializer):
 
-    
-
     class Meta:
         model = User
         fields = [
@@ -24,10 +22,12 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             return value
 
         if not value.isdigit():
-            raise serializers.ValidationError("Phone number must contain only digits.")
+            raise serializers.ValidationError(
+                "Phone number must contain only digits.")
 
         if len(value) != 10:
-            raise serializers.ValidationError("Phone number must be exactly 10 digits.")
+            raise serializers.ValidationError(
+                "Phone number must be exactly 10 digits.")
 
         return value
 

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../Store/authSlice';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../Store/authSlice";
 import { toast } from "sonner";
 
 import {
@@ -20,11 +20,10 @@ import {
   Heart,
   Package,
   Menu,
-  Ticket
-} from 'lucide-react';
-import Logo from '../../assets/learnbridge-logo.png';
-import Api from '../Services/Api';
-
+  Ticket,
+} from "lucide-react";
+import Logo from "../../assets/learnbridge-logo.png";
+import Api from "../Services/Api";
 
 const StudentProfile = () => {
   const navigate = useNavigate();
@@ -37,51 +36,41 @@ const StudentProfile = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
 
-
-
   // Data
   const [profileData, setProfileData] = useState({
-    username: '',
-    email: '',
-    phone: '',
-    address: '',
+    username: "",
+    email: "",
+    phone: "",
+    address: "",
     avatar: null,
     stats: {
       enrolled: 0,
       completed: 0,
-      in_progress: 0
-    }
+      in_progress: 0,
+    },
   });
 
-
   useEffect(() => {
-    fetchProfile()
-  }, [])
-
+    fetchProfile();
+  }, []);
 
   const fetchProfile = async () => {
-
     try {
-
-      const res = await Api.get("/student/profile/")
+      const res = await Api.get("/student/profile/");
       setProfileData({
         username: res.data.username,
         email: res.data.email,
         phone: res.data.phone || "",
         address: res.data.address || "",
         avatar: res.data.profile_image || null,
-        stats: res.data.stats || { enrolled: 0, completed: 0, in_progress: 0 }
-      })
-
+        stats: res.data.stats || { enrolled: 0, completed: 0, in_progress: 0 },
+      });
     } catch (err) {
-
-      toast.error("Failed to load profile")
-
+      toast.error("Failed to load profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
+  };
 
   //   Save Profile
 
@@ -89,8 +78,7 @@ const StudentProfile = () => {
     if (!validateForm()) return;
 
     try {
-
-      const formData = new FormData()
+      const formData = new FormData();
 
       formData.append("phone", profileData.phone);
       formData.append("address", profileData.address);
@@ -111,12 +99,11 @@ const StudentProfile = () => {
       setPreviewImage(null);
 
       fetchProfile();
-
     } catch (err) {
       const msg = err.response?.data?.phone?.[0] || "Update failed";
       toast.error(msg);
     }
-  }
+  };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
@@ -129,9 +116,21 @@ const StudentProfile = () => {
   if (loading) return <div className="p-10">Loading...</div>;
 
   const stats = [
-    { label: 'Enrolled Courses', value: profileData.stats?.enrolled || 0, color: 'text-blue-600' },
-    { label: 'Completed', value: profileData.stats?.completed || 0, color: 'text-green-600' },
-    { label: 'In Progress', value: profileData.stats?.in_progress || 0, color: 'text-orange-500' },
+    {
+      label: "Enrolled Courses",
+      value: profileData.stats?.enrolled || 0,
+      color: "text-blue-600",
+    },
+    {
+      label: "Completed",
+      value: profileData.stats?.completed || 0,
+      color: "text-green-600",
+    },
+    {
+      label: "In Progress",
+      value: profileData.stats?.in_progress || 0,
+      color: "text-orange-500",
+    },
   ];
 
   const handleInputChange = (e) => {
@@ -140,7 +139,7 @@ const StudentProfile = () => {
       if (!/^\d*$/.test(value)) return;
       if (value.length > 10) return;
     }
-    setProfileData(prev => ({ ...prev, [name]: value }));
+    setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateForm = () => {
@@ -151,45 +150,66 @@ const StudentProfile = () => {
     return true;
   };
 
-
-
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
-
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
         <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
+              <span className="text-xl font-bold text-gray-900">
+                LearnBridge
+              </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <Link
+                to="/courses"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </Link>
 
-              <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>
-
-              <a href="#" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-              <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
+              <a href="#" className="hover:text-blue-600 transition-colors">
+                Q&A Community
+              </a>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/student/cart')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/cart")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <ShoppingCart className="w-5 h-5" />
               {/* <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
-            <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/notifications")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <Bell className="w-5 h-5" />
               {/* <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span> */}
             </button>
 
-            <button onClick={() => navigate('/student/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
+            <button
+              onClick={() => navigate("/student/wishlist")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
               <Heart className="w-5 h-5" />
             </button>
 
             <div className="relative group">
               <button className="hidden md:flex items-center gap-3 pl-2 border-l border-gray-200">
-                <span className="text-sm font-medium">{isAuthenticated ? `Hi, ${username}` : "User"}</span>
+                <span className="text-sm font-medium">
+                  {isAuthenticated ? `Hi, ${username}` : "User"}
+                </span>
 
                 <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                   {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
@@ -198,20 +218,16 @@ const StudentProfile = () => {
 
               {/* Profile Dropdown */}
               <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
-
-
                 {/* Not Logged In */}
 
                 {!isAuthenticated && (
-
                   <>
                     <button
                       onClick={() => navigate("/student/login")}
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
                     >
-                      <User className='w-4 h-4' />
+                      <User className="w-4 h-4" />
                       Login
-
                     </button>
 
                     <button
@@ -221,33 +237,41 @@ const StudentProfile = () => {
                       <BookOpen className="w-4 h-4" />
                       Sign Up
                     </button>
-
-
                   </>
                 )}
 
-
                 {/*  LOGGED IN */}
-
 
                 {isAuthenticated && (
                   <>
-                    <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
+                    <button
+                      onClick={() => navigate("/student/profile")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
+                    >
                       <User className="w-4 h-4 cursor-pointer" />
                       Profile
                     </button>
 
-                    <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/mycourse")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <BookOpen className="w-4 h-4" />
                       My Courses
                     </button>
 
-                    <button onClick={() => navigate("/student/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/student/wishlist")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Heart className="w-4 h-4" />
                       Wishlist
                     </button>
 
-                    <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
+                    <button
+                      onClick={() => navigate("/student/coupons")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
                       <Ticket className="w-4 h-4" />
                       Coupons
                     </button>
@@ -270,37 +294,73 @@ const StudentProfile = () => {
                     </button>
                   </>
                 )}
-
               </div>
             </div>
 
-
-            <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full">
-            <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium">Explore</button>
-            <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
-            <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 font-medium"
+            >
+              Explore
+            </button>
+            <a href="#" className="text-gray-700 font-medium">
+              Q&A Community
+            </a>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">
+              Live Classes
+            </Link>
             <hr className="border-gray-100" />
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                 {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
               </div>
-              <span className="text-sm font-medium">{isAuthenticated ? username : "Guest"}</span>
+              <span className="text-sm font-medium">
+                {isAuthenticated ? username : "Guest"}
+              </span>
             </div>
 
             {isAuthenticated && (
               <div className="flex flex-col gap-3 mt-2">
-                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                <button onClick={() => navigate("/student/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/student/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
                 <button
                   onClick={() => {
                     dispatch(logout());
@@ -319,11 +379,12 @@ const StudentProfile = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 md:px-6 py-8 md:py-12 max-w-6xl">
-
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              My Profile
+            </h1>
             <p className="text-gray-500">Manage your personal information</p>
           </div>
           <button
@@ -338,7 +399,6 @@ const StudentProfile = () => {
         {/* Profile Card */}
         <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-8 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start">
-
             {/* Avatar Section */}
             <div className="flex flex-col items-center space-y-4">
               <div className="w-40 h-40 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg relative overflow-hidden">
@@ -353,7 +413,6 @@ const StudentProfile = () => {
                     {profileData.username?.charAt(0)?.toUpperCase()}
                   </span>
                 )}
-
               </div>
             </div>
 
@@ -385,7 +444,7 @@ const StudentProfile = () => {
                   Phone Number
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-400 font-normal italic">
-                  {profileData.phone || 'Enter phone number'}
+                  {profileData.phone || "Enter phone number"}
                 </div>
               </div>
 
@@ -395,7 +454,7 @@ const StudentProfile = () => {
                   Address
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-400 font-normal italic">
-                  {profileData.address || 'Enter address'}
+                  {profileData.address || "Enter address"}
                 </div>
               </div>
             </div>
@@ -405,14 +464,20 @@ const StudentProfile = () => {
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-40">
-              <h3 className="text-gray-700 font-bold text-lg mb-2">{stat.label}</h3>
-              <p className={`text-4xl font-extrabold ${stat.color}`}>{stat.value}</p>
+            <div
+              key={index}
+              className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between h-40"
+            >
+              <h3 className="text-gray-700 font-bold text-lg mb-2">
+                {stat.label}
+              </h3>
+              <p className={`text-4xl font-extrabold ${stat.color}`}>
+                {stat.value}
+              </p>
             </div>
           ))}
         </div>
       </main>
-
 
       {/* Edit Profile Modal */}
       {isEditModalOpen && (
@@ -439,9 +504,17 @@ const StudentProfile = () => {
                 <div className="relative group cursor-pointer">
                   <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-blue-500 transition-colors">
                     {previewImage ? (
-                      <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : profileData.avatar ? (
-                      <img src={profileData.avatar} alt="Preview" className="w-full h-full object-cover" />
+                      <img
+                        src={profileData.avatar}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <Camera size={32} className="text-gray-400" />
                     )}
@@ -456,13 +529,17 @@ const StudentProfile = () => {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                 </div>
-                <p className="text-xs text-gray-500">Click to upload new photo</p>
+                <p className="text-xs text-gray-500">
+                  Click to upload new photo
+                </p>
               </div>
 
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-gray-700 text-sm font-semibold">Name</label>
+                  <label className="text-gray-700 text-sm font-semibold">
+                    Name
+                  </label>
                   <input
                     type="text"
                     name="username"
@@ -473,7 +550,9 @@ const StudentProfile = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-gray-700 text-sm font-semibold">Email Address</label>
+                  <label className="text-gray-700 text-sm font-semibold">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     name="email"
@@ -485,7 +564,9 @@ const StudentProfile = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-gray-700 text-sm font-semibold">Phone Number</label>
+                  <label className="text-gray-700 text-sm font-semibold">
+                    Phone Number
+                  </label>
                   <input
                     type="tel"
                     name="phone"
@@ -499,7 +580,9 @@ const StudentProfile = () => {
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-gray-700 text-sm font-semibold">Address</label>
+                  <label className="text-gray-700 text-sm font-semibold">
+                    Address
+                  </label>
                   <textarea
                     name="address"
                     placeholder="Enter address"

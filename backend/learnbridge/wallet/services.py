@@ -29,7 +29,8 @@ def credit_admin_wallet(amount, description, course=None, source="course_fee", r
 
         # TEACHER WALLET PART
         teacher = course.teacher
-        teacher_wallet, _ = TeacherWallet.objects.get_or_create(teacher=teacher)
+        teacher_wallet, _ = TeacherWallet.objects.get_or_create(
+            teacher=teacher)
 
         teacher_wallet.total_earnings += teacher_share
         teacher_wallet.pending_balance += teacher_share

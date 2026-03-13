@@ -17,20 +17,28 @@ class OfferSerializer(serializers.ModelSerializer):
         end_date = data.get("end_date")
 
         if self.instance:
-            if apply_type is None: apply_type = self.instance.apply_type
-            if course is None: course = self.instance.course
-            if category is None: category = self.instance.category
-            if start_date is None: start_date = self.instance.start_date
-            if end_date is None: end_date = self.instance.end_date
+            if apply_type is None:
+                apply_type = self.instance.apply_type
+            if course is None:
+                course = self.instance.course
+            if category is None:
+                category = self.instance.category
+            if start_date is None:
+                start_date = self.instance.start_date
+            if end_date is None:
+                end_date = self.instance.end_date
 
         if apply_type == "Course" and not course:
-            raise serializers.ValidationError({"course": "Course is required."})
+            raise serializers.ValidationError(
+                {"course": "Course is required."})
 
         if apply_type == "Category" and not category:
-            raise serializers.ValidationError({"category": "Category is required."})
+            raise serializers.ValidationError(
+                {"category": "Category is required."})
 
         if start_date and end_date and start_date > end_date:
-            raise serializers.ValidationError({"end_date": "End date must be after start date."})
+            raise serializers.ValidationError(
+                {"end_date": "End date must be after start date."})
 
         discount_type = data.get("discount_type")
         discount_value = data.get("discount_value")

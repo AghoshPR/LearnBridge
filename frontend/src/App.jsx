@@ -1,63 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '../../frontend/src/assets/learnbridge-logo.png'
-import './App.css'
-import StudentLogin from './Pages/Auth/StudentLogin'
-import StudentRegister from './Pages/Auth/StudentRegister'
-import OtpVerify from './Pages/Auth/OtpVerify'
-import TeacherLogin from './Pages/Auth/TeacherLogin'
-import TeacherRegister from './Pages/Auth/TeacherRegister'
-import TeacherForgotPass from './Pages/Auth/TeacherForgotPass'
-import ForgotPassword from './Pages/Auth/ForgotPassword'
-import AdminLogin from './Pages/Auth/AdminLogin'
-import AdminTeachers from './Pages/Admin/AdminTeachers'
-import AdminDashboard from './Pages/Admin/AdminDashboard'
-import TeacherVerify from './Pages/Auth/TeacherVerify'
-import Home from './Pages/Public/Home'
-import Courses from './Pages/Public/Courses'
-import CourseDetail from './Pages/Public/CourseDetail'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import ProtectedRoute from './ProtectedRoute'
-import StudentProfile from './Pages/Student/StudentProfile'
-import TeacherDashBoard from './Pages/Teacher/TeacherDashBoard'
-import TeacherProfile from './Pages/Teacher/TeacherProfile'
-import TeacherCourses from './Pages/Teacher/TeacherCourses'
-import TeacherResetPassword from './Pages/Auth/TeacherResetPassword'
-import StudentResetPassword from './Pages/Auth/StudentResetPassword'
-import AdminUsers from './Pages/Admin/AdminUsers'
-import TeacherManageCourses from './Pages/Teacher/TeacherManageCourses'
-import TeacherCourseCategory from './Pages/Teacher/TeacherCourseCategory'
-import StudentWishlist from './Pages/Student/StudentWishlist'
-import StudentCart from './Pages/Student/StudentCart'
-import QuestionCommunity from './Pages/Public/QuestionCommunity'
-import AdminCourses from './Pages/Admin/AdminCourses'
-import AdminCategories from './Pages/Admin/AdminCategories'
-import CourseVideos from './Pages/Course/CourseVideos'
-import OrdersCheckout from './Pages/Payments/OrdersCheckout'
-import MyCourses from './Pages/Course/MyCourses'
-import AdminWallet from './Pages/Admin/AdminWallet'
-import TeacherWallet from './Pages/Teacher/TeacherWallet'
-import TeacherQACommunity from './Pages/Teacher/TeacherQACommunity'
-import AdminCoupon from './Pages/Admin/AdminCoupon'
-import AdminOffer from './Pages/Admin/AdminOffer'
-import StudentCoupons from './Pages/Student/StudentCoupons'
-import AdminTags from './Pages/Admin/AdminTags'
-import AdminQA_Community from './Pages/Admin/AdminQA_Community'
-import QACommunityAnswers from './Pages/Public/QACommunityAnswers'
-import TeacherLiveClass from './Pages/Teacher/TeacherLiveClass'
-import StudentNotification from './Pages/Student/StudentNotification'
-import LiveClass from './Pages/LiveClasses/LiveClass'
-import VideoChat from './Pages/LiveClasses/VideoChat'
-
-
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "../../frontend/src/assets/learnbridge-logo.png";
+import "./App.css";
+import StudentLogin from "./Pages/Auth/StudentLogin";
+import StudentRegister from "./Pages/Auth/StudentRegister";
+import OtpVerify from "./Pages/Auth/OtpVerify";
+import TeacherLogin from "./Pages/Auth/TeacherLogin";
+import TeacherRegister from "./Pages/Auth/TeacherRegister";
+import TeacherForgotPass from "./Pages/Auth/TeacherForgotPass";
+import ForgotPassword from "./Pages/Auth/ForgotPassword";
+import AdminLogin from "./Pages/Auth/AdminLogin";
+import AdminTeachers from "./Pages/Admin/AdminTeachers";
+import AdminDashboard from "./Pages/Admin/AdminDashboard";
+import TeacherVerify from "./Pages/Auth/TeacherVerify";
+import Home from "./Pages/Public/Home";
+import Courses from "./Pages/Public/Courses";
+import CourseDetail from "./Pages/Public/CourseDetail";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
+import StudentProfile from "./Pages/Student/StudentProfile";
+import TeacherDashBoard from "./Pages/Teacher/TeacherDashBoard";
+import TeacherProfile from "./Pages/Teacher/TeacherProfile";
+import TeacherCourses from "./Pages/Teacher/TeacherCourses";
+import TeacherResetPassword from "./Pages/Auth/TeacherResetPassword";
+import StudentResetPassword from "./Pages/Auth/StudentResetPassword";
+import AdminUsers from "./Pages/Admin/AdminUsers";
+import TeacherManageCourses from "./Pages/Teacher/TeacherManageCourses";
+import TeacherCourseCategory from "./Pages/Teacher/TeacherCourseCategory";
+import StudentWishlist from "./Pages/Student/StudentWishlist";
+import StudentCart from "./Pages/Student/StudentCart";
+import QuestionCommunity from "./Pages/Public/QuestionCommunity";
+import AdminCourses from "./Pages/Admin/AdminCourses";
+import AdminCategories from "./Pages/Admin/AdminCategories";
+import CourseVideos from "./Pages/Course/CourseVideos";
+import OrdersCheckout from "./Pages/Payments/OrdersCheckout";
+import MyCourses from "./Pages/Course/MyCourses";
+import AdminWallet from "./Pages/Admin/AdminWallet";
+import TeacherWallet from "./Pages/Teacher/TeacherWallet";
+import TeacherQACommunity from "./Pages/Teacher/TeacherQACommunity";
+import AdminCoupon from "./Pages/Admin/AdminCoupon";
+import AdminOffer from "./Pages/Admin/AdminOffer";
+import StudentCoupons from "./Pages/Student/StudentCoupons";
+import AdminTags from "./Pages/Admin/AdminTags";
+import AdminQA_Community from "./Pages/Admin/AdminQA_Community";
+import QACommunityAnswers from "./Pages/Public/QACommunityAnswers";
+import TeacherLiveClass from "./Pages/Teacher/TeacherLiveClass";
+import StudentNotification from "./Pages/Student/StudentNotification";
+import LiveClass from "./Pages/LiveClasses/LiveClass";
+import VideoChat from "./Pages/LiveClasses/VideoChat";
 
 function App() {
-
-
   return (
     <>
       <Routes>
-
         {/* Public */}
 
         <Route path="/" element={<Home />} />
@@ -67,78 +62,134 @@ function App() {
         {/* VideoChat */}
         <Route path="/liveclass/room/:classId" element={<VideoChat />} />
 
-
-
         {/* Auth */}
 
         <Route path="/student/register" element={<StudentRegister />} />
         <Route path="/otp-verify" element={<OtpVerify />} />
 
-
         <Route path="/student/login" element={<StudentLogin />} />
         <Route path="/student/forgotpass" element={<ForgotPassword />} />
-        <Route path="/student/reset-password" element={<StudentResetPassword />} />
+        <Route
+          path="/student/reset-password"
+          element={<StudentResetPassword />}
+        />
 
         <Route path="/teacher/login" element={<TeacherLogin />} />
 
         <Route path="/teacher/register" element={<TeacherRegister />} />
         <Route path="/teacher/verify" element={<TeacherVerify />} />
         <Route path="/teacher/forgotpass" element={<TeacherForgotPass />} />
-        <Route path="/teacher/reset-password" element={<TeacherResetPassword />} />
-
+        <Route
+          path="/teacher/reset-password"
+          element={<TeacherResetPassword />}
+        />
 
         <Route path="/admin/login" element={<AdminLogin />} />
 
-
-
-
-
-
-
-
-
-
         {/* Student */}
 
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute role="student">
+              <StudentProfile />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute role="student">
+              <StudentWishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute role="student">
+              <StudentCart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute role="student">
+              <OrdersCheckout />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/mycourse" element={<MyCourses />} />
+        <Route
+          path="/student/coupons"
+          element={
+            <ProtectedRoute role="student">
+              <StudentCoupons />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/student/profile" element={
-          <ProtectedRoute role="student">
-            <StudentProfile />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/course/videos/:courseId"
+          element={
+            <ProtectedRoute role="student">
+              <CourseVideos />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/courses" element={
-          <ProtectedRoute role="student">
-            <StudentProfile />
-          </ProtectedRoute>
-        } />
+        <Route path="/question-community" element={<QuestionCommunity />} />
+        <Route
+          path="/question-community/:id"
+          element={<QACommunityAnswers />}
+        />
 
-
-        <Route path='/wishlist' element={<ProtectedRoute role="student"><StudentWishlist /></ProtectedRoute>} />
-        <Route path='/cart' element={<ProtectedRoute role="student"><StudentCart /></ProtectedRoute>} />
-        <Route path='/checkout' element={<ProtectedRoute role="student"><OrdersCheckout /></ProtectedRoute>} />
-        <Route path='/mycourse' element={<MyCourses />} />
-        <Route path='/student/coupons' element={<ProtectedRoute role="student"><StudentCoupons /></ProtectedRoute>} />
-
-        <Route path='/course/videos/:courseId' element={<ProtectedRoute role="student"><CourseVideos /></ProtectedRoute>} />
-
-        <Route path='/question-community' element={<QuestionCommunity />} />
-        <Route path='/question-community/:id' element={<QACommunityAnswers />} />
-
-        <Route path="/student/notifications" element={<ProtectedRoute role="student"><StudentNotification /></ProtectedRoute>} />
-        <Route path="/student/liveclass" element={<ProtectedRoute role="student"><LiveClass /></ProtectedRoute>} />
-        <Route path="/student/videochat" element={<ProtectedRoute role="student"><VideoChat /></ProtectedRoute>} />
-
-
+        <Route
+          path="/student/notifications"
+          element={
+            <ProtectedRoute role="student">
+              <StudentNotification />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/liveclass"
+          element={
+            <ProtectedRoute role="student">
+              <LiveClass />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/videochat"
+          element={
+            <ProtectedRoute role="student">
+              <VideoChat />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Teacher */}
 
-
         <Route
-
-          path="/teacher/dashboard" element={<ProtectedRoute role="teacher"><TeacherDashBoard /></ProtectedRoute>} />
+          path="/teacher/dashboard"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherDashBoard />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/teacher/profile"
@@ -146,54 +197,153 @@ function App() {
             <ProtectedRoute role="teacher">
               <TeacherProfile />
             </ProtectedRoute>
-          } />
+          }
+        />
 
-        <Route path="/teacher/courses"
+        <Route
+          path="/teacher/courses"
           element={
             <ProtectedRoute role="teacher">
               <TeacherCourses />
             </ProtectedRoute>
-          } />
+          }
+        />
 
-        <Route path='/teacher/managecourses/:id' element={<ProtectedRoute role="teacher"><TeacherManageCourses /></ProtectedRoute>} />
+        <Route
+          path="/teacher/managecourses/:id"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherManageCourses />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path='/teacher/coursecategory' element={<ProtectedRoute role="teacher"><TeacherCourseCategory /></ProtectedRoute>} />
+        <Route
+          path="/teacher/coursecategory"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherCourseCategory />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/teacher/wallet" element={<ProtectedRoute role="teacher"><TeacherWallet /></ProtectedRoute>} />
-        <Route path="/teacher/qa" element={<ProtectedRoute role="teacher"><TeacherQACommunity /></ProtectedRoute>} />
-        <Route path="/teacher/liveclass" element={<ProtectedRoute role="teacher"><TeacherLiveClass /></ProtectedRoute>} />
-
-
+        <Route
+          path="/teacher/wallet"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherWallet />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/qa"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherQACommunity />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/liveclass"
+          element={
+            <ProtectedRoute role="teacher">
+              <TeacherLiveClass />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin */}
 
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin/dashboard" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route
+          path="/admin/teachers"
+          element={
+            <ProtectedRoute role="admin">
+              {" "}
+              <AdminTeachers />{" "}
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin/teachers" element={<ProtectedRoute role="admin"> <AdminTeachers /> </ProtectedRoute>} />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/admin/courses"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCourses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCategories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="admin/tags"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminTags />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin/users" element={<ProtectedRoute role="admin"><AdminUsers /></ProtectedRoute>} />
+        <Route
+          path="/admin/qna"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminQA_Community />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin/courses" element={<ProtectedRoute role="admin"><AdminCourses /></ProtectedRoute>} />
-        <Route path="/admin/categories" element={<ProtectedRoute role="admin"><AdminCategories /></ProtectedRoute>} />
-        <Route path='admin/tags' element={<ProtectedRoute role="admin"><AdminTags /></ProtectedRoute>} />
+        <Route
+          path="/admin/wallet"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminWallet />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin/qna" element={<ProtectedRoute role="admin"><AdminQA_Community /></ProtectedRoute>} />
-
-        <Route path="/admin/wallet" element={<ProtectedRoute role="admin"><AdminWallet /></ProtectedRoute>} />
-
-        <Route path='/admin/coupons' element={<ProtectedRoute role="admin"><AdminCoupon /></ProtectedRoute>} />
-        <Route path='/admin/offers' element={<ProtectedRoute role="admin"><AdminOffer /></ProtectedRoute>} />
-
-
-
+        <Route
+          path="/admin/coupons"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminCoupon />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/offers"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminOffer />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
-
-
     </>
-  )
+  );
 }
 
-export default App
+export default App;

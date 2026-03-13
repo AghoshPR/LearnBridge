@@ -686,7 +686,8 @@ class PublicCourseListView(APIView):
 
             paginator = CoursePagination()
             page = paginator.paginate_queryset(courses, request)
-            serializer = PublicCourseSerializer(page, many=True, context={"request": request})
+            serializer = PublicCourseSerializer(
+                page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

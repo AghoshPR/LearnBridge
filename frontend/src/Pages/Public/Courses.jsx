@@ -1,380 +1,437 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import Logo from '../../assets/learnbridge-logo.png';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
-import { logout } from '../../Store/authSlice';
+import Logo from "../../assets/learnbridge-logo.png";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { logout } from "../../Store/authSlice";
 import {
-    ShoppingCart,
-    Bell,
-    Menu,
-    X,
-    ChevronDown,
-    Clock,
-    Star,
-    Heart,
-    User,
-    LogOut,
-    BookOpen,
-    Package,
-    Ticket,
-    CheckCircle
+  ShoppingCart,
+  Bell,
+  Menu,
+  X,
+  ChevronDown,
+  Clock,
+  Star,
+  Heart,
+  User,
+  LogOut,
+  BookOpen,
+  Package,
+  Ticket,
+  CheckCircle,
 } from "lucide-react";
-import Api from '../Services/Api';
+import Api from "../Services/Api";
 
 const Courses = () => {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    const [courses, setCourses] = useState([])
-    const [loading, setLoading] = useState(true)
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const [search, setSearch] = useState("");
 
-    const [search, setSearch] = useState("")
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 8;
 
-    const [categories, setCategories] = useState([])
-    const [selectedCategory, setSelectedCategory] = useState("")
+  const { isAuthenticated, username } = useSelector((state) => state.auth);
+  const [wishlistIds, setWishlistIds] = useState([]);
 
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const PAGE_SIZE = 8
+  const goToCourseDetail = (id) => {
+    navigate(`/courseview/${id}`);
+  };
 
-    const { isAuthenticated, username } = useSelector((state) => state.auth);
-    const [wishlistIds, setWishlistIds] = useState([]);
+  useEffect(() => {
+    setLoading(true);
+    Api.get("/courses/public/", {
+      params: {
+        page,
+        search: search || undefined,
+        category: selectedCategory || undefined,
+      },
+    })
+      .then((res) => {
+        setCourses(res.data.results);
+        setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
+      })
+      .finally(() => setLoading(false));
+  }, [page, search, selectedCategory]);
 
-    const goToCourseDetail = (id) => {
-        navigate(`/courseview/${id}`);
-    };
+  useEffect(() => {
+    setPage(1);
+  }, [search, selectedCategory]);
 
-    useEffect(() => {
-        setLoading(true);
-        Api.get("/courses/public/", {
-            params: {
-                page,
-                search: search || undefined,
-                category: selectedCategory || undefined,
-            }
-        })
-            .then((res) => {
-                setCourses(res.data.results);
-                setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
-            })
-            .finally(() => setLoading(false))
-    }, [page, search, selectedCategory])
+  const handleAddToCart = async (e, courseId) => {
+    e.stopPropagation();
 
-    useEffect(() => {
-        setPage(1);
-    }, [search, selectedCategory]);
-
-
-
-
-
-    const handleAddToCart = async (e, courseId) => {
-
-        e.stopPropagation()
-
-        if (!isAuthenticated) {
-            toast.info("Please login to add course to cart");
-            navigate("/student/login")
-            return
-        }
-
-        try {
-
-            await Api.post("/cart/add/", {
-                course_id: courseId,
-            })
-
-            toast.success("Course added to cart 🛒")
-        } catch (err) {
-            if (err.response?.status === 400) {
-                toast.warning(err.response.data.detail || "Already in cart")
-            } else {
-                toast.error("Failed to add to cart")
-            }
-        }
+    if (!isAuthenticated) {
+      toast.info("Please login to add course to cart");
+      navigate("/student/login");
+      return;
     }
 
-    useEffect(() => {
+    try {
+      await Api.post("/cart/add/", {
+        course_id: courseId,
+      });
 
-        if (isAuthenticated) {
-            Api.get("/student/wishlist")
-                .then(res => {
-                    const ids = res.data.map(item => item.course);
-                    setWishlistIds(ids);
-                });
-        }
-    }, [isAuthenticated]);
+      toast.success("Course added to cart 🛒");
+    } catch (err) {
+      if (err.response?.status === 400) {
+        toast.warning(err.response.data.detail || "Already in cart");
+      } else {
+        toast.error("Failed to add to cart");
+      }
+    }
+  };
 
-    useEffect(() => {
-        Api.get("/courses/categories/public/")
-            .then((res) => setCategories(res.data));
-    }, []);
+  useEffect(() => {
+    if (isAuthenticated) {
+      Api.get("/student/wishlist").then((res) => {
+        const ids = res.data.map((item) => item.course);
+        setWishlistIds(ids);
+      });
+    }
+  }, [isAuthenticated]);
 
+  useEffect(() => {
+    Api.get("/courses/categories/public/").then((res) =>
+      setCategories(res.data),
+    );
+  }, []);
 
+  const handleWishlistToggle = async (e, courseId) => {
+    e.stopPropagation();
 
-    const handleWishlistToggle = async (e, courseId) => {
-
-        e.stopPropagation()
-
-        if (!isAuthenticated) {
-            toast.info("Please login to use wishlist");
-            navigate("/student/login");
-            return;
-        }
-
-        try {
-            await Api.post("/student/wishlist/add/", {
-                course_id: courseId
-            });
-
-            setWishlistIds(prev => [...prev, courseId]);
-            toast.success("Added to wishlist ❤️");
-
-        } catch (err) {
-            if (err.response?.status === 400) {
-                toast.warning("Already in wishlist")
-                setWishlistIds(prev => [...prev, courseId])
-
-            } else {
-                toast.error("Failed to add to wishlist");
-            }
-        }
-
-
-
-
-
+    if (!isAuthenticated) {
+      toast.info("Please login to use wishlist");
+      navigate("/student/login");
+      return;
     }
 
+    try {
+      await Api.post("/student/wishlist/add/", {
+        course_id: courseId,
+      });
 
-    // if (loading) {
-    //     return (
-    //         <div className="min-h-screen flex items-center justify-center">
-    //             <p className="text-lg font-semibold text-gray-600">
-    //                 Loading courses...
-    //             </p>
-    //         </div>
-    //     );
-    // }
+      setWishlistIds((prev) => [...prev, courseId]);
+      toast.success("Added to wishlist ❤️");
+    } catch (err) {
+      if (err.response?.status === 400) {
+        toast.warning("Already in wishlist");
+        setWishlistIds((prev) => [...prev, courseId]);
+      } else {
+        toast.error("Failed to add to wishlist");
+      }
+    }
+  };
 
+  // if (loading) {
+  //     return (
+  //         <div className="min-h-screen flex items-center justify-center">
+  //             <p className="text-lg font-semibold text-gray-600">
+  //                 Loading courses...
+  //             </p>
+  //         </div>
+  //     );
+  // }
 
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+      {/* Navbar (Same as Home) */}
+      <nav className="bg-white sticky top-0 z-50 border-b border-gray-100">
+        <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <a href="/" className="flex items-center gap-2">
+              <img src={Logo} alt="LearnBridge Logo" className="h-8" />
+              <span className="text-xl font-bold text-gray-900">
+                LearnBridge
+              </span>
+            </a>
+            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+              <button
+                onClick={() => navigate("/courses")}
+                className="hover:text-blue-600 transition-colors"
+              >
+                Explore
+              </button>
+              <a
+                href="/question-community"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Q&A Community
+              </a>
+              <Link
+                to="/student/liveclass"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Live Classes
+              </Link>
+            </div>
+          </div>
 
+          <div className="flex items-center gap-4">
+            <Link
+              to={isAuthenticated ? "/cart" : "/student/login"}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            >
+              <ShoppingCart className="w-5 h-5 cursor-pointer" />
+            </Link>
+            <button
+              onClick={() => navigate("/student/notifications")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => navigate("/wishlist")}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            >
+              <Heart className="w-5 h-5" />
+            </button>
+            <div className="relative group hidden md:block pl-2 border-l border-gray-200">
+              <button className="flex items-center gap-3">
+                <span className="text-sm font-medium">
+                  {isAuthenticated ? `Hi, ${username}` : "User"}
+                </span>
 
-    return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
-            {/* Navbar (Same as Home) */}
-            <nav className="bg-white sticky top-0 z-50 border-b border-gray-100">
-                <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                        <a href="/" className="flex items-center gap-2">
-                            <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-                            <span className="text-xl font-bold text-gray-900">LearnBridge</span>
-
-                        </a>
-                        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <button onClick={() => navigate("/courses")} className="hover:text-blue-600 transition-colors">Explore</button>
-                            <a href="/question-community" className="hover:text-blue-600 transition-colors">Q&A Community</a>
-                            <Link to="/student/liveclass" className="hover:text-blue-600 transition-colors">Live Classes</Link>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <Link
-                            to={isAuthenticated ? "/cart" : "/student/login"}
-
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
-                        >
-                            <ShoppingCart className="w-5 h-5 cursor-pointer" />
-                        </Link>
-                        <button onClick={() => navigate('/student/notifications')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative">
-                            <Bell className="w-5 h-5" />
-                        </button>
-                        <button onClick={() => navigate('/wishlist')} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600">
-                            <Heart className="w-5 h-5" />
-                        </button>
-                        <div className="relative group hidden md:block pl-2 border-l border-gray-200">
-                            <button className="flex items-center gap-3">
-                                <span className="text-sm font-medium">
-                                    {isAuthenticated ? `Hi, ${username}` : "User"}
-                                </span>
-
-                                <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                    {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
-                                </div>
-                            </button>
-
-                            {/* Dropdown */}
-                            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100
-                                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-
-                                {!isAuthenticated ? (
-                                    <>
-                                        <button
-                                            onClick={() => navigate("/student/login")}
-                                            className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
-                                        >
-                                            Login
-                                        </button>
-                                        <button
-                                            onClick={() => navigate("/student/register")}
-                                            className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
-                                        >
-                                            Sign Up
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button onClick={() => navigate("/student/profile")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer">
-                                            <User className="w-4 h-4" />
-                                            Profile
-                                        </button>
-
-                                        <button onClick={() => navigate("/mycourse")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                            <BookOpen className="w-4 h-4" />
-                                            My Courses
-                                        </button>
-
-                                        <button onClick={() => navigate("/wishlist")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                            <Heart className="w-4 h-4" />
-                                            Wishlist
-                                        </button>
-
-                                        <button onClick={() => navigate("/student/coupons")} className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full">
-                                            <Ticket className="w-4 h-4" />
-                                            Coupons
-                                        </button>
-
-                                        <hr className="my-1 border-gray-100" />
-
-                                        <button
-                                            onClick={() => {
-                                                dispatch(logout());
-                                                navigate("/student/login", { replace: true });
-                                                toast.success("Logged out successfully 👋", {
-                                                    description: "See you again!",
-                                                    duration: 2500,
-                                                });
-                                            }}
-                                            className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
-                                        >
-                                            <LogOut className="w-4 h-4 cursor-pointer" />
-                                            Logout
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
+                <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  {isAuthenticated ? username.charAt(0).toUpperCase() : "U"}
                 </div>
-                {/* Mobile Menu */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full z-50">
-                        <button onClick={() => navigate("/courses")} className="text-gray-700 font-medium text-left">Explore</button>
-                        <a href="#" className="text-gray-700 font-medium">Q&A Community</a>
-                        <Link to="/student/liveclass" className="text-gray-700 font-medium">Live Classes</Link>
-                        <hr className="border-gray-100" />
+              </button>
 
-                        {!isAuthenticated ? (
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => navigate("/student/login")}
-                                    className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                                >
-                                    Sign In
-                                </button>
-                                <button
-                                    onClick={() => navigate("/student/register")}
-                                    className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
-                                >
-                                    Sign Up
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                        {username ? username.charAt(0).toUpperCase() : "U"}
-                                    </div>
-                                    <span className="text-sm font-medium">{username || "User"}</span>
-                                </div>
-                                <button onClick={() => navigate("/student/profile")} className="text-gray-700 font-medium text-left">Profile</button>
-                                <button onClick={() => navigate("/mycourse")} className="text-gray-700 font-medium text-left">My Courses</button>
-                                <button onClick={() => navigate("/wishlist")} className="text-gray-700 font-medium text-left">Wishlist</button>
-                                <button onClick={() => navigate("/student/coupons")} className="text-gray-700 font-medium text-left">Coupons</button>
-                                <button
-                                    onClick={() => {
-                                        dispatch(logout());
-                                        navigate("/student/login", { replace: true });
-                                        toast.success("Logged out successfully 👋");
-                                    }}
-                                    className="text-red-600 font-medium text-left"
-                                >
-                                    Logout
-                                </button>
-                            </div>
-                        )}
-                    </div>
+              {/* Dropdown */}
+              <div
+                className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-100
+                                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
+              >
+                {!isAuthenticated ? (
+                  <>
+                    <button
+                      onClick={() => navigate("/student/login")}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => navigate("/student/register")}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => navigate("/student/profile")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full cursor-pointer"
+                    >
+                      <User className="w-4 h-4" />
+                      Profile
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/mycourse")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      My Courses
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/wishlist")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <Heart className="w-4 h-4" />
+                      Wishlist
+                    </button>
+
+                    <button
+                      onClick={() => navigate("/student/coupons")}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 w-full"
+                    >
+                      <Ticket className="w-4 h-4" />
+                      Coupons
+                    </button>
+
+                    <hr className="my-1 border-gray-100" />
+
+                    <button
+                      onClick={() => {
+                        dispatch(logout());
+                        navigate("/student/login", { replace: true });
+                        toast.success("Logged out successfully 👋", {
+                          description: "See you again!",
+                          duration: 2500,
+                        });
+                      }}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 cursor-pointer" />
+                      Logout
+                    </button>
+                  </>
                 )}
-            </nav>
+              </div>
+            </div>
 
-            {/* Main Content */}
-            <main className="container mx-auto px-4 md:px-6 py-8">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Explore Courses</h1>
-                    <p className="text-gray-500">Discover thousands of courses across various categories</p>
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+        </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-gray-100 py-4 px-4 flex flex-col gap-4 shadow-lg absolute w-full left-0 top-full z-50">
+            <button
+              onClick={() => navigate("/courses")}
+              className="text-gray-700 font-medium text-left"
+            >
+              Explore
+            </button>
+            <Link
+              to="/question-community"
+              className="text-gray-700 font-medium"
+            >
+              Q&A Community
+            </Link>
+            <Link to="/student/liveclass" className="text-gray-700 font-medium">
+              Live Classes
+            </Link>
+            <hr className="border-gray-100" />
+
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => navigate("/student/login")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => navigate("/student/register")}
+                  className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm cursor-pointer"
+                >
+                  Sign Up
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+                    {username ? username.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <span className="text-sm font-medium cursor-pointer">
+                    {username || "User"}
+                  </span>
                 </div>
+                <button
+                  onClick={() => navigate("/student/profile")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => navigate("/mycourse")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => navigate("/wishlist")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => navigate("/student/coupons")}
+                  className="text-gray-700 font-medium text-left"
+                >
+                  Coupons
+                </button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </nav>
 
-                {/* Search and Filters */}
-                <div className="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="flex gap-2 w-full md:w-2/3 lg:w-1/2">
-                        <div className="flex-1 relative">
-                            <input
-                                type="text"
-                                placeholder="Search resources"
-                                value={search}
-                                onChange={(e) => {
-                                    setPage(1)
-                                    setSearch(e.target.value)
-                                }}
-                                className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl"
-                            />
-                        </div>
-                        <button
-                            onClick={() => {
-                                setPage(1);
-                                setSearch(searchInput);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap">
-                            Search
-                        </button>
-                    </div>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 md:px-6 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Explore Courses
+          </h1>
+          <p className="text-gray-500">
+            Discover thousands of courses across various categories
+          </p>
+        </div>
 
-                    <div className="flex gap-4 w-full md:w-auto">
-                        <div className="relative flex-1 md:flex-none">
-                            <select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
+        {/* Search and Filters */}
+        <div className="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex gap-2 w-full md:w-2/3 lg:w-1/2">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Search resources"
+                value={search}
+                onChange={(e) => {
+                  setPage(1);
+                  setSearch(e.target.value);
+                }}
+                className="w-full pl-4 pr-4 py-3 border border-gray-200 rounded-xl"
+              />
+            </div>
+            <button
+              onClick={() => {
+                setPage(1);
+                setSearch(searchInput);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 md:px-8 py-3 rounded-xl font-semibold transition-colors shadow-sm whitespace-nowrap"
+            >
+              Search
+            </button>
+          </div>
 
-                                <option value="">All Categories</option>
-                                {categories.map((cat) => (
-                                    <option value={cat.id} key={cat.id} >{cat.name}</option>
-                                ))}
-
-
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                        </div>
-                        {/* <div className="relative flex-1 md:flex-none">
+          <div className="flex gap-4 w-full md:w-auto">
+            <div className="relative flex-1 md:flex-none">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors"
+              >
+                <option value="">All Categories</option>
+                {categories.map((cat) => (
+                  <option value={cat.id} key={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            </div>
+            {/* <div className="relative flex-1 md:flex-none">
                             <select className="w-full appearance-none bg-white border border-gray-200 text-gray-700 pl-4 pr-10 py-3 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-400 cursor-pointer hover:border-gray-300 transition-colors">
                                 <option>Most Popular</option>
                                 <option>Newest</option>
@@ -382,160 +439,164 @@ const Courses = () => {
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                         </div> */}
-                    </div>
-                </div>
-
-                {/* Course Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {courses.map((course) => (
-                        <div
-                            key={course.id}
-                            className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col"
-                        >
-
-                            {/* ================= CLICKABLE AREA ================= */}
-                            <div
-                                onClick={() => goToCourseDetail(course.id)}
-                                className="cursor-pointer"
-                            >
-                                <div className="relative h-60 overflow-hidden bg-gray-100">
-                                    <img
-                                        src={course.thumbnail}
-                                        alt={course.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-
-                                    <span
-                                        className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white 
-                                ${course.level === 'Intermediate'
-                                                ? 'bg-orange-400'
-                                                : course.level === 'Advanced'
-                                                    ? 'bg-red-500'
-                                                    : 'bg-orange-400'}`}
-                                    >
-                                        {course.level}
-                                    </span>
-                                </div>
-
-                                <div className="p-5">
-                                    <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg">
-                                        {course.title}
-                                    </h3>
-                                    <p className="text-xs font-medium text-blue-600 mb-2">
-                                        {course.category}
-                                    </p>
-                                    <p className="text-sm text-gray-500 mb-3">
-
-                                        {course.instructor}
-                                    </p>
-
-                                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
-                                        <span className="flex items-center gap-1 text-orange-500">
-                                            <Star className="w-3.5 h-3.5 fill-current" />
-                                            {course.average_rating ? Number(course.average_rating).toFixed(1) : "0.0"}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <User className="w-3.5 h-3.5" /> {course.students_count || 0}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="w-3.5 h-3.5" /> {course.total_duration || "0m"}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    {course.has_offer ? (
-                                        <div className="flex flex-col items-start gap-1">
-
-                                            <span className="text-xl font-bold text-blue-600 tracking-tight">
-                                                ₹{course.final_price.toFixed(2)}
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
-                                                ₹{course.original_price}
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="text-xl font-bold text-blue-600 tracking-tight">
-                                            ₹{course.original_price}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {isAuthenticated && course.is_purchased ? (
-                                    <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
-                                        <CheckCircle className="w-3.5 h-3.5" />
-                                        Purchased
-                                    </span>
-                                ) : (
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={(e) => handleAddToCart(e, course.id)}
-                                            className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
-                                        >
-                                            <ShoppingCart className="w-5 h-5" />
-                                        </button>
-
-                                        <button
-                                            onClick={(e) => handleWishlistToggle(e, course.id)}
-                                            className={`p-2 rounded-full transition
-                                    ${wishlistIds.includes(course.id)
-                                                    ? "bg-red-100 text-red-500"
-                                                    : "bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500"
-                                                }
-                                `}
-                                        >
-                                            <Heart
-                                                className={`w-4 h-4 ${wishlistIds.includes(course.id) ? "fill-red-500" : ""
-                                                    }`}
-                                            />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-
-                {totalPages > 0 && (
-                    <div className="flex justify-center items-center gap-2 mt-12">
-                        <button
-                            disabled={page === 1}
-                            onClick={() => setPage(page - 1)}
-                            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
-
-                        {[...Array(totalPages)].map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i + 1)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium
-                                ${page === i + 1
-                                        ? "bg-blue-600 text-white"
-                                        : "bg-gray-100 hover:bg-gray-200"
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-
-                        <button
-                            disabled={page === totalPages}
-                            onClick={() => setPage(page + 1)}
-                            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
-                )}
-            </main>
+          </div>
         </div>
-    );
+
+        {/* Course Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {courses.map((course) => (
+            <div
+              key={course.id}
+              className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col"
+            >
+              {/* ================= CLICKABLE AREA ================= */}
+              <div
+                onClick={() => goToCourseDetail(course.id)}
+                className="cursor-pointer"
+              >
+                <div className="relative h-60 overflow-hidden bg-gray-100">
+                  <img
+                    src={course.thumbnail}
+                    alt={course.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+
+                  <span
+                    className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white 
+                                ${
+                                  course.level === "Intermediate"
+                                    ? "bg-orange-400"
+                                    : course.level === "Advanced"
+                                      ? "bg-red-500"
+                                      : "bg-orange-400"
+                                }`}
+                  >
+                    {course.level}
+                  </span>
+                </div>
+
+                <div className="p-5">
+                  <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg">
+                    {course.title}
+                  </h3>
+                  <p className="text-xs font-medium text-blue-600 mb-2">
+                    {course.category}
+                  </p>
+                  <p className="text-sm text-gray-500 mb-3">
+                    {course.instructor}
+                  </p>
+
+                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
+                    <span className="flex items-center gap-1 text-orange-500">
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      {course.average_rating
+                        ? Number(course.average_rating).toFixed(1)
+                        : "0.0"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <User className="w-3.5 h-3.5" />{" "}
+                      {course.students_count || 0}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />{" "}
+                      {course.total_duration || "0m"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
+                <div className="flex flex-col">
+                  {course.has_offer ? (
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-xl font-bold text-blue-600 tracking-tight">
+                        ₹{course.final_price.toFixed(2)}
+                      </span>
+                      <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
+                        ₹{course.original_price}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-xl font-bold text-blue-600 tracking-tight">
+                      ₹{course.original_price}
+                    </span>
+                  )}
+                </div>
+
+                {isAuthenticated && course.is_purchased ? (
+                  <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Purchased
+                  </span>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => handleAddToCart(e, course.id)}
+                      className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 cursor-pointer"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                    </button>
+
+                    <button
+                      onClick={(e) => handleWishlistToggle(e, course.id)}
+                      className={`p-2 rounded-full transition
+                                    ${
+                                      wishlistIds.includes(course.id)
+                                        ? "bg-red-100 text-red-500"
+                                        : "bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500"
+                                    }
+                                `}
+                    >
+                      <Heart
+                        className={`cursor-pointer w-4 h-4 ${
+                          wishlistIds.includes(course.id) ? "fill-red-500" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {totalPages > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-12">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium
+                                ${
+                                  page === i + 1
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 hover:bg-gray-200"
+                                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="px-4 py-2 rounded-lg border text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
 export default Courses;
