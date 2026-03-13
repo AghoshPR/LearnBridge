@@ -17,6 +17,8 @@ import {
   CheckCircle2,
   Video,
   Search,
+  Menu,
+  X,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +26,8 @@ import Api from "../Services/Api";
 import { logout } from "../../Store/authSlice";
 
 const TeacherWallet = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { username } = useSelector((state) => state.auth);
@@ -121,8 +125,37 @@ const TeacherWallet = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+            <BookOpen size={20} className="text-white" />
+          </div>
+          <span className="font-bold text-white text-lg">Teacher Portal</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-10">
+      <aside
+        className={`
+          w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
         <div className="p-6 flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
             <BookOpen size={24} className="text-white" />
@@ -136,12 +169,14 @@ const TeacherWallet = () => {
           {sidebarItems.map((item, index) => (
             <button
               key={index}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                item.active
+              onClick={() => {
+                navigate(item.path);
+                setIsSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                   ? "bg-purple-600 shadow-lg shadow-purple-900/40 text-white"
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
+                }`}
             >
               <item.icon
                 size={20}
@@ -185,7 +220,7 @@ const TeacherWallet = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Wallet</h1>
           <p className="text-slate-400">
@@ -353,15 +388,14 @@ const TeacherWallet = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                            transaction.source === "course_sale"
+                          className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${transaction.source === "course_sale"
                               ? "bg-blue-500/10 text-blue-400"
                               : transaction.source === "live_class"
                                 ? "bg-purple-500/10 text-purple-400"
                                 : transaction.source === "withdrawal"
                                   ? "bg-red-500/10 text-red-400"
                                   : "bg-gray-500/10 text-gray-400"
-                          }`}
+                            }`}
                         >
                           {transaction.source === "course_sale"
                             ? "Course Sale"
@@ -373,21 +407,19 @@ const TeacherWallet = () => {
                         </span>
                       </td>
                       <td
-                        className={`px-6 py-4 text-sm font-bold text-right ${
-                          transaction.type === "credit"
+                        className={`px-6 py-4 text-sm font-bold text-right ${transaction.type === "credit"
                             ? "text-emerald-400"
                             : "text-white-400"
-                        }`}
+                          }`}
                       >
                         ₹ {transaction.amount}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span
-                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            transaction.status === "payment_completed"
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.status === "payment_completed"
                               ? "bg-emerald-500/10 text-emerald-400"
                               : "bg-amber-500/10 text-amber-400"
-                          }`}
+                            }`}
                         >
                           {transaction.status === "payment_completed"
                             ? "Completed"
@@ -416,11 +448,10 @@ const TeacherWallet = () => {
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                              ${
-                                currentPage === i + 1
-                                  ? "bg-purple-600 text-white"
-                                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                              }`}
+                              ${currentPage === i + 1
+                      ? "bg-purple-600 text-white"
+                      : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                    }`}
                 >
                   {i + 1}
                 </button>

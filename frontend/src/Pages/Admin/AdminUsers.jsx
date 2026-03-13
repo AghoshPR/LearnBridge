@@ -367,26 +367,26 @@ const AdminUsers = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-white">User Management</h1>
-            <p className="text-gray-400 text-sm mt-1">
-              Manage and monitor all platform users
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-white">User Management</h1>
+              <p className="text-gray-400 text-sm mt-1">
+                Manage and monitor all platform users
+              </p>
+            </div>
+            <button
+              onClick={() => setIsAddUserModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 text-sm active:scale-95 whitespace-nowrap"
+            >
+              <Plus size={18} /> Add User
+            </button>
           </div>
-          <button
-            onClick={() => setIsAddUserModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 text-sm active:scale-95"
-          >
-            <Plus size={18} /> Add User
-          </button>
-        </div>
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full">
+          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full sm:w-80">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
               size={18}
@@ -394,7 +394,7 @@ const AdminUsers = () => {
             <input
               type="text"
               placeholder="Search by name or email..."
-              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600"
+              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -407,22 +407,22 @@ const AdminUsers = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Name
+                  <th className="px-4 md:px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    User Details
                   </th>
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Join Date
                   </th>
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Courses
                   </th>
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">
+                  <th className="px-4 md:px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                     Actions
                   </th>
                 </tr>
@@ -434,19 +434,26 @@ const AdminUsers = () => {
                       key={user.id}
                       className="hover:bg-gray-800/20 transition-colors group"
                     >
-                      <td className="px-3 py-3 text-sm font-medium text-white">
-                        {user.name}
+                      <td className="px-4 md:px-6 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-white">
+                            {user.name}
+                          </span>
+                          <span className="lg:hidden text-xs text-gray-500 mt-0.5">
+                            {user.email}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-400">
+                      <td className="hidden lg:table-cell px-3 py-3 text-sm text-gray-400">
                         {user.email}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-400">
+                      <td className="hidden sm:table-cell px-3 py-3 text-sm text-gray-400">
                         {user.joinDate}
                       </td>
-                      <td className="px-3 py-3 text-sm text-gray-400 pl-8">
+                      <td className="hidden md:table-cell px-3 py-3 text-sm text-gray-400">
                         {user.courses}
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-4 md:px-6 py-3">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
                             user.status === "Active"
@@ -457,41 +464,45 @@ const AdminUsers = () => {
                           {user.status}
                         </span>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-4 md:px-6 py-3 text-right">
                         {user.status === "Active" ? (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleBlockToggle(user)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-1.5 p-2 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                              title="Block"
                             >
-                              <Ban size={14} /> Block
+                              <Ban size={14} />
                             </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors">
-                              <Pencil size={14} /> Edit
+                            <button className="flex items-center gap-1.5 p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
+                              <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(user)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-1.5 p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                              title="Delete"
                             >
-                              <Trash size={14} /> Delete
+                              <Trash size={14} />
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleBlockToggle(user)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-1.5 p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm"
+                              title="Unblock"
                             >
-                              <CheckCircle size={14} /> Unblock
+                              <CheckCircle size={14} />
                             </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors">
-                              <Pencil size={14} /> Edit
+                            <button className="flex items-center gap-1.5 p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
+                              <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(user)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-1.5 p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                              title="Delete"
                             >
-                              <Trash size={14} /> Delete
+                              <Trash size={14} />
                             </button>
                           </div>
                         )}
@@ -649,7 +660,7 @@ const AdminUsers = () => {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsAddUserModalOpen(false)}
           ></div>
-          <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-lg p-6 relative z-10 shadow-2xl">
+          <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-lg p-6 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-white">Add New User</h3>
               <button

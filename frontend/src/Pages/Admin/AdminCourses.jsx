@@ -286,7 +286,7 @@ const AdminCourses = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 min-w-0 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Courses</h1>
@@ -297,18 +297,7 @@ const AdminCourses = () => {
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="relative w-full">
-            {/* Background container to match the dark blueish bar in the UI */}
-            <div className="absolute inset-0 bg-[#0F1014] rounded-lg border border-gray-800"></div>
-
-            {/* Provide a dummy input hidden or just styled bar if strictly following image, 
-                    but simpler to just make it a real search bar that looks like the strip */}
-            <div className="relative bg-[#1A1D24] rounded-lg border border-gray-800 h-12 w-full">
-              {/* The image shows a dark strip. I'll make it a standard search field but styled dark */}
-            </div>
-          </div>
-          {/* Actual Search Implementation replacing the strip placeholder */}
-          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full mt-2">
+          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full sm:w-80">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
               size={18}
@@ -316,7 +305,7 @@ const AdminCourses = () => {
             <input
               type="text"
               placeholder="Search courses..."
-              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600"
+              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -329,25 +318,25 @@ const AdminCourses = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#0A0B0F]/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Course
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Instructor
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Students
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Rating
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Price
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                     Actions
                   </th>
                 </tr>
@@ -358,23 +347,28 @@ const AdminCourses = () => {
                     key={course.id}
                     className="hover:bg-gray-800/20 transition-colors group"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-4 md:px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-white mb-1">
+                        <span className="text-sm font-medium text-white mb-0.5">
                           {course.title}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {course.total_lessons} lessons
-                        </span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                          <span className="text-[10px] text-gray-400 lg:hidden">
+                            By {course.instructor}
+                          </span>
+                          <span className="text-[10px] text-gray-500">
+                            {course.total_lessons} lessons
+                          </span>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                       {course.instructor}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-400">
                       {course.students_count}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden md:table-cell px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-white">
                         <Star
                           size={14}
@@ -383,22 +377,21 @@ const AdminCourses = () => {
                         <span>{course.average_rating || 0}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="px-4 md:px-6 py-4 text-sm text-gray-400">
                       {course.price}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden sm:table-cell px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
-                          course.status === "active"
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${course.status === "active"
                             ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10"
                             : "bg-red-500/10 text-gray-400 border-gray-500/20"
-                        }`}
+                          }`}
                       >
                         {course.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 md:px-6 py-4">
+                      <div className="flex items-center justify-end gap-1 md:gap-2">
                         <button
                           onClick={() => toggleCourseStatus(course.id)}
                           className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer"
@@ -445,11 +438,10 @@ const AdminCourses = () => {
                     key={i}
                     onClick={() => setPage(i + 1)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium
-                    ${
-                      page === i + 1
+                    ${page === i + 1
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 hover:bg-gray-700"
-                    }`}
+                      }`}
                   >
                     {i + 1}
                   </button>

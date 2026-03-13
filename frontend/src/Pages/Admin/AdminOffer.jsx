@@ -338,7 +338,7 @@ const AdminOffer = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
@@ -386,23 +386,22 @@ const AdminOffer = () => {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-gray-800 bg-[#111216]">
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Name
+                      <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Offer Details
                       </th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Discount
                       </th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden sm:table-cell px-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Apply To
                       </th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden lg:table-cell px-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Valid Period
                       </th>
-                      {/* <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usage</th> */}
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                      <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                         Actions
                       </th>
                     </tr>
@@ -422,15 +421,29 @@ const AdminOffer = () => {
                           key={offer.id}
                           className="hover:bg-gray-900/50 transition"
                         >
-                          <td className="p-4 font-bold">{offer.title}</td>
+                          <td className="px-4 md:px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-white text-sm">
+                                {offer.title}
+                              </span>
+                              <div className="sm:hidden flex flex-col gap-1 mt-1.5Condensed">
+                                <span className="text-[10px] text-blue-400/80 bg-blue-500/10 px-2 py-0.5 rounded w-fit border border-blue-500/20">
+                                  {offer.apply_type === "Category" ? categoryName || "Loading..." : courseTitle || "Loading..."}
+                                </span>
+                                <span className="text-[10px] text-gray-500">
+                                  {offer.start_date} → {offer.end_date}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
 
-                          <td className="p-4">
+                          <td className="px-4 md:px-6 py-4 text-sm font-medium">
                             {offer.discount_type === "percentage"
                               ? `${offer.discount_value}%`
                               : `₹ ${offer.discount_value}`}
                           </td>
 
-                          <td className="p-4">
+                          <td className="hidden sm:table-cell px-4 py-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs border ${
                                 offer.apply_type === "Category"
@@ -444,15 +457,11 @@ const AdminOffer = () => {
                             </span>
                           </td>
 
-                          <td className="p-4 text-sm text-gray-400">
+                          <td className="hidden lg:table-cell px-4 py-4 text-sm text-gray-400">
                             {offer.start_date} → {offer.end_date}
                           </td>
 
-                          {/* <td className="p-4 text-gray-400">
-                            {offer.used_count} / {offer.max_uses}
-                          </td> */}
-
-                          <td className="p-4">
+                          <td className="px-4 md:px-6 py-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs border ${
                                 offer.is_active
@@ -464,7 +473,7 @@ const AdminOffer = () => {
                             </span>
                           </td>
 
-                          <td className="p-4 text-right">
+                          <td className="px-4 md:px-6 py-4 text-right">
                             <div className="flex justify-end gap-2">
                               <button
                                 onClick={() => handleEdit(offer)}

@@ -18,6 +18,9 @@ import {
   TrendingUp,
   Book,
   Folder,
+  Menu,
+  X,
+  ShieldCheck,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +29,8 @@ import { logout } from "../../Store/authSlice";
 import Api from "../Services/Api";
 
 const TeacherDashBoard = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { username } = useSelector((state) => state.auth);
@@ -142,8 +147,37 @@ const TeacherDashBoard = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+            <BookOpen size={20} className="text-white" />
+          </div>
+          <span className="font-bold text-white text-lg">Teacher Portal</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-10">
+      <aside
+        className={`
+          w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
         <div className="p-6 flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
             <BookOpen size={24} className="text-white" />
@@ -157,12 +191,14 @@ const TeacherDashBoard = () => {
           {sidebarItems.map((item, index) => (
             <button
               key={index}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                item.active
+              onClick={() => {
+                navigate(item.path);
+                setIsSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                   ? "bg-purple-600 shadow-lg shadow-purple-900/40 text-white"
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
+                }`}
             >
               <item.icon
                 size={20}
@@ -206,7 +242,7 @@ const TeacherDashBoard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
           <p className="text-slate-400">
@@ -269,14 +305,14 @@ const TeacherDashBoard = () => {
                       key={index}
                       className="bg-slate-900 p-4 rounded-xl border border-slate-800 flex items-center justify-between hover:bg-slate-800/50 transition-colors group"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div
-                          className={`w-12 h-12 rounded-lg ${topCourseColors[index % topCourseColors.length]} flex items-center justify-center text-white shadow-lg`}
+                          className={`w-12 h-12 shrink-0 rounded-lg ${topCourseColors[index % topCourseColors.length]} flex items-center justify-center text-white shadow-lg`}
                         >
                           <BookOpen size={20} />
                         </div>
-                        <div>
-                          <h3 className="font-bold text-white mb-1">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-white mb-1 truncate">
                             {course.title}
                           </h3>
                           <p className="text-xs text-slate-400">
@@ -284,7 +320,7 @@ const TeacherDashBoard = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-8">
+                      <div className="flex flex-wrap items-center gap-4 sm:gap-8 mt-4 sm:mt-0">
                         <div className="text-right">
                           <p className="font-bold text-white mb-1">
                             ₹{course.revenue}

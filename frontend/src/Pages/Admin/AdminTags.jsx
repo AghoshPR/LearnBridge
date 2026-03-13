@@ -291,7 +291,7 @@ const AdminTags = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -300,8 +300,8 @@ const AdminTags = () => {
               Manage course tags and categories
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            <div className="relative flex-1 sm:w-64">
               <input
                 type="text"
                 placeholder="Search tags..."
@@ -318,7 +318,7 @@ const AdminTags = () => {
             </div>
             <button
               onClick={handleAddClick}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2 text-sm active:scale-95 whitespace-nowrap"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 text-sm active:scale-95 whitespace-nowrap"
             >
               <Plus size={18} /> Add New Tag
             </button>
@@ -340,7 +340,7 @@ const AdminTags = () => {
                   <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Tag Name
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">
+                  <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">
                     Created Date
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
@@ -356,9 +356,14 @@ const AdminTags = () => {
                       className="hover:bg-gray-800/20 transition-colors group"
                     >
                       <td className="px-6 py-4 text-sm font-medium text-white">
-                        {tag.tag_name}
+                        <div className="flex flex-col">
+                          <span>{tag.tag_name}</span>
+                          <span className="sm:hidden text-[10px] text-gray-500 mt-1">
+                            Added: {new Date(tag.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-400 text-center">
+                      <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-400 text-center">
                         {new Date(tag.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-right">

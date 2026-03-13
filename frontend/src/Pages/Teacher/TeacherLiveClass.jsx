@@ -19,6 +19,7 @@ import {
   Plus,
   X,
   Search,
+  Menu,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -57,10 +58,11 @@ async function getCroppedImg(imageElement, crop) {
 }
 
 const TeacherLiveClass = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { username } = useSelector((state) => state.auth);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modal state
   const [classes, setClasses] = useState([]);
@@ -390,37 +392,36 @@ const TeacherLiveClass = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
-      {/* Mobile Sidebar Toggle - Only visible on small screens */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="p-2 bg-slate-800 rounded-lg text-white shadow-lg"
-        >
-          <div className="space-y-1.5">
-            <span
-              className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? "rotate-45 translate-y-2" : ""}`}
-            ></span>
-            <span
-              className={`block w-6 h-0.5 bg-white ${isSidebarOpen ? "opacity-0" : ""}`}
-            ></span>
-            <span
-              className={`block w-6 h-0.5 bg-white transition-transform ${isSidebarOpen ? "-rotate-45 -translate-y-2" : ""}`}
-            ></span>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+            <BookOpen size={20} className="text-white" />
           </div>
+          <span className="font-bold text-white text-lg">Teacher Portal</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Overlay */}
       {isSidebarOpen && (
         <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40 transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`
+          w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
       >
         <div className="p-6 flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
@@ -435,12 +436,14 @@ const TeacherLiveClass = () => {
           {sidebarItems.map((item, index) => (
             <button
               key={index}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                item.active
+              onClick={() => {
+                navigate(item.path);
+                setIsSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                   ? "bg-purple-600 shadow-lg shadow-purple-900/40 text-white"
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
+                }`}
             >
               <item.icon
                 size={20}
@@ -484,7 +487,7 @@ const TeacherLiveClass = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 ml-0 md:ml-64 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
         <div className="max-w-6xl mx-auto mt-12 md:mt-0">
           <header className="flex flex-col sm:flex-row justify-between sm:items-start mb-8 gap-4">
             <div>
@@ -578,9 +581,8 @@ const TeacherLiveClass = () => {
                       <div className="flex items-center gap-1.5">
                         <Clock size={14} className="text-yellow-400" />
                         {cls.duration_minutes >= 60
-                          ? `${Math.floor(cls.duration_minutes / 60)}h ${
-                              cls.duration_minutes % 60
-                            }m`
+                          ? `${Math.floor(cls.duration_minutes / 60)}h ${cls.duration_minutes % 60
+                          }m`
                           : `${cls.duration_minutes}m`}
                       </div>
                     </div>
@@ -626,11 +628,10 @@ const TeacherLiveClass = () => {
                     key={i}
                     onClick={() => setCurrentPageUpcoming(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                ${
-                                  currentPageUpcoming === i + 1
-                                    ? "bg-purple-600 text-white"
-                                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                                }`}
+                                ${currentPageUpcoming === i + 1
+                        ? "bg-purple-600 text-white"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -709,11 +710,10 @@ const TeacherLiveClass = () => {
                     key={i}
                     onClick={() => setCurrentPagePast(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                ${
-                                  currentPagePast === i + 1
-                                    ? "bg-purple-600 text-white"
-                                    : "bg-slate-800 text-slate-400 hover:bg-slate-700"
-                                }`}
+                                ${currentPagePast === i + 1
+                        ? "bg-purple-600 text-white"
+                        : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                      }`}
                   >
                     {i + 1}
                   </button>

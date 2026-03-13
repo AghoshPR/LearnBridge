@@ -40,6 +40,9 @@ const TeacherManageCourses = () => {
 
   const [isUpdatingLesson, setIsUpdatingLesson] = useState(false);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { username } = useSelector((state) => state.auth);
@@ -359,8 +362,37 @@ const TeacherManageCourses = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-20">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
+            <BookOpen size={20} className="text-white" />
+          </div>
+          <span className="font-bold text-white text-lg">Teacher Portal</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-10">
+      <aside
+        className={`
+          w-64 bg-slate-900 border-r border-slate-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
         <div className="p-6 flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg">
             <BookOpen size={24} className="text-white" />
@@ -374,12 +406,14 @@ const TeacherManageCourses = () => {
           {sidebarItems.map((item, index) => (
             <button
               key={index}
-              onClick={() => item.path && navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${
-                item.active
+              onClick={() => {
+                if (item.path) navigate(item.path);
+                setIsSidebarOpen(false);
+              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer ${item.active
                   ? "bg-purple-600 shadow-lg shadow-purple-900/40 text-white"
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
+                }`}
             >
               <item.icon
                 size={20}
@@ -423,7 +457,7 @@ const TeacherManageCourses = () => {
       </aside>
 
       {/* Main Area */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
         {/* Top Bar */}
         <div className="mb-8">
           <button

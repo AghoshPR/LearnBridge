@@ -264,14 +264,68 @@ const Home = () => {
             >
               Live Classes
             </Link>
-            <hr className="border-gray-100" />
-
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                A
+            {!isAuthenticated ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => { navigate("/student/login"); setMobileMenuOpen(false); }}
+                  className="w-full px-5 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { navigate("/student/register"); setMobileMenuOpen(false); }}
+                  className="w-full px-5 py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors shadow-sm cursor-pointer"
+                >
+                  Sign Up
+                </button>
               </div>
-              <span className="text-sm font-medium">Aghosh</span>
-            </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+                    {username ? username.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <span className="text-sm font-medium cursor-pointer">
+                    {username || "User"}
+                  </span>
+                </div>
+                <button
+                  onClick={() => { navigate("/student/profile"); setMobileMenuOpen(false); }}
+                  className="text-gray-700 font-medium text-left cursor-pointer"
+                >
+                  Profile
+                </button>
+                <button
+                  onClick={() => { navigate("/mycourse"); setMobileMenuOpen(false); }}
+                  className="text-gray-700 font-medium text-left cursor-pointer"
+                >
+                  My Courses
+                </button>
+                <button
+                  onClick={() => { navigate("/wishlist"); setMobileMenuOpen(false); }}
+                  className="text-gray-700 font-medium text-left cursor-pointer"
+                >
+                  Wishlist
+                </button>
+                <button
+                  onClick={() => { navigate("/student/coupons"); setMobileMenuOpen(false); }}
+                  className="text-gray-700 font-medium text-left cursor-pointer"
+                >
+                  Coupons
+                </button>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate("/student/login", { replace: true });
+                    setMobileMenuOpen(false);
+                    toast.success("Logged out successfully 👋");
+                  }}
+                  className="text-red-600 font-medium text-left cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
@@ -308,7 +362,7 @@ const Home = () => {
             </button>
           </div>
 
-          <div className="flex flex-wrapjustify-center gap-3 text-sm text-blue-100 items-center justify-center">
+          <div className="flex flex-wrap justify-center gap-3 text-sm text-blue-100 items-center justify-center">
             <span className="opacity-70">Popular:</span>
             {popularTags.map((tag) => (
               <button
@@ -380,103 +434,131 @@ const Home = () => {
               View All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {trendingCourses.map((course, idx) => (
               <div
                 key={course.id}
-                onClick={() => navigate(`/courseview/${course.id}`)}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full cursor-pointer"
+                className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col"
               >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-gray-100"
-                  />
-                  <span
-                    className={`absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded-md shadow-sm bg-orange-500 text-white`}
-                  >
-                    {course.level}
-                  </span>
-                </div>
-                <div className="p-5 flex flex-col flex-1">
-                  <h3 className="font-bold text-gray-900 mb-2 leading-tight line-clamp-2 min-h-[3rem]">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {course.instructor}
-                  </p>
+                {/* ================= CLICKABLE AREA ================= */}
+                <div
+                  onClick={() => navigate(`/courseview/${course.id}`)}
+                  className="cursor-pointer"
+                >
+                  <div className="relative h-60 overflow-hidden bg-gray-100">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
-                    <span className="flex items-center gap-1 text-orange-500">
-                      ★{" "}
-                      {course.average_rating
-                        ? Number(course.average_rating).toFixed(1)
-                        : "0.0"}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <User className="w-3 h-3" /> {course.students_count || 0}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />{" "}
-                      {course.total_duration || "0m"}
+                    <span
+                      className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white 
+                                ${
+                                  course.level === "Intermediate"
+                                    ? "bg-orange-400"
+                                    : course.level === "Advanced"
+                                      ? "bg-red-500"
+                                      : "bg-orange-400"
+                                }`}
+                    >
+                      {course.level}
                     </span>
                   </div>
 
-                  <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xl font-bold text-blue-600">
-                      {course.has_offer
-                        ? `₹${Number(course.final_price).toFixed(2)}`
-                        : `₹${course.original_price}`}
-                    </span>
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg h-12">
+                      {course.title}
+                    </h3>
+                    <p className="text-xs font-medium text-blue-600 mb-2">
+                      {course.category || "General"}
+                    </p>
+                    <p className="text-sm text-gray-500 mb-3">
+                      {course.instructor}
+                    </p>
 
-                    {isAuthenticated && course.is_purchased ? (
-                      <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Purchased
+                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
+                      <span className="flex items-center gap-1 text-orange-500">
+                        <BookOpen className="w-3.5 h-3.5 fill-current" />
+                        {course.average_rating
+                          ? Number(course.average_rating).toFixed(1)
+                          : "0.0"}
                       </span>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            Api.post("/student/cart/add/", {
-                              course_id: course.id,
-                            })
-                              .then(() => toast.success("Added to cart!"))
-                              .catch((err) =>
-                                toast.error(
-                                  err.response?.data?.detail ||
-                                    "Failed to add to cart",
-                                ),
-                              );
-                          }}
-                          className="p-2 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
-                        >
-                          <ShoppingCart className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            Api.post("/student/wishlist/toggle/", {
-                              course_id: course.id,
-                            })
-                              .then(() => toast.success("Wishlist updated!"))
-                              .catch((err) =>
-                                toast.error(
-                                  err.response?.data?.detail ||
-                                    "Failed to update wishlist",
-                                ),
-                              );
-                          }}
-                          className="p-2 rounded-full bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-300"
-                        >
-                          <Heart className="w-4 h-4" />
-                        </button>
+                      <span className="flex items-center gap-1">
+                        <User className="w-3.5 h-3.5" />{" "}
+                        {course.students_count || 0}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />{" "}
+                        {course.total_duration || "0m"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    {course.has_offer ? (
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="text-xl font-bold text-blue-600 tracking-tight">
+                          ₹{Number(course.final_price).toFixed(2)}
+                        </span>
+                        <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
+                          ₹{course.original_price}
+                        </span>
                       </div>
+                    ) : (
+                      <span className="text-xl font-bold text-blue-600 tracking-tight">
+                        ₹{course.original_price}
+                      </span>
                     )}
                   </div>
+
+                  {isAuthenticated && course.is_purchased ? (
+                    <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Purchased
+                    </span>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          Api.post("/student/cart/add/", {
+                            course_id: course.id,
+                          })
+                            .then(() => toast.success("Course added to cart 🛒"))
+                            .catch((err) =>
+                              toast.error(
+                                err.response?.data?.detail ||
+                                "Failed to add to cart",
+                              ),
+                            );
+                        }}
+                        className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 cursor-pointer"
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          Api.post("/student/wishlist/toggle/", {
+                            course_id: course.id,
+                          })
+                            .then(() => toast.success("Wishlist updated ❤️"))
+                            .catch((err) =>
+                              toast.error(
+                                err.response?.data?.detail ||
+                                "Failed to update wishlist",
+                              ),
+                            );
+                        }}
+                        className="p-2.5 rounded-full bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500 transition-all duration-300 cursor-pointer"
+                      >
+                        <Heart className="w-4 h-4 cursor-pointer" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

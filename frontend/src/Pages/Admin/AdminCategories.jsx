@@ -294,13 +294,13 @@ const AdminCategories = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
           <h1 className="text-2xl font-bold text-white">Course Categories</h1>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm"
+            className="bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 text-sm active:scale-95 whitespace-nowrap"
           >
             <Plus size={18} /> Add Category
           </button>
@@ -308,12 +308,7 @@ const AdminCategories = () => {
 
         {/* Search Bar */}
         <div className="mb-6">
-          <div className="relative w-full">
-            <div className="relative bg-[#1A1D24] rounded-lg border border-gray-800 h-12 w-full hidden">
-              {/* Placeholder for visual consistency if needed */}
-            </div>
-          </div>
-          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full mt-2">
+          <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full sm:w-80">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
               size={18}
@@ -321,7 +316,7 @@ const AdminCategories = () => {
             <input
               type="text"
               placeholder="Search categories..."
-              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600"
+              className="w-full bg-transparent text-gray-200 py-3.5 pl-12 pr-4 outline-none placeholder-gray-600 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -334,22 +329,22 @@ const AdminCategories = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#0A0B0F]/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/5">
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/5">
                     Category Name
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/3">
+                  <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/3">
                     Description
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Courses
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Created By
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                     Actions
                   </th>
                 </tr>
@@ -360,18 +355,23 @@ const AdminCategories = () => {
                     key={category.id}
                     className="hover:bg-gray-800/20 transition-colors group"
                   >
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-white">
-                        {category.name}
-                      </span>
+                    <td className="px-4 md:px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-white">
+                          {category.name}
+                        </span>
+                        <span className="lg:hidden text-xs text-gray-500 mt-1 line-clamp-1">
+                          {category.description}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                       {category.description}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">
+                    <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-400">
                       {category.courses}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-400 ">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
                         {category.createdBy}
                       </span>
@@ -387,8 +387,8 @@ const AdminCategories = () => {
                         {category.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                    <td className="px-4 md:px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                           <Pencil size={16} />
                         </button>
@@ -459,7 +459,7 @@ const AdminCategories = () => {
               onClick={() => setIsAddModalOpen(false)}
             ></div>
 
-            <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl">
+            <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]">
               <h3 className="text-xl font-bold text-white mb-4">
                 Add Category
               </h3>

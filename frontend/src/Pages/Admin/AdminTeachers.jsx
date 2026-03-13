@@ -27,6 +27,7 @@ import {
   Star,
   Search,
   X,
+  Menu,
   Upload,
   Briefcase,
   GraduationCap as GradCapIcon,
@@ -38,6 +39,7 @@ import {
 const AdminTeachers = () => {
   const [pendingTeachers, setPendingTeacher] = useState([]);
   const [approvedTeacher, setApproveTeacher] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPagePending, setCurrentPagePending] = useState(1);
   const [currentPageApproved, setCurrentPageApproved] = useState(1);
@@ -52,6 +54,8 @@ const AdminTeachers = () => {
   const [teacherType, setTeacherType] = useState("fresher"); // 'fresher' | 'experienced'
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   // admin teacher add
 
@@ -314,8 +318,37 @@ const AdminTeachers = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center border border-blue-500/30">
+            <ShieldCheck className="w-5 h-5 text-blue-500" />
+          </div>
+          <span className="font-bold text-white text-base">LearnBridge</span>
+        </div>
+        <button
+          onClick={toggleSidebar}
+          className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar (Reused) */}
-      <aside className="w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-20">
+      <aside
+        className={`
+          w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center border border-blue-500/30">
@@ -427,16 +460,16 @@ const AdminTeachers = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Teacher Management</h1>
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-blue-900/20"
           >
             <Plus size={18} />
-            Create Teacher
+            <span className="whitespace-nowrap">Create Teacher</span>
           </button>
         </header>
 
@@ -473,22 +506,22 @@ const AdminTeachers = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#16181D] text-gray-400 text-xs uppercase tracking-wider">
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
-                      Name
+                    <th className="px-4 md:px-6 py-3 font-medium border-b border-gray-800">
+                      Teacher Details
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden lg:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Email
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden sm:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Expertise
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden md:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Experience
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden xl:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Applied
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="px-4 md:px-6 py-3 font-medium border-b border-gray-800 text-right">
                       Actions
                     </th>
                   </tr>
@@ -500,41 +533,54 @@ const AdminTeachers = () => {
                       key={teacher.id}
                       className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors"
                     >
-                      <td className="px-3 py-3 font-medium text-white">
-                        {teacher.name}
+                      <td className="px-4 md:px-6 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-white text-sm">
+                            {teacher.name}
+                          </span>
+                          <span className="lg:hidden text-xs text-blue-400/80 mt-1 line-clamp-1">
+                            {teacher.subjects}
+                          </span>
+                          <span className="lg:hidden text-[10px] text-gray-500 mt-0.5">
+                            {teacher.email}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden lg:table-cell px-3 py-3 text-gray-400">
                         {teacher.email}
                       </td>
-                      <td className="px-3 py-3 text-gray-300">
+                      <td className="hidden sm:table-cell px-3 py-3 text-gray-300">
                         {teacher.subjects}
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden md:table-cell px-3 py-3 text-gray-400">
                         {teacher.experience}
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden xl:table-cell px-3 py-3 text-gray-400">
                         {teacher.applied_at}
                       </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
+                      <td className="px-4 md:px-6 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleApproveClick(teacher)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            className="p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm"
+                            title="Approve"
                           >
-                            <CheckCircle size={14} /> Approve
+                            <CheckCircle size={14} />
                           </button>
 
                           <button
                             onClick={() => handleRejectClick(teacher)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors"
+                            title="Reject"
                           >
-                            <XCircle size={14} /> Reject
+                            <XCircle size={14} />
                           </button>
                           <button
                             onClick={() => handleViewClick(teacher)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm"
+                            title="View"
                           >
-                            <Eye size={14} /> View
+                            <Eye size={14} />
                           </button>
                         </div>
                       </td>
@@ -601,28 +647,28 @@ const AdminTeachers = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#16181D] text-gray-400 text-xs uppercase tracking-wider">
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
-                      Name
+                    <th className="px-4 md:px-6 py-3 font-medium border-b border-gray-800">
+                      Teacher Details
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden lg:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Email
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden sm:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Expertise
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden md:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Courses
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden md:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Students
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="hidden sm:table-cell px-3 py-3 font-medium border-b border-gray-800">
                       Rating
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800">
+                    <th className="px-4 md:px-6 py-3 font-medium border-b border-gray-800">
                       Status
                     </th>
-                    <th className="px-3 py-3 font-medium border-b border-gray-800 text-center">
+                    <th className="px-4 md:px-6 py-3 font-medium border-b border-gray-800 text-right">
                       Actions
                     </th>
                   </tr>
@@ -633,23 +679,39 @@ const AdminTeachers = () => {
                       key={teacher.id}
                       className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors"
                     >
-                      <td className="px-3 py-3 font-medium text-white">
-                        {teacher.name}
+                      <td className="px-4 md:px-6 py-3">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-white text-sm">
+                            {teacher.name}
+                          </span>
+                          <span className="lg:hidden text-xs text-blue-400/80 mt-1 line-clamp-1">
+                            {teacher.subjects}
+                          </span>
+                          <div className="lg:hidden flex items-center gap-2 mt-1">
+                             <div className="flex items-center gap-0.5 text-amber-400 text-[10px]">
+                              <Star size={10} fill="currentColor" />
+                              <span>{teacher.rating}</span>
+                            </div>
+                            <span className="text-[10px] text-gray-500">
+                              {teacher.courses_count} courses
+                            </span>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden lg:table-cell px-3 py-3 text-gray-400">
                         {teacher.email}
                       </td>
-                      <td className="px-3 py-3 text-gray-300">
+                      <td className="hidden sm:table-cell px-3 py-3 text-gray-300">
                         {teacher.subjects}
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden md:table-cell px-3 py-3 text-gray-400">
                         {teacher.courses_count}
                       </td>
-                      <td className="px-3 py-3 text-gray-400">
+                      <td className="hidden md:table-cell px-3 py-3 text-gray-400">
                         {teacher.students_count}
                       </td>
 
-                      <td className="px-3 py-3">
+                      <td className="hidden sm:table-cell px-3 py-3">
                         <div className="flex items-center gap-1 text-amber-400">
                           <Star size={14} fill="currentColor" />
                           <span className="text-gray-300">
@@ -658,54 +720,58 @@ const AdminTeachers = () => {
                         </div>
                       </td>
 
-                      <td className="px-3 py-3">
+                      <td className="px-4 md:px-6 py-3">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold border
-                                                    ${
-                                                      teacher.is_blocked
-                                                        ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                                        : "bg-green-500/10 text-green-500 border-green-500/20"
-                                                    }`}
+                                                     ${
+                                                       teacher.is_blocked
+                                                         ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                                         : "bg-green-500/10 text-green-500 border-green-500/20"
+                                                     }`}
                         >
                           {teacher.is_blocked ? "Blocked" : "Active"}
                         </span>
                       </td>
 
-                      <td className="px-3 py-3">
+                      <td className="px-4 md:px-6 py-3 text-right">
                         {teacher.is_blocked ? (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleUnblockClick(teacher)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                              className="p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm"
+                              title="Unblock"
                             >
-                              <CheckCircle size={14} /> Unblock
+                              <CheckCircle size={14} />
                             </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors">
-                              <Pencil size={14} /> Edit
+                            <button className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
+                              <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(teacher)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm"
+                              title="Delete"
                             >
-                              <Trash size={14} /> Delete
+                              <Trash size={14} />
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleBlockClick(teacher)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="p-2 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                              title="Block"
                             >
-                              <Ban size={14} /> Block
+                              <Ban size={14} />
                             </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-xs font-semibold transition-colors">
-                              <Pencil size={14} /> Edit
+                            <button className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
+                              <Pencil size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(teacher)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold transition-colors"
+                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm"
+                              title="Delete"
                             >
-                              <Trash size={14} /> Delete
+                              <Trash size={14} />
                             </button>
                           </div>
                         )}

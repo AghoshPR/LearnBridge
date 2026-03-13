@@ -323,7 +323,7 @@ const AdminCoupon = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
@@ -333,8 +333,8 @@ const AdminCoupon = () => {
                 Manage coupon codes for checkout discounts
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+              <div className="relative flex-1 sm:w-64">
                 <input
                   type="text"
                   placeholder="Search coupons..."
@@ -351,7 +351,7 @@ const AdminCoupon = () => {
               </div>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95 whitespace-nowrap"
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-600/20 active:scale-95 whitespace-nowrap"
               >
                 <Plus size={18} />
                 <span>Add Coupon</span>
@@ -365,25 +365,25 @@ const AdminCoupon = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-gray-800 bg-[#111216]">
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Code
+                    <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Coupon Details
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Discount
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="hidden sm:table-cell px-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Min Order
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="hidden lg:table-cell px-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Valid Period
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      User Limit
+                    <th className="hidden md:table-cell px-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Limit
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                    <th className="px-4 md:px-6 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                       Actions
                     </th>
                   </tr>
@@ -395,42 +395,41 @@ const AdminCoupon = () => {
                         key={coupon.id}
                         className="group hover:bg-gray-900/50 transition-colors"
                       >
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium flex items-center gap-2">
+                        <td className="px-4 md:px-6 py-4">
+                          <div className="flex flex-col gap-1.5">
+                            <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium flex items-center gap-2 w-fit">
                               {coupon.code}
                               <Copy
                                 size={12}
                                 className="cursor-pointer hover:text-blue-300"
                               />
                             </div>
+                            <div className="lg:hidden text-[10px] text-gray-500">
+                              {coupon.valid_from} → {coupon.valid_till}
+                            </div>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="px-4 md:px-6 py-4">
                           <span className="text-sm font-medium text-white">
                             {coupon.discount_type === "percentage"
                               ? `${coupon.discount_value}%`
                               : `₹ ${coupon.discount_value}`}
                           </span>
                         </td>
-                        <td className="p-4">
+                        <td className="hidden sm:table-cell px-4 py-4">
                           <span className="text-sm text-gray-400 font-mono">
                             ₹{coupon.min_purchase_amount}
                           </span>
                         </td>
-                        <td className="p-4">
-                          <div className="text-xs text-gray-400">
-                            <span className="block">
-                              {coupon.valid_from} to {coupon.valid_till}
-                            </span>
-                          </div>
+                        <td className="hidden lg:table-cell px-4 py-4 text-xs text-gray-400">
+                           {coupon.valid_from} to {coupon.valid_till}
                         </td>
-                        <td className="p-4">
+                        <td className="hidden md:table-cell px-4 py-4">
                           <div className="text-sm text-gray-400">
                             {coupon.max_uses_per_user}
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="px-4 md:px-6 py-4">
                           <span
                             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
                               coupon.is_active
@@ -441,7 +440,7 @@ const AdminCoupon = () => {
                             {coupon.is_active ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="p-4 text-right">
+                        <td className="px-4 md:px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleEdit(coupon)}
@@ -652,12 +651,13 @@ const AdminCoupon = () => {
                 </div> */}
 
                 <div>
-                  <label>Max Uses Per User</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Max Uses Per User</label>
                   <input
                     type="number"
                     name="max_uses_per_user"
                     value={formData.max_uses_per_user}
                     onChange={handleChange}
+                    className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
                   />
                 </div>
 

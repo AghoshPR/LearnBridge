@@ -333,7 +333,7 @@ const StudentCart = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 md:px-6 py-8">
+      <main className="flex-1 container mx-auto px-4 md:px-6 py-8 max-w-7xl">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
           Shopping Cart
         </h1>
@@ -345,70 +345,77 @@ const StudentCart = () => {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col md:flex-row gap-6 items-start md:items-center hover:bg-gray-50/50 transition-colors group"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center hover:bg-gray-50/50 transition-all duration-300 group"
                 >
-                  <div className="w-full md:w-40 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+                  <div className="w-full md:w-80 aspect-video md:h-48 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 shadow-inner ring-1 ring-gray-100">
                     <img
                       src={item.thumbnail}
                       alt={item.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                     />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight">
+                  <div className="flex-1 w-full min-h-[100px] flex flex-col justify-center">
+                    <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight line-clamp-2 transition-colors">
                       {item.title}
                     </h3>
-                    <div className="flex items-baseline gap-2 mb-2">
+                    <div className="flex items-center gap-3 mb-3">
                       <p className="text-sm text-gray-500">
-                        By {item.instructor}
+                        By <span className="font-semibold text-gray-800">{item.instructor}</span>
                       </p>
                       {item.is_enrolled && (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full border border-red-200 uppercase">
+                        <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
                           Purchased
                         </span>
                       )}
                     </div>
                     {item.tag && (
-                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded mb-2 border border-gray-200">
+                      <span className="inline-block self-start px-2 py-1 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded mb-3 border border-gray-200">
                         {item.tag}
                       </span>
                     )}
-                    <div className="flex items-center gap-3 md:hidden">
+                    
+                    {/* Price - Mobile Only */}
+                    <div className="flex items-center gap-3 md:hidden mt-2">
                       {item.has_offer ? (
                         <>
-                          <span className="text-gray-400 text-xs line-through">
-                            ₹{item.original_price}
-                          </span>
-                          <span className="text-lg font-bold text-blue-600">
+                          <span className="text-xl font-bold text-blue-600 tracking-tight">
                             ₹{item.final_price}
+                          </span>
+                          <span className="text-gray-400 text-sm line-through">
+                            ₹{item.original_price}
                           </span>
                         </>
                       ) : (
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-xl font-bold text-blue-600 tracking-tight">
                           ₹{item.original_price}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
+
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-40 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 gap-4">
+                    {/* Price - Desktop Only */}
                     <div className="hidden md:flex flex-col items-end">
                       {item.has_offer ? (
-                        <>
-                          <span className="text-lg font-bold text-blue-600">
-                            ₹{item.final_price}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-lg font-bold text-blue-600">
+                        <div className="flex flex-col items-end">
+                        <span className="text-xl font-bold text-blue-600 tracking-tight">
+                          ₹{item.final_price}
+                        </span>
+                        <span className="text-sm text-gray-400 line-through font-medium">
                           ₹{item.original_price}
                         </span>
-                      )}
+                      </div>
+                    ) : (
+                      <span className="text-xl font-bold text-blue-600 tracking-tight">
+                        ₹{item.original_price}
+                      </span>
+                    )}
                     </div>
                     <button
                       onClick={() => handleDeleteClick(item)}
-                      className="flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                      className="group/delete flex items-center gap-2 text-gray-400 hover:text-red-500 text-sm font-bold transition-all p-2 hover:bg-red-50 rounded-xl"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} className="group-hover/delete:scale-110 transition-transform" />
                       Remove
                     </button>
                   </div>

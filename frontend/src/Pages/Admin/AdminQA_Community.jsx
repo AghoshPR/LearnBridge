@@ -243,7 +243,7 @@ const AdminQA_Community = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
         <div className="flex flex-col gap-6 mb-8">
           <div>
@@ -251,19 +251,10 @@ const AdminQA_Community = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2">
-            {/* <button
-              onClick={() => setActiveTab('reported')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'reported'
-                  ? 'bg-[#1e293b] text-blue-400 border border-blue-500/30'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
-            >
-              Reported ({reportedQuestions.length})
-            </button> */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             <button
               onClick={() => setActiveTab("all")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === "all"
                   ? "bg-[#1e293b] text-blue-400 border border-blue-500/30"
                   : "text-gray-400 hover:text-white hover:bg-gray-800"
@@ -280,35 +271,35 @@ const AdminQA_Community = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#131418]">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Question
+                  <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Question Details
                   </th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Author
                   </th>
                   {activeTab === "reported" ? (
                     <>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Reports
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Reason
                       </th>
                     </>
                   ) : (
                     <>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Answers
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Views
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Status
                       </th>
                     </>
                   )}
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Date
                   </th>
                   <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -323,29 +314,39 @@ const AdminQA_Community = () => {
                         key={item.id}
                         className="hover:bg-gray-800/20 transition-colors group"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <AlertTriangle
-                              size={16}
-                              className="text-amber-500 shrink-0"
-                            />
-                            <span className="text-sm font-medium text-white">
-                              {item.question}
-                            </span>
+                        <td className="px-4 md:px-6 py-4">
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-3">
+                              <AlertTriangle
+                                size={16}
+                                className="text-amber-500 shrink-0"
+                              />
+                              <span className="text-sm font-medium text-white line-clamp-2">
+                                {item.question}
+                              </span>
+                            </div>
+                            <div className="lg:hidden flex items-center gap-2">
+                               <span className="text-[10px] text-gray-500">
+                                {item.author}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 text-[10px] border border-red-500/20">
+                                {item.reports} reports
+                              </span>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.author}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="hidden md:table-cell px-6 py-4">
                           <span className="px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs border border-red-500/20">
                             {item.reports} reports
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.reason}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.date}
                         </td>
                         <td className="px-6 py-4">
@@ -371,19 +372,25 @@ const AdminQA_Community = () => {
                         key={item.id}
                         className="hover:bg-gray-800/20 transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm font-medium text-white">
-                          {item.question}
+                        <td className="px-4 md:px-6 py-4 font-medium text-white">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-sm line-clamp-2">{item.question}</span>
+                            <div className="lg:hidden flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500">{item.author}</span>
+                              <span className="text-[10px] text-blue-400/70 bg-blue-500/5 px-1.5 py-0.5 rounded border border-blue-500/10">{item.answers} answers</span>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.author}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden sm:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.answers}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.views}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="hidden sm:table-cell px-6 py-4">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium border ${
                               item.status === "active"
@@ -396,15 +403,15 @@ const AdminQA_Community = () => {
                             {item.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-400">
                           {item.date}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 md:px-6 py-4 text-right">
                           <button
                             onClick={() => handleDeleteClick(item)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 hover:text-red-400 text-gray-500 transition-colors"
+                            className="p-2 hover:bg-red-500/10 text-gray-500 hover:text-red-400 rounded-lg transition-colors ml-auto flex items-center"
                           >
-                            <Trash size={14} /> Delete
+                            <Trash size={14} />
                           </button>
                         </td>
                       </tr>

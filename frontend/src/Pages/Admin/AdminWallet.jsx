@@ -263,17 +263,17 @@ const AdminWallet = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
+      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300 min-w-0">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Company Wallet</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">Company Wallet</h1>
           <p className="text-gray-400">
             Platform revenue and transaction history
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
           {/* Total Revenue */}
           <div className="bg-[#0F1014] rounded-2xl p-6 border border-gray-800 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-emerald-500/20"></div>
@@ -334,12 +334,12 @@ const AdminWallet = () => {
         <div>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-2">
-              <Wallet className="text-blue-500" size={24} />
-              <h2 className="text-xl font-bold text-white">
+              <Wallet className="text-blue-500 shrink-0" size={24} />
+              <h2 className="text-xl font-bold text-white whitespace-nowrap">
                 Transaction History
               </h2>
             </div>
-            <div className="relative w-full md:w-64">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Search transactions..."
@@ -361,31 +361,25 @@ const AdminWallet = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-gray-800 bg-[#0A0B0F]/50">
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      No
+                    <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Transaction Info
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Date
+                    <th className="hidden lg:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Tutor
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Course / Description
+                    <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Revenue
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Tutor Name
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      Full Amount
-                    </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-green-400">
+                    <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-green-400">
                       Admin (20%)
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-blue-400">
+                    <th className="hidden sm:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-blue-400">
                       Teacher (80%)
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                    <th className="px-4 md:px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                       Action
                     </th>
                   </tr>
@@ -396,35 +390,51 @@ const AdminWallet = () => {
                       key={transaction.id}
                       className="hover:bg-gray-800/20 transition-colors group"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-500 font-medium">
-                        {index + 1}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-400 font-medium">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 md:px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-white mb-1">
-                            {transaction.courseName || "Null"}
+                          <span className="text-[10px] text-gray-500 mb-1">
+                            {new Date(transaction.date).toLocaleDateString()}
                           </span>
-                          <span className="text-xs text-blue-400/80 bg-blue-500/10 px-2 py-0.5 rounded w-fit border border-blue-500/20">
-                            {transaction.source} : {transaction.description}
+                          <span className="text-sm font-medium text-white mb-1 line-clamp-1">
+                            {transaction.courseName || "Transaction"}
+                          </span>
+                          <span className="lg:hidden text-[10px] text-blue-400/80 bg-blue-500/10 px-2 py-0.5 rounded w-fit border border-blue-500/20 mb-1.5">
+                            {transaction.tutorName}
+                          </span>
+                          <span className="md:hidden">
+                            <span
+                              className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                                transaction.status === "transfer_pending"
+                                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                  : transaction.status === "transferred"
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                    : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                              }`}
+                            >
+                              {transaction.status === "transfer_pending" ? "Pending" : "Done"}
+                            </span>
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-white">
+                      <td className="hidden lg:table-cell px-6 py-4 text-sm font-bold text-white">
                         {transaction.tutorName}
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-white">
-                        ₹{transaction.fullAmount}
+                      <td className="px-4 md:px-6 py-4">
+                         <div className="flex flex-col">
+                            <span className="text-sm font-bold text-white">₹{transaction.fullAmount}</span>
+                            <div className="sm:hidden flex flex-col gap-0.5 mt-1">
+                               <span className="text-[10px] text-green-400/80">A: ₹{transaction.adminShare}</span>
+                               <span className="text-[10px] text-blue-400/80">T: ₹{transaction.teacherShare || 0}</span>
+                            </div>
+                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-green-400">
+                      <td className="hidden sm:table-cell px-6 py-4 text-sm font-bold text-green-400">
                         +₹{transaction.adminShare}
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-blue-400">
+                      <td className="hidden sm:table-cell px-6 py-4 text-sm font-bold text-blue-400">
                         ₹{transaction.teacherShare || 0}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="hidden md:table-cell px-6 py-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
                             transaction.status === "transfer_pending"
@@ -441,17 +451,17 @@ const AdminWallet = () => {
                               : transaction.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 md:px-6 py-4 text-right">
                         {transaction.status === "transfer_pending" ? (
                           <button
                             onClick={() => handleTransfer(transaction.id)}
-                            className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                            className="px-3 md:px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                           >
                             Transfer
                           </button>
                         ) : (
                           <span className="text-xs text-white-600 flex items-center justify-end gap-1">
-                            <CheckCircle2 size={14} /> Completed
+                            <CheckCircle2 size={14} className="text-emerald-500" /> <span className="hidden sm:inline">Completed</span>
                           </span>
                         )}
                       </td>

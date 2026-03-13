@@ -241,7 +241,7 @@ const StudentWishlist = () => {
             >
               Explore
             </button>
-            <a href="#" className="text-gray-700 font-medium">
+            <a href="/question-community" className="text-gray-700 font-medium text-left">
               Q&A Community
             </a>
             <Link to="/student/liveclass" className="text-gray-700 font-medium">
@@ -273,8 +273,8 @@ const StudentWishlist = () => {
                   My Courses
                 </button>
                 <button
-                  onClick={() => navigate("/student/wishlist")}
-                  className="text-gray-700 font-medium text-left"
+                  onClick={() => navigate("/wishlist")}
+                  className="text-blue-600 font-medium text-left"
                 >
                   Wishlist
                 </button>
@@ -301,78 +301,206 @@ const StudentWishlist = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 flex-1">
-        <h1 className="text-3xl font-bold mb-6">My Wishlist</h1>
+      <main className="flex-1 container mx-auto px-4 md:px-6 py-8 max-w-7xl">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
+          My Wishlist
+        </h1>
 
         {wishlistItems.length === 0 ? (
-          <p className="text-gray-500">Your wishlist is empty.</p>
+          <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart className="text-gray-300 w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Your wishlist is empty</h2>
+            <p className="text-gray-500 mb-8">Explore our courses and save your favorites here!</p>
+            <button
+              onClick={() => navigate("/courses")}
+              className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+            >
+              Explore Courses
+            </button>
+          </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* ITEMS */}
+            {/* Wishlist Items */}
             <div className="flex-1 space-y-4">
               {wishlistItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white p-4 rounded-xl flex gap-6 border"
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 flex flex-col md:flex-row gap-8 items-start md:items-center hover:bg-gray-50/50 transition-all duration-300 group"
                 >
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="w-48 h-32 object-cover rounded-lg"
-                  />
+                  <div className="w-full md:w-80 aspect-video md:h-48 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 shadow-inner ring-1 ring-gray-100">
+                    <img
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                    />
+                  </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold">{item.title}</h3>
-                    <p className="text-sm text-gray-500">
-                      By {item.instructor}
+                  <div className="flex-1 w-full flex flex-col justify-center min-h-[140px]">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight line-clamp-2 transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                      <User size={14} className="text-gray-400" />
+                      By <span className="font-semibold text-gray-800">{item.instructor}</span>
                     </p>
 
-                    {/* Dummy tag */}
-                    <span className="inline-block mt-2 text-xs bg-gray-100 px-2 py-1 rounded">
-                      Bestseller
-                    </span>
-
-                    <div className="flex gap-3 items-center mt-3">
-                      <span className="line-through text-gray-400">₹3999</span>
-                      <span className="text-xl font-bold text-blue-600">
-                        ₹{item.price}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 flex items-center gap-1">
+                        Bestseller
                       </span>
+                    </div>
+
+                    <div className="flex items-center gap-4 mt-auto">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold text-blue-600 tracking-tight">
+                          ₹{item.price}
+                        </span>
+                        <span className="text-sm text-gray-400 line-through font-medium">
+                          ₹3999
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => navigate("/cart")}
-                      className="border px-4 py-2 rounded-lg flex gap-2 items-center cursor-pointer"
-                    >
-                      <ShoppingBag size={16} /> Go to Cart
-                    </button>
+                  <div className="flex flex-row md:flex-col items-center justify-end md:justify-center h-full pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 md:pl-6">
                     <button
                       onClick={() => handleDeleteClick(item)}
-                      className="text-red-500"
+                      className="group/delete p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all duration-300 flex items-center gap-2"
+                      title="Remove from wishlist"
                     >
-                      <Trash2 />
+                      <Trash2 size={22} className="group-hover/delete:scale-110 transition-transform" />
+                      <span className="text-sm font-semibold md:hidden">Remove</span>
                     </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* SUMMARY */}
-            <div className="w-full lg:w-80 bg-white p-6 rounded-xl border h-fit">
-              <h2 className="font-bold mb-4">Wishlist Summary</h2>
-              <div className="flex justify-between text-sm">
-                <span>Total Items</span>
-                <span>{wishlistItems.length}</span>
-              </div>
-              <div className="flex justify-between font-bold mt-4">
-                <span>Total Value</span>
-                <span className="text-blue-600">₹{totalValue}</span>
+            {/* Wishlist Summary */}
+            <div className="w-full lg:w-96 h-fit">
+              <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm sticky top-24">
+                <h2 className="text-lg font-bold text-gray-900 mb-6 font-sans">
+                  Wishlist Summary
+                </h2>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Total Items</span>
+                    <span className="font-semibold text-gray-900">{wishlistItems.length}</span>
+                  </div>
+                  <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
+                    <span className="font-bold text-gray-900">Total Value</span>
+                    <span className="text-2xl font-bold text-blue-600">₹{totalValue}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate("/courses")}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3"
+                >
+                  Continue Shopping
+                </button>
+                <div className="text-center">
+                  <p className="text-xs text-gray-400">Save courses here to buy them later</p>
+                </div>
               </div>
             </div>
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 pt-16 pb-8 mt-auto">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+                  L
+                </div>
+                <span className="text-xl font-bold text-gray-900 font-sans">
+                  LearnBridge
+                </span>
+              </div>
+              <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                Empowering learners worldwide with quality education. Join our
+                community and start your journey today.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4 font-sans">Platform</h4>
+              <ul className="space-y-3 text-sm text-gray-500">
+                <li>
+                  <Link to="/courses" className="hover:text-blue-600">
+                    Browse Courses
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/student/liveclass" className="hover:text-blue-600">
+                    Live Classes
+                  </Link>
+                </li>
+                <li>
+                  <a href="/question-community" className="hover:text-blue-600">
+                    Q&A Community
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4 font-sans">Support</h4>
+              <ul className="space-y-3 text-sm text-gray-500">
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Contact Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    FAQs
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4 font-sans">Company</h4>
+              <ul className="space-y-3 text-sm text-gray-500">
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-blue-600">
+                    Blog
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100 pt-8 text-center text-xs text-gray-400">
+            © 2024 LearnBridge. All rights reserved.
+          </div>
+        </div>
+      </footer>
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
