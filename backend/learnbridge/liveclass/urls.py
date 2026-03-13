@@ -9,6 +9,10 @@ urlpatterns = [
     path("teacher/liveclass/<int:pk>/", TeacherLiveClassDetailView.as_view()),
     path("student/liveclass/upcoming/",
          StudentUpCommingLiveClassesView.as_view()),
+    path("student/liveclass/live/",
+         StudentLiveNowClassesView.as_view()),
+    path("student/liveclass/past/",
+         StudentPastLiveClassesView.as_view()),
     # liveclass/urls.py
 
     path("student/liveclass/razorpay/create/",

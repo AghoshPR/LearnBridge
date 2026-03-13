@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { logout } from '@/Store/authSlice';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "@/Store/authSlice";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -23,73 +23,63 @@ import {
   Pencil,
   Trash2,
   Lock,
-  Unlock
-} from 'lucide-react';
-import Api from '../Services/Api';
+  Unlock,
+} from "lucide-react";
+import Api from "../Services/Api";
 
 const AdminCategories = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const PAGE_SIZE = 10
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 10;
 
+  const [categories, setCategories] = useState([]);
 
-  const [categories, setCategories] = useState([])
-
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [newCategory, setNewCategory] = useState({
     name: "",
-    description: ""
-  })
+    description: "",
+  });
 
   const fetchCategories = async () => {
-
     try {
-      const res = await Api.get('/courses/admin/categories/', {
-
+      const res = await Api.get("/courses/admin/categories/", {
         params: {
           page,
-          search: searchQuery || undefined
-        }
+          search: searchQuery || undefined,
+        },
+      });
 
-      })
-
-      setCategories(res.data.results)
-      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
-
+      setCategories(res.data.results);
+      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
     } catch (err) {
-      toast.error("Failed to load categories")
+      toast.error("Failed to load categories");
     }
-  }
-
+  };
 
   const handleAddCategory = async () => {
-
     if (!newCategory.name.trim()) {
-      toast.error("Category name required")
-      return
+      toast.error("Category name required");
+      return;
     }
 
     if (!newCategory.description.trim()) {
-      toast.error("Description required")
-      return
+      toast.error("Description required");
+      return;
     }
 
     try {
+      await Api.post("/courses/admin/categories/", newCategory);
 
-      await Api.post("/courses/admin/categories/", newCategory)
-
-      toast.success("Category added successfully")
-      setIsAddModalOpen(false)
-      setNewCategory({ name: "", description: "" })
-      fetchCategories()
-
-
+      toast.success("Category added successfully");
+      setIsAddModalOpen(false);
+      setNewCategory({ name: "", description: "" });
+      fetchCategories();
     } catch (err) {
       const errorMsg =
         err.response?.data?.name?.[0] ||
@@ -98,37 +88,33 @@ const AdminCategories = () => {
 
       toast.error(errorMsg);
     }
-
-  }
+  };
 
   useEffect(() => {
-    fetchCategories()
-  }, [page, searchQuery])
+    fetchCategories();
+  }, [page, searchQuery]);
 
   // block and unblock
 
   const toggleCategoriesStatus = async (id) => {
-
     try {
-      await Api.post(`/courses/admin/categories/toggle/${id}/`)
-      toast.success('Category status updated')
-      fetchCategories()
+      await Api.post(`/courses/admin/categories/toggle/${id}/`);
+      toast.success("Category status updated");
+      fetchCategories();
     } catch {
-      toast.error("Action Failed")
+      toast.error("Action Failed");
     }
-  }
+  };
 
   const deleteCategory = async (id) => {
-
     try {
-      await Api.delete(`/courses/admin/categories/${id}/`)
-      toast.success("Category deleted")
-      fetchCategories()
+      await Api.delete(`/courses/admin/categories/${id}/`);
+      toast.success("Category deleted");
+      fetchCategories();
     } catch {
-      toast.error("Delete failed")
+      toast.error("Delete failed");
     }
-  }
-
+  };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -154,16 +140,18 @@ const AdminCategories = () => {
       onClick={onClick}
       className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-        ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
-      `}>
+        ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}
+      `}
+    >
       <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-      <span className={`text-sm font-medium ${active ? 'font-semibold' : ''}`}>{label}</span>
+      <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+        {label}
+      </span>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
-
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
@@ -189,10 +177,12 @@ const AdminCategories = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
                 w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
+                ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            `}
+      >
         {/* Sidebar Header */}
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -200,8 +190,12 @@ const AdminCategories = () => {
               <ShieldCheck className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-tight">LearnBridge</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+              <h1 className="font-bold text-white text-lg leading-tight">
+                LearnBridge
+              </h1>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
@@ -279,11 +273,19 @@ const AdminCategories = () => {
                   A
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">Admin</span>
-                  <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    Admin
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    Super User
+                  </span>
                 </div>
               </div>
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
                 <LogOut size={18} />
               </button>
             </div>
@@ -293,7 +295,6 @@ const AdminCategories = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
-
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Course Categories</h1>
@@ -313,7 +314,10 @@ const AdminCategories = () => {
             </div>
           </div>
           <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full mt-2">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search categories..."
@@ -330,32 +334,56 @@ const AdminCategories = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#0A0B0F]/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/5">Category Name</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/3">Description</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Courses</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Created By</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/5">
+                    Category Name
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider w-1/3">
+                    Description
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Courses
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Created By
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50">
                 {categories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-800/20 transition-colors group">
+                  <tr
+                    key={category.id}
+                    className="hover:bg-gray-800/20 transition-colors group"
+                  >
                     <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-white">{category.name}</span>
+                      <span className="text-sm font-medium text-white">
+                        {category.name}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{category.description}</td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{category.courses}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                      {category.description}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                      {category.courses}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
                         {category.createdBy}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${category.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10'
-                        : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                        }`}>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+                          category.status === "active"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10"
+                            : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                        }`}
+                      >
                         {category.status}
                       </span>
                     </td>
@@ -366,12 +394,18 @@ const AdminCategories = () => {
                         </button>
                         <button
                           onClick={() => toggleCategoriesStatus(category.id)}
-                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
-                          {category.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
+                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
+                        >
+                          {category.status === "blocked" ? (
+                            <Lock size={16} />
+                          ) : (
+                            <Unlock size={16} />
+                          )}
                         </button>
                         <button
                           onClick={() => deleteCategory(category.id)}
-                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                          className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -398,9 +432,10 @@ const AdminCategories = () => {
                 key={i}
                 onClick={() => setPage(i + 1)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium
-                  ${page === i + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 hover:bg-gray-700"
+                  ${
+                    page === i + 1
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-800 hover:bg-gray-700"
                   }`}
               >
                 {i + 1}
@@ -425,21 +460,30 @@ const AdminCategories = () => {
             ></div>
 
             <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl">
-              <h3 className="text-xl font-bold text-white mb-4">Add Category</h3>
+              <h3 className="text-xl font-bold text-white mb-4">
+                Add Category
+              </h3>
 
               <div className="space-y-4">
                 <input
                   type="text"
                   placeholder="Category name"
                   value={newCategory.name}
-                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewCategory({ ...newCategory, name: e.target.value })
+                  }
                   className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
                 />
 
                 <textarea
                   placeholder="Category description"
                   value={newCategory.description}
-                  onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewCategory({
+                      ...newCategory,
+                      description: e.target.value,
+                    })
+                  }
                   className="w-full bg-[#0F1014] border border-gray-700 text-white rounded-lg px-4 py-2.5"
                 />
 
@@ -461,8 +505,6 @@ const AdminCategories = () => {
             </div>
           </div>
         )}
-
-
       </main>
     </div>
   );

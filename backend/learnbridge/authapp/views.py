@@ -20,7 +20,6 @@ from rest_framework_simplejwt.exceptions import TokenError
 from authapp.tasks import send_otp_task
 
 
-
 class TeacherRegisterView(APIView):
 
     authentication_classes = [CsrfExemptSessionAuthentication]
@@ -36,7 +35,7 @@ class TeacherRegisterView(APIView):
                     "message": "OTP sent. Please verify. Waiting for admin approval after verification",
                     "email": user.email
                 }, status=status.HTTP_201_CREATED)
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -90,7 +89,7 @@ class LoginView(APIView):
                 )
 
                 return response
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -116,13 +115,11 @@ class StudentRegisterView(APIView):
                 except Exception as e:
                     print("OTP Sending Failed:", e)
 
-               
-
                 return Response({
                     "message": "OTP send to email",
                     "email": user.email
                 }, status=status.HTTP_201_CREATED)
-            
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -523,18 +520,18 @@ class RefreshTokenView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [AllowAny]
 
-    def post(self,request):
+    def post(self, request):
 
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
-            return Response({"error":"No refresh toekn"},status=401)
-        
+            return Response({"error": "No refresh toekn"}, status=401)
+
         try:
 
             refresh = RefreshToken(refresh_token)
 
-            response = Response({"message":"Token refreshed"})
+            response = Response({"message": "Token refreshed"})
 
             response.set_cookie(
                 key="access_token",
@@ -547,8 +544,7 @@ class RefreshTokenView(APIView):
             return response
 
         except TokenError:
-            return Response({"error":"Invalid refresh"},status=401)
-
+            return Response({"error": "Invalid refresh"}, status=401)
 
 
 class LogoutView(APIView):

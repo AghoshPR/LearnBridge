@@ -125,7 +125,16 @@ const VideoChat = () => {
 
     const connect = () => {
       console.log("Attempting to connect to WebSocket...");
-      socket = new WebSocket(`ws://localhost:8000/ws/liveclass/${classId}/`);
+
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+
+      const host =
+        window.location.hostname === "localhost"
+          ? "localhost:8000"
+          : "api.learnbridge.aghosh.site";
+
+      socket = new WebSocket(`${protocol}://${host}/ws/liveclass/${classId}/`);
+
       ws.current = socket;
 
       socket.onopen = () => {

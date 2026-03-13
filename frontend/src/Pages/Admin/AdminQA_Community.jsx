@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { logout } from '@/Store/authSlice';
-import { useDispatch } from 'react-redux';
+import { logout } from "@/Store/authSlice";
+import { useDispatch } from "react-redux";
 import {
   LayoutDashboard,
   BookOpen,
@@ -21,14 +21,14 @@ import {
   Search,
   CheckCircle,
   Trash,
-  AlertTriangle
-} from 'lucide-react';
-import Api from '../Services/Api';
+  AlertTriangle,
+} from "lucide-react";
+import Api from "../Services/Api";
 
 const AdminQA_Community = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -45,7 +45,9 @@ const AdminQA_Community = () => {
 
   const fetchQuestions = async () => {
     try {
-      const res = await Api.get('/qna/admin/questions/', { params: { status: activeTab } });
+      const res = await Api.get("/qna/admin/questions/", {
+        params: { status: activeTab },
+      });
       setQuestions(res.data);
     } catch (err) {
       toast.error("Failed to load questions");
@@ -99,7 +101,6 @@ const AdminQA_Community = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
-
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
@@ -125,10 +126,12 @@ const AdminQA_Community = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
                 w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
+                ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            `}
+      >
         {/* Sidebar Header */}
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -136,8 +139,12 @@ const AdminQA_Community = () => {
               <ShieldCheck className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-tight">LearnBridge</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+              <h1 className="font-bold text-white text-lg leading-tight">
+                LearnBridge
+              </h1>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
@@ -215,11 +222,19 @@ const AdminQA_Community = () => {
                   A
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">Admin</span>
-                  <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    Admin
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    Super User
+                  </span>
                 </div>
               </div>
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
                 <LogOut size={18} />
               </button>
             </div>
@@ -229,7 +244,6 @@ const AdminQA_Community = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
-
         {/* Header */}
         <div className="flex flex-col gap-6 mb-8">
           <div>
@@ -248,11 +262,12 @@ const AdminQA_Community = () => {
               Reported ({reportedQuestions.length})
             </button> */}
             <button
-              onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'all'
-                ? 'bg-[#1e293b] text-blue-400 border border-blue-500/30'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
+              onClick={() => setActiveTab("all")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "all"
+                  ? "bg-[#1e293b] text-blue-400 border border-blue-500/30"
+                  : "text-gray-400 hover:text-white hover:bg-gray-800"
+              }`}
             >
               All Questions
             </button>
@@ -265,87 +280,135 @@ const AdminQA_Community = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#131418]">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Question</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Author</th>
-                  {activeTab === 'reported' ? (
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Question
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Author
+                  </th>
+                  {activeTab === "reported" ? (
                     <>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reports</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Reason</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Reports
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Reason
+                      </th>
                     </>
                   ) : (
                     <>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Answers</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Views</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Answers
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Views
+                      </th>
+                      <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
                     </>
                   )}
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50">
-                {activeTab === 'reported' ? (
-                  questions.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-800/20 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-                          <span className="text-sm font-medium text-white">{item.question}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.author}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs border border-red-500/20">
-                          {item.reports} reports
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.reason}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.date}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleApprove(item.id)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                {activeTab === "reported"
+                  ? questions.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-800/20 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <AlertTriangle
+                              size={16}
+                              className="text-amber-500 shrink-0"
+                            />
+                            <span className="text-sm font-medium text-white">
+                              {item.question}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.author}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-2 py-1 rounded bg-red-500/10 text-red-400 text-xs border border-red-500/20">
+                            {item.reports} reports
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.reason}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.date}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleApprove(item.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            >
+                              <CheckCircle size={14} /> Approve
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(item)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            >
+                              <Trash size={14} /> Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  : questions.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-800/20 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm font-medium text-white">
+                          {item.question}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.author}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.answers}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.views}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                              item.status === "active"
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                : item.status === "reported"
+                                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                  : "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                            }`}
                           >
-                            <CheckCircle size={14} /> Approve
-                          </button>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-400">
+                          {item.date}
+                        </td>
+                        <td className="px-6 py-4">
                           <button
                             onClick={() => handleDeleteClick(item)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-xs font-semibold transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 hover:text-red-400 text-gray-500 transition-colors"
                           >
                             <Trash size={14} /> Delete
                           </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  questions.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-800/20 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-white">{item.question}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.author}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.answers}</td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.views}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${item.status === 'active' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                            item.status === 'reported' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                              'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                          }`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-400">{item.date}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleDeleteClick(item)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 hover:text-red-400 text-gray-500 transition-colors"
-                        >
-                          <Trash size={14} /> Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
           </div>
@@ -355,7 +418,10 @@ const AdminQA_Community = () => {
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setDeleteModalOpen(false)}></div>
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDeleteModalOpen(false)}
+          ></div>
           <div className="bg-[#181a20] rounded-2xl border border-gray-700 w-full max-w-md p-6 relative z-10 shadow-2xl border-red-500/20">
             <div className="flex items-center gap-3 mb-2 text-red-500">
               <Trash size={24} />
@@ -364,7 +430,9 @@ const AdminQA_Community = () => {
             <p className="text-gray-400 text-sm mb-6">
               Are you sure you want to delete this question?
               <br />
-              <span className="text-white font-medium mt-1 block">"{selectedItem.question}"</span>
+              <span className="text-white font-medium mt-1 block">
+                "{selectedItem.question}"
+              </span>
             </p>
             <div className="flex items-center justify-end gap-3">
               <button
@@ -383,7 +451,6 @@ const AdminQA_Community = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
@@ -393,10 +460,13 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
     onClick={onClick}
     className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-        ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
-    `}>
+        ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}
+    `}
+  >
     <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-    <span className={`text-sm font-medium ${active ? 'font-semibold' : ''}`}>{label}</span>
+    <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+      {label}
+    </span>
   </div>
 );
 

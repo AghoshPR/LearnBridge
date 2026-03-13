@@ -20,8 +20,19 @@ const LiveClass = () => {
 
   const [upcomingClasses, setUpcomingClasses] = useState([]);
   const [liveNowClasses, setLiveNowClasses] = useState([]);
+  const [pastClasses, setPastClasses] = useState([]);
 
   const [isPaying, setIsPaying] = useState(false);
+
+  // Pagination states
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [upcomingTotal, setUpcomingTotal] = useState(1);
+  const [livePage, setLivePage] = useState(1);
+  const [liveTotal, setLiveTotal] = useState(1);
+  const [pastPage, setPastPage] = useState(1);
+  const [pastTotal, setPastTotal] = useState(1);
+
+  const [liveNowCount, setLiveNowCount] = useState(0);
 
 
 
@@ -29,28 +40,47 @@ const LiveClass = () => {
 
 
   useEffect(() => {
-    fetchUpcomingClasses()
-  }, [])
+    fetchUpcomingClasses();
+  }, [upcomingPage]);
+
+  useEffect(() => {
+    fetchLiveNowClasses();
+  }, [livePage]);
+
+  useEffect(() => {
+    fetchPastClasses();
+  }, [pastPage]);
 
   const fetchUpcomingClasses = async () => {
-
     try {
-      const res = await Api.get("/student/liveclass/upcoming/")
-      const now = new Date()
-
-      const upcoming = res.data.filter(
-        cls => new Date(cls.start_time) > now
-      )
-
-      const liveNow = res.data.filter(cls => cls.is_registered === true)
-
-      setUpcomingClasses(upcoming)
-      setLiveNowClasses(liveNow)
-
+      const res = await Api.get(`/student/liveclass/upcoming/?page=${upcomingPage}`);
+      setUpcomingClasses(res.data.results);
+      setUpcomingTotal(res.data.total_pages);
     } catch {
-      toast.error("Failed to load live classes")
+      toast.error("Failed to load upcoming classes");
     }
-  }
+  };
+
+  const fetchLiveNowClasses = async () => {
+    try {
+      const res = await Api.get(`/student/liveclass/live/?page=${livePage}`);
+      setLiveNowClasses(res.data.results);
+      setLiveTotal(res.data.total_pages);
+      setLiveNowCount(res.data.count);
+    } catch {
+      toast.error("Failed to load live sessions");
+    }
+  };
+
+  const fetchPastClasses = async () => {
+    try {
+      const res = await Api.get(`/student/liveclass/past/?page=${pastPage}`);
+      setPastClasses(res.data.results);
+      setPastTotal(res.data.total_pages);
+    } catch {
+      toast.error("Failed to load past sessions");
+    }
+  };
 
   const payForLiveClass = async () => {
     if (isPaying) return;
@@ -287,7 +317,7 @@ const LiveClass = () => {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${activeTab === 'live' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}
           >
             Live Now <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full shrink-0">
-              {liveNowClasses.length}
+              {liveNowCount}
             </span>
           </button>
           <button
@@ -299,7 +329,8 @@ const LiveClass = () => {
         </div>
 
         {activeTab === 'upcoming' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {upcomingClasses.map(cls => (
               <div key={cls.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                 <img
@@ -352,9 +383,52 @@ const LiveClass = () => {
               </div>
             ))}
           </div>
-        )}
 
-        {activeTab === 'live' && (
+          {/* Pagination for Upcoming */}
+          {upcomingTotal > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12 bg-white p-4 rounded-xl shadow-sm border border-gray-100 w-fit mx-auto">
+              <button
+                disabled={upcomingPage === 1}
+                onClick={() => setUpcomingPage((p) => p - 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  upcomingPage === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Prev
+              </button>
+              {[...Array(upcomingTotal)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setUpcomingPage(i + 1)}
+                  className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
+                    upcomingPage === i + 1
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={upcomingPage === upcomingTotal}
+                onClick={() => setUpcomingPage((p) => p + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  upcomingPage === upcomingTotal
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === 'live' && (
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {liveNowClasses.map(cls => (
               <div key={cls.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
@@ -407,14 +481,166 @@ const LiveClass = () => {
               </div>
             ))}
           </div>
-        )}
 
-        {activeTab === 'past' && (
-          <div className="text-center py-12 text-gray-500">
-            No past sessions available.
+          {/* Pagination for Live */}
+          {liveTotal > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12 bg-white p-4 rounded-xl shadow-sm border border-gray-100 w-fit mx-auto">
+              <button
+                disabled={livePage === 1}
+                onClick={() => setLivePage((p) => p - 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  livePage === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Prev
+              </button>
+              {[...Array(liveTotal)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setLivePage(i + 1)}
+                  className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
+                    livePage === i + 1
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={livePage === liveTotal}
+                onClick={() => setLivePage((p) => p + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  livePage === liveTotal
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === 'past' && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pastClasses.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                No past sessions available.
+              </div>
+            ) : (
+              pastClasses.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="bg-white rounded-xl border border-gray-200 overflow-hidden opacity-75 grayscale-[0.5] hover:opacity-100 hover:grayscale-0 transition-all shadow-sm hover:shadow-md"
+                >
+                  <div className="relative">
+                    <img
+                      src={
+                        cls.thumbnail
+                          ? cls.thumbnail.startsWith("http")
+                            ? cls.thumbnail
+                            : `http://localhost:8000${cls.thumbnail}`
+                          : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800"
+                      }
+                      alt={cls.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute top-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded">
+                      COMPLETED
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="bg-gray-100 text-gray-700 text-xs font-semibold px-2 py-1 rounded">
+                        {cls.subject || "General"}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-lg mb-1 line-clamp-2">
+                      {cls.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      by {cls.teacher_name}
+                    </p>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />{" "}
+                        {new Date(cls.start_time).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="w-4 h-4 mr-2" />{" "}
+                        {new Date(cls.start_time).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100">
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span className="flex items-center">
+                          <Users className="w-3 h-3 mr-1" />{" "}
+                          {cls.registered_count} Attended
+                        </span>
+                        <span className="font-medium text-blue-600">
+                          Finished
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        )}
-      </main>
+
+          {/* Pagination for Past */}
+          {pastTotal > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12 bg-white p-4 rounded-xl shadow-sm border border-gray-100 w-fit mx-auto">
+              <button
+                disabled={pastPage === 1}
+                onClick={() => setPastPage((p) => p - 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  pastPage === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Prev
+              </button>
+              {[...Array(pastTotal)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPastPage(i + 1)}
+                  className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
+                    pastPage === i + 1
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={pastPage === pastTotal}
+                onClick={() => setPastPage((p) => p + 1)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  pastPage === pastTotal
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-blue-600"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </main>
 
       {/* Registration Modal */}
       {isRegisterModalOpen && (

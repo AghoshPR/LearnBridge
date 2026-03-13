@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Api from '../Services/Api';
-import { toast } from "sonner"
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Api from "../Services/Api";
+import { toast } from "sonner";
 
 import {
   LayoutDashboard,
@@ -26,8 +26,8 @@ import {
   Search,
   Filter,
   Layers,
-  Copy
-} from 'lucide-react';
+  Copy,
+} from "lucide-react";
 
 const AdminOffer = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -36,10 +36,9 @@ const AdminOffer = () => {
   const [offerToDelete, setOfferToDelete] = useState(null);
   const navigate = useNavigate();
 
-  const [offers, setOffers] = useState([])
-  const [categories, setCategories] = useState([])
-  const [courses, setCourses] = useState([])
-
+  const [offers, setOffers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [courses, setCourses] = useState([]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -53,51 +52,48 @@ const AdminOffer = () => {
     start_date: "",
     end_date: "",
     max_uses: "",
-    is_active: true
-  }
+    is_active: true,
+  };
 
-  const [formData, setFormData] = useState(initialFormState)
+  const [formData, setFormData] = useState(initialFormState);
 
-  const [editingId, setEditingId] = useState(null)
+  const [editingId, setEditingId] = useState(null);
 
   // Pagination & Search States
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchOffers()
-    fetchCategories()
-    fetchCourses()
-  }, [])
+    fetchOffers();
+    fetchCategories();
+    fetchCourses();
+  }, []);
 
   const fetchOffers = async () => {
-
     try {
-      const res = await Api.get("/offers/")
-      setOffers(res.data)
-
+      const res = await Api.get("/offers/");
+      setOffers(res.data);
     } catch (err) {
-      toast.error("Failed to load offers")
+      toast.error("Failed to load offers");
     }
-  }
+  };
 
   const fetchCategories = async () => {
     try {
-      const res = await Api.get("/courses/admin/categories/")
-      setCategories(res.data.results)
-    } catch (err) { }
-  }
+      const res = await Api.get("/courses/admin/categories/");
+      setCategories(res.data.results);
+    } catch (err) {}
+  };
 
   const fetchCourses = async () => {
     try {
-      const res = await Api.get("/courses/admin/courses/")
-      setCourses(res.data.results)
-    } catch (err) { }
-  }
+      const res = await Api.get("/courses/admin/courses/");
+      setCourses(res.data.results);
+    } catch (err) {}
+  };
 
   const handleChange = (e) => {
-
     const { name, value, type, checked } = e.target;
 
     setFormData({
@@ -110,10 +106,10 @@ const AdminOffer = () => {
     setEditingId(null);
     setFormData(initialFormState);
     setIsModalOpen(true);
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
       // Clean up data before sending
@@ -130,24 +126,25 @@ const AdminOffer = () => {
       }
 
       if (editingId) {
-        await Api.put(`/offers/update/${editingId}/`, payload)
-        toast.success("Offer updated successfully")
+        await Api.put(`/offers/update/${editingId}/`, payload);
+        toast.success("Offer updated successfully");
       } else {
-        await Api.post("/offers/create/", payload)
-        toast.success("Offer created successfully")
+        await Api.post("/offers/create/", payload);
+        toast.success("Offer created successfully");
       }
 
-      setIsModalOpen(false)
-      setEditingId(null)
-      fetchOffers()
-
+      setIsModalOpen(false);
+      setEditingId(null);
+      fetchOffers();
     } catch (err) {
       if (err.response?.data) {
         const errors = err.response.data;
-        if (typeof errors === 'object') {
-          Object.keys(errors).forEach(key => {
-            const messages = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
-            messages.forEach(msg => toast.error(`${key}: ${msg}`));
+        if (typeof errors === "object") {
+          Object.keys(errors).forEach((key) => {
+            const messages = Array.isArray(errors[key])
+              ? errors[key]
+              : [errors[key]];
+            messages.forEach((msg) => toast.error(`${key}: ${msg}`));
           });
         } else {
           toast.error("Validation failed");
@@ -156,44 +153,50 @@ const AdminOffer = () => {
         toast.error("Something went wrong");
       }
     }
-  }
+  };
 
   const handleEdit = (offer) => {
-    setEditingId(offer.id)
+    setEditingId(offer.id);
     setFormData({
       ...offer,
       course: offer.course || "",
       category: offer.category || "",
-
-    })
-    setIsModalOpen(true)
-  }
+    });
+    setIsModalOpen(true);
+  };
 
   const handleDelete = (offer) => {
     setOfferToDelete(offer);
     setIsDeleteModalOpen(true);
-  }
+  };
 
   const confirmDelete = async () => {
     if (!offerToDelete) return;
 
     try {
-      await Api.delete(`/offers/delete/${offerToDelete.id}/`)
-      toast.success("Offer deleted")
-      fetchOffers()
+      await Api.delete(`/offers/delete/${offerToDelete.id}/`);
+      toast.success("Offer deleted");
+      fetchOffers();
       setIsDeleteModalOpen(false);
       setOfferToDelete(null);
-
     } catch {
-      toast.error("Delete Failed")
+      toast.error("Delete Failed");
     }
-  }
+  };
 
   // Pagination & Search Logic
-  const filteredOffers = offers.filter(offer =>
-    (offer.title && offer.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (categories.find(c => Number(c.id) === Number(offer.category))?.name?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (courses.find(c => Number(c.id) === Number(offer.course))?.title?.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredOffers = offers.filter(
+    (offer) =>
+      (offer.title &&
+        offer.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      categories
+        .find((c) => Number(c.id) === Number(offer.category))
+        ?.name?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      courses
+        .find((c) => Number(c.id) === Number(offer.course))
+        ?.title?.toLowerCase()
+        .includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredOffers.length / itemsPerPage);
@@ -203,7 +206,6 @@ const AdminOffer = () => {
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
-
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
@@ -229,11 +231,12 @@ const AdminOffer = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
                 w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
-
+                ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            `}
+      >
         {/* Sidebar Header */}
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -241,25 +244,69 @@ const AdminOffer = () => {
               <ShieldCheck className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-tight">LearnBridge</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+              <h1 className="font-bold text-white text-lg leading-tight">
+                LearnBridge
+              </h1>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-          <NavItem icon={LayoutDashboard} label="Dashboard" onClick={() => navigate("/admin/dashboard")} />
-          <NavItem icon={BookOpen} label="Courses" onClick={() => navigate("/admin/courses")} />
-          <NavItem icon={Folder} label="Categories" onClick={() => navigate("/admin/categories")} />
-          <NavItem icon={Users} label="Users" onClick={() => navigate("/admin/users")} />
-          <NavItem icon={GraduationCap} label="Teachers" onClick={() => navigate("/admin/teachers")} />
-          <NavItem icon={MessageSquare} label="Q&A Moderation" onClick={() => navigate("/admin/qna")} />
-          <NavItem icon={Tag} label="Tags Management" onClick={() => navigate("/admin/tags")} />
-          <NavItem icon={Percent} label="Offers" active onClick={() => navigate("/admin/offers")} />
-          <NavItem icon={Ticket} label="Coupons" onClick={() => navigate("/admin/coupons")} />
-          <NavItem icon={Wallet} label="Wallet" onClick={() => navigate("/admin/wallet")} />
-
+          <NavItem
+            icon={LayoutDashboard}
+            label="Dashboard"
+            onClick={() => navigate("/admin/dashboard")}
+          />
+          <NavItem
+            icon={BookOpen}
+            label="Courses"
+            onClick={() => navigate("/admin/courses")}
+          />
+          <NavItem
+            icon={Folder}
+            label="Categories"
+            onClick={() => navigate("/admin/categories")}
+          />
+          <NavItem
+            icon={Users}
+            label="Users"
+            onClick={() => navigate("/admin/users")}
+          />
+          <NavItem
+            icon={GraduationCap}
+            label="Teachers"
+            onClick={() => navigate("/admin/teachers")}
+          />
+          <NavItem
+            icon={MessageSquare}
+            label="Q&A Moderation"
+            onClick={() => navigate("/admin/qna")}
+          />
+          <NavItem
+            icon={Tag}
+            label="Tags Management"
+            onClick={() => navigate("/admin/tags")}
+          />
+          <NavItem
+            icon={Percent}
+            label="Offers"
+            active
+            onClick={() => navigate("/admin/offers")}
+          />
+          <NavItem
+            icon={Ticket}
+            label="Coupons"
+            onClick={() => navigate("/admin/coupons")}
+          />
+          <NavItem
+            icon={Wallet}
+            label="Wallet"
+            onClick={() => navigate("/admin/wallet")}
+          />
         </nav>
 
         {/* Sidebar Footer */}
@@ -271,11 +318,18 @@ const AdminOffer = () => {
                   A
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">Admin</span>
-                  <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    Admin
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    Super User
+                  </span>
                 </div>
               </div>
-              <button className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button
+                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
                 <LogOut size={18} />
               </button>
             </div>
@@ -285,13 +339,14 @@ const AdminOffer = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
-
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
             <div>
               <h1 className="text-2xl font-bold text-white">Offers</h1>
-              <p className="text-gray-400 mt-1 text-sm">Manage discounts for courses and categories</p>
+              <p className="text-gray-400 mt-1 text-sm">
+                Manage discounts for courses and categories
+              </p>
             </div>
 
             <div className="flex items-center gap-4">
@@ -331,24 +386,35 @@ const AdminOffer = () => {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-gray-800 bg-[#111216]">
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Discount</th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Apply To</th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Period</th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Discount
+                      </th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Apply To
+                      </th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Valid Period
+                      </th>
                       {/* <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usage</th> */}
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                     {currentOffers.map((offer) => {
-
                       const categoryName = categories.find(
-                        (c) => Number(c.id) === Number(offer.category)
+                        (c) => Number(c.id) === Number(offer.category),
                       )?.name;
 
                       const courseTitle = courses.find(
-                        (c) => Number(c.id) === Number(offer.course)
+                        (c) => Number(c.id) === Number(offer.course),
                       )?.title;
 
                       return (
@@ -366,14 +432,15 @@ const AdminOffer = () => {
 
                           <td className="p-4">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-xs border ${offer.apply_type === "Category"
-                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                : "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                                }`}
+                              className={`px-2.5 py-1 rounded-full text-xs border ${
+                                offer.apply_type === "Category"
+                                  ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                  : "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                              }`}
                             >
                               {offer.apply_type === "Category"
-                                ? (categoryName || "Unknown Category")
-                                : (courseTitle || "Unknown Course")}
+                                ? categoryName || "Unknown Category"
+                                : courseTitle || "Unknown Course"}
                             </span>
                           </td>
 
@@ -387,10 +454,11 @@ const AdminOffer = () => {
 
                           <td className="p-4">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-xs border ${offer.is_active
-                                ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                : "bg-red-500/10 text-red-400 border-red-500/20"
-                                }`}
+                              className={`px-2.5 py-1 rounded-full text-xs border ${
+                                offer.is_active
+                                  ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                  : "bg-red-500/10 text-red-400 border-red-500/20"
+                              }`}
                             >
                               {offer.is_active ? "Active" : "Inactive"}
                             </span>
@@ -425,7 +493,9 @@ const AdminOffer = () => {
               <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-800">
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
                 >
                   Prev
@@ -435,17 +505,20 @@ const AdminOffer = () => {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                                          ${currentPage === i + 1
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                      }`}
+                                          ${
+                                            currentPage === i + 1
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                          }`}
                   >
                     {i + 1}
                   </button>
                 ))}
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
                 >
                   Next
@@ -459,10 +532,15 @@ const AdminOffer = () => {
       {/* Add/Edit Offer Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          />
           <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 overflow-y-auto max-h-[90vh] animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white mb-0">{editingId ? "Edit Offer" : "Add New Offer"}</h2>
+              <h2 className="text-xl font-bold text-white mb-0">
+                {editingId ? "Edit Offer" : "Add New Offer"}
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
@@ -474,7 +552,9 @@ const AdminOffer = () => {
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Offer Name */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Offer Name *</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Offer Name *
+                </label>
                 <input
                   type="text"
                   name="title"
@@ -489,7 +569,9 @@ const AdminOffer = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Discount Type */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Type *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Discount Type *
+                  </label>
                   <div className="relative">
                     <select
                       name="discount_type"
@@ -502,14 +584,30 @@ const AdminOffer = () => {
                     </select>
 
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <svg
+                        width="10"
+                        height="6"
+                        viewBox="0 0 10 6"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 1L5 5L9 1"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </div>
                   </div>
                 </div>
 
                 {/* Discount Value */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Value *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Discount Value *
+                  </label>
                   <input
                     type="number"
                     name="discount_value"
@@ -527,7 +625,9 @@ const AdminOffer = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Valid From */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Valid From *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Valid From *
+                  </label>
                   <input
                     type="date"
                     name="start_date"
@@ -540,7 +640,9 @@ const AdminOffer = () => {
 
                 {/* Valid Till */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Valid Till *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Valid Till *
+                  </label>
                   <input
                     type="date"
                     name="end_date"
@@ -554,7 +656,9 @@ const AdminOffer = () => {
 
               {/* Max Uses */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Max Uses</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Max Uses
+                </label>
                 <input
                   type="number"
                   name="max_uses"
@@ -568,7 +672,9 @@ const AdminOffer = () => {
 
               {/* Apply To Selector */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Apply Type *</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Apply Type *
+                </label>
                 <div className="relative">
                   <select
                     name="apply_type"
@@ -580,14 +686,30 @@ const AdminOffer = () => {
                     <option value="Course">Course</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg
+                      width="10"
+                      height="6"
+                      viewBox="0 0 10 6"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 1L5 5L9 1"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
 
               {/* Select Category/Course */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Select {formData.apply_type} *</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Select {formData.apply_type} *
+                </label>
                 <div className="relative">
                   {formData.apply_type === "Category" ? (
                     <select
@@ -622,14 +744,30 @@ const AdminOffer = () => {
                   )}
 
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <svg
+                      width="10"
+                      height="6"
+                      viewBox="0 0 10 6"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 1L5 5L9 1"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
 
               {/* Active Toggle */}
               <div className="flex items-center justify-between pt-2">
-                <label className="text-sm font-medium text-gray-300">Active</label>
+                <label className="text-sm font-medium text-gray-300">
+                  Active
+                </label>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -658,7 +796,6 @@ const AdminOffer = () => {
                   {editingId ? "Update Offer" : "Create Offer"}
                 </button>
               </div>
-
             </form>
           </div>
         </div>
@@ -667,11 +804,18 @@ const AdminOffer = () => {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
           <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-md shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
             <h3 className="text-xl font-bold text-white mb-2">Delete Offer</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete <span className="text-white font-medium">{offerToDelete?.title}</span>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="text-white font-medium">
+                {offerToDelete?.title}
+              </span>
+              ? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -699,10 +843,13 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
     onClick={onClick}
     className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-        ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
-    `}>
+        ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}
+    `}
+  >
     <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-    <span className={`text-sm font-medium ${active ? 'font-semibold' : ''}`}>{label}</span>
+    <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+      {label}
+    </span>
   </div>
 );
 

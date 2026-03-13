@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
@@ -24,12 +24,12 @@ import {
   Search,
   Filter,
   Copy,
-  Check
-} from 'lucide-react';
-import Api from '../Services/Api';
-import { toast } from 'sonner';
-import { useDispatch } from 'react-redux';
-import { logout } from '@/Store/authSlice';
+  Check,
+} from "lucide-react";
+import Api from "../Services/Api";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { logout } from "@/Store/authSlice";
 
 const AdminCoupon = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -39,11 +39,11 @@ const AdminCoupon = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [coupons, setCoupons] = useState([])
-  const [editingId, setEditingId] = useState(null)
+  const [coupons, setCoupons] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   // Pagination & Search States
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -56,39 +56,35 @@ const AdminCoupon = () => {
     valid_from: "",
     valid_till: "",
     max_uses: "",
-    is_active: true
+    is_active: true,
+  };
 
-  }
-
-  const [formData, setFormData] = useState(initialFormState)
-
+  const [formData, setFormData] = useState(initialFormState);
 
   useEffect(() => {
-    fetchCoupons()
-  }, [])
-
+    fetchCoupons();
+  }, []);
 
   const fetchCoupons = async () => {
-
     try {
-      const res = await Api.get("/coupons/")
-      setCoupons(res.data)
+      const res = await Api.get("/coupons/");
+      setCoupons(res.data);
     } catch {
-      toast.error("Failed to load coupons")
+      toast.error("Failed to load coupons");
     }
-  }
+  };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
 
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value
-    })
-  }
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
       // Clean up data before sending
@@ -101,73 +97,77 @@ const AdminCoupon = () => {
       };
 
       if (editingId) {
-        await Api.put(`/coupons/update/${editingId}/`, payload)
-        toast.success("Coupon updated")
+        await Api.put(`/coupons/update/${editingId}/`, payload);
+        toast.success("Coupon updated");
       } else {
-        await Api.post("/coupons/create/", payload)
-        toast.success("Coupon Created")
+        await Api.post("/coupons/create/", payload);
+        toast.success("Coupon Created");
       }
 
-      setIsModalOpen(false)
-      setEditingId(null)
-      setFormData(initialFormState)
-      fetchCoupons()
-
+      setIsModalOpen(false);
+      setEditingId(null);
+      setFormData(initialFormState);
+      fetchCoupons();
     } catch (err) {
       if (err.response?.data) {
         const errors = err.response.data;
-        if (typeof errors === 'object') {
-          Object.keys(errors).forEach(key => {
-            const messages = Array.isArray(errors[key]) ? errors[key] : [errors[key]];
-            messages.forEach(msg => toast.error(`${key}: ${msg}`));
+        if (typeof errors === "object") {
+          Object.keys(errors).forEach((key) => {
+            const messages = Array.isArray(errors[key])
+              ? errors[key]
+              : [errors[key]];
+            messages.forEach((msg) => toast.error(`${key}: ${msg}`));
           });
         } else {
           toast.error("Validation failed");
         }
       } else {
-        toast.error("something went wrong")
+        toast.error("something went wrong");
       }
     }
-  }
+  };
 
   const handleEdit = (coupon) => {
-
-    setEditingId(coupon.id)
+    setEditingId(coupon.id);
     setFormData({
-      ...coupon
-    })
-    setIsModalOpen(true)
-  }
+      ...coupon,
+    });
+    setIsModalOpen(true);
+  };
 
   const handleDelete = (coupon) => {
     setCouponToDelete(coupon);
     setIsDeleteModalOpen(true);
-  }
+  };
 
   const confirmDelete = async () => {
     if (!couponToDelete) return;
 
     try {
-      await Api.delete(`/coupons/delete/${couponToDelete.id}/`)
-      toast.success("Coupon deactivated")
-      fetchCoupons()
+      await Api.delete(`/coupons/delete/${couponToDelete.id}/`);
+      toast.success("Coupon deactivated");
+      fetchCoupons();
       setIsDeleteModalOpen(false);
       setCouponToDelete(null);
     } catch {
-      toast.error("Delete failed")
+      toast.error("Delete failed");
     }
-  }
-
+  };
 
   // Pagination & Search Logic
-  const filteredCoupons = coupons.filter(coupon =>
-    coupon.code && coupon.code.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCoupons = coupons.filter(
+    (coupon) =>
+      coupon.code &&
+      coupon.code.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentCoupons = filteredCoupons.slice(indexOfFirstItem, indexOfLastItem);
+  const currentCoupons = filteredCoupons.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -186,12 +186,10 @@ const AdminCoupon = () => {
       dispatch(logout()); // Redux clear
       navigate("/admin/login", { replace: true });
     }
-
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
-
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
@@ -217,11 +215,12 @@ const AdminCoupon = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
                 w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
-
+                ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            `}
+      >
         {/* Sidebar Header */}
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -229,24 +228,69 @@ const AdminCoupon = () => {
               <ShieldCheck className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-tight">LearnBridge</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+              <h1 className="font-bold text-white text-lg leading-tight">
+                LearnBridge
+              </h1>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
-          <NavItem icon={LayoutDashboard} label="Dashboard" onClick={() => navigate("/admin/dashboard")} />
-          <NavItem icon={BookOpen} label="Courses" onClick={() => navigate("/admin/courses")} />
-          <NavItem icon={Folder} label="Categories" onClick={() => navigate("/admin/categories")} />
-          <NavItem icon={Users} label="Users" onClick={() => navigate("/admin/users")} />
-          <NavItem icon={GraduationCap} label="Teachers" onClick={() => navigate("/admin/teachers")} />
-          <NavItem icon={MessageSquare} label="Q&A Moderation" onClick={() => navigate("/admin/qna")} />
-          <NavItem icon={Tag} label="Tags Management" onClick={() => navigate("/admin/tags")} />
-          <NavItem icon={Percent} label="Offers" onClick={() => navigate("/admin/offers")} />
-          <NavItem icon={Ticket} label="Coupons" active onClick={() => navigate("/admin/coupons")} />
-          <NavItem icon={Wallet} label="Wallet" onClick={() => navigate("/admin/wallet")} />
+          <NavItem
+            icon={LayoutDashboard}
+            label="Dashboard"
+            onClick={() => navigate("/admin/dashboard")}
+          />
+          <NavItem
+            icon={BookOpen}
+            label="Courses"
+            onClick={() => navigate("/admin/courses")}
+          />
+          <NavItem
+            icon={Folder}
+            label="Categories"
+            onClick={() => navigate("/admin/categories")}
+          />
+          <NavItem
+            icon={Users}
+            label="Users"
+            onClick={() => navigate("/admin/users")}
+          />
+          <NavItem
+            icon={GraduationCap}
+            label="Teachers"
+            onClick={() => navigate("/admin/teachers")}
+          />
+          <NavItem
+            icon={MessageSquare}
+            label="Q&A Moderation"
+            onClick={() => navigate("/admin/qna")}
+          />
+          <NavItem
+            icon={Tag}
+            label="Tags Management"
+            onClick={() => navigate("/admin/tags")}
+          />
+          <NavItem
+            icon={Percent}
+            label="Offers"
+            onClick={() => navigate("/admin/offers")}
+          />
+          <NavItem
+            icon={Ticket}
+            label="Coupons"
+            active
+            onClick={() => navigate("/admin/coupons")}
+          />
+          <NavItem
+            icon={Wallet}
+            label="Wallet"
+            onClick={() => navigate("/admin/wallet")}
+          />
         </nav>
 
         {/* Sidebar Footer */}
@@ -258,11 +302,19 @@ const AdminCoupon = () => {
                   A
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">Admin</span>
-                  <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    Admin
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    Super User
+                  </span>
                 </div>
               </div>
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
                 <LogOut size={18} />
               </button>
             </div>
@@ -272,13 +324,14 @@ const AdminCoupon = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
-
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0A0B0F] p-6 rounded-2xl border border-gray-800">
             <div>
               <h1 className="text-2xl font-bold text-white">Coupons</h1>
-              <p className="text-gray-400 mt-1 text-sm">Manage coupon codes for checkout discounts</p>
+              <p className="text-gray-400 mt-1 text-sm">
+                Manage coupon codes for checkout discounts
+              </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -312,38 +365,64 @@ const AdminCoupon = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-gray-800 bg-[#111216]">
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Code</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Discount</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Min Order</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Valid Period</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">User Limit</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Code
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Discount
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Min Order
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Valid Period
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      User Limit
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="p-4 py-5 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                   {currentCoupons.length > 0 ? (
                     currentCoupons.map((coupon) => (
-                      <tr key={coupon.id} className="group hover:bg-gray-900/50 transition-colors">
+                      <tr
+                        key={coupon.id}
+                        className="group hover:bg-gray-900/50 transition-colors"
+                      >
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium flex items-center gap-2">
                               {coupon.code}
-                              <Copy size={12} className="cursor-pointer hover:text-blue-300" />
+                              <Copy
+                                size={12}
+                                className="cursor-pointer hover:text-blue-300"
+                              />
                             </div>
                           </div>
                         </td>
                         <td className="p-4">
                           <span className="text-sm font-medium text-white">
-                            {coupon.discount_type === 'percentage' ? `${coupon.discount_value}%` : `₹ ${coupon.discount_value}`}
+                            {coupon.discount_type === "percentage"
+                              ? `${coupon.discount_value}%`
+                              : `₹ ${coupon.discount_value}`}
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm text-gray-400 font-mono">₹{coupon.min_purchase_amount}</span>
+                          <span className="text-sm text-gray-400 font-mono">
+                            ₹{coupon.min_purchase_amount}
+                          </span>
                         </td>
                         <td className="p-4">
                           <div className="text-xs text-gray-400">
-                            <span className="block">{coupon.valid_from} to {coupon.valid_till}</span>
+                            <span className="block">
+                              {coupon.valid_from} to {coupon.valid_till}
+                            </span>
                           </div>
                         </td>
                         <td className="p-4">
@@ -352,19 +431,28 @@ const AdminCoupon = () => {
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${coupon.is_active
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'
-                            }`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                              coupon.is_active
+                                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                                : "bg-red-500/10 text-red-400 border-red-500/20"
+                            }`}
+                          >
                             {coupon.is_active ? "Active" : "Inactive"}
                           </span>
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => handleEdit(coupon)} className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
+                            <button
+                              onClick={() => handleEdit(coupon)}
+                              className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
+                            >
                               <Pencil size={16} />
                             </button>
-                            <button onClick={() => handleDelete(coupon)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                            <button
+                              onClick={() => handleDelete(coupon)}
+                              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                            >
                               <Trash2 size={16} />
                             </button>
                           </div>
@@ -373,7 +461,10 @@ const AdminCoupon = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="p-8 text-center text-gray-500 text-sm">
+                      <td
+                        colSpan="7"
+                        className="p-8 text-center text-gray-500 text-sm"
+                      >
                         No coupons found.
                       </td>
                     </tr>
@@ -387,7 +478,9 @@ const AdminCoupon = () => {
               <div className="flex justify-center items-center gap-2 p-6 border-t border-gray-800">
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
                 >
                   Prev
@@ -397,17 +490,20 @@ const AdminCoupon = () => {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                                          ${currentPage === i + 1
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                      }`}
+                                          ${
+                                            currentPage === i + 1
+                                              ? "bg-blue-600 text-white"
+                                              : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                                          }`}
                   >
                     {i + 1}
                   </button>
                 ))}
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   className="px-4 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
                 >
                   Next
@@ -421,10 +517,15 @@ const AdminCoupon = () => {
       {/* Add/Edit Coupon Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          />
           <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-lg shadow-2xl p-6 overflow-y-auto max-h-[90vh] animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">{editingId ? "Edit Coupon" : "Add Coupon"}</h2>
+              <h2 className="text-xl font-bold text-white">
+                {editingId ? "Edit Coupon" : "Add Coupon"}
+              </h2>
 
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -437,9 +538,11 @@ const AdminCoupon = () => {
             <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Coupon Code */}
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Coupon Code *</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Coupon Code *
+                </label>
                 <input
-                  name='code'
+                  name="code"
                   value={formData.code}
                   placeholder="E.G. SUMMER20"
                   onChange={handleChange}
@@ -450,30 +553,48 @@ const AdminCoupon = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Discount Type */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Type *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Discount Type *
+                  </label>
                   <div className="relative">
                     <select
-                      name='discount_type'
+                      name="discount_type"
                       value={formData.discount_type}
                       onChange={handleChange}
-                      className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer">
-
+                      className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 appearance-none cursor-pointer"
+                    >
                       <option value="percentage">Percentage (%)</option>
                       <option value="fixed">Fixed Amount (₹)</option>
                     </select>
 
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                      <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <svg
+                        width="10"
+                        height="6"
+                        viewBox="0 0 10 6"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 1L5 5L9 1"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     </div>
                   </div>
                 </div>
 
                 {/* Discount Value */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Discount Value *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Discount Value *
+                  </label>
                   <input
                     type="number"
-                    name='discount_value'
+                    name="discount_value"
                     value={formData.discount_value}
                     onChange={handleChange}
                     placeholder="Discount Value"
@@ -485,11 +606,13 @@ const AdminCoupon = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Valid From */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Valid From *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Valid From *
+                  </label>
                   <div className="relative">
                     <input
                       type="date"
-                      name='valid_from'
+                      name="valid_from"
                       value={formData.valid_from}
                       onChange={handleChange}
                       className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600 custom-date-input"
@@ -499,11 +622,13 @@ const AdminCoupon = () => {
 
                 {/* Valid Till */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Valid Till *</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Valid Till *
+                  </label>
                   <div className="relative">
                     <input
                       type="date"
-                      name='valid_till'
+                      name="valid_till"
                       value={formData.valid_till}
                       onChange={handleChange}
                       className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600 custom-date-input"
@@ -538,10 +663,12 @@ const AdminCoupon = () => {
 
                 {/* Min Order Value */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">Min Order Value (₹)</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                    Min Order Value (₹)
+                  </label>
                   <input
                     type="number"
-                    name='min_purchase_amount'
+                    name="min_purchase_amount"
                     value={formData.min_purchase_amount}
                     onChange={handleChange}
                     placeholder="0"
@@ -552,14 +679,17 @@ const AdminCoupon = () => {
 
               {/* Active Toggle */}
               <div className="flex items-center justify-between pt-2">
-                <label className="text-sm font-medium text-gray-300">Active</label>
+                <label className="text-sm font-medium text-gray-300">
+                  Active
+                </label>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    name='is_active'
+                    name="is_active"
                     checked={formData.is_active}
                     onChange={handleChange}
-                    className="sr-only peer" />
+                    className="sr-only peer"
+                  />
                   <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
               </div>
@@ -580,7 +710,6 @@ const AdminCoupon = () => {
                   {editingId ? "Update Coupon" : "Create Coupon"}
                 </button>
               </div>
-
             </form>
           </div>
         </div>
@@ -589,11 +718,18 @@ const AdminCoupon = () => {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsDeleteModalOpen(false)}
+          />
           <div className="relative bg-[#0A0B0F] border border-gray-800 rounded-2xl w-full max-w-md shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
             <h3 className="text-xl font-bold text-white mb-2">Delete Coupon</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete <span className="text-white font-medium">{couponToDelete?.code}</span>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="text-white font-medium">
+                {couponToDelete?.code}
+              </span>
+              ? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -612,7 +748,6 @@ const AdminCoupon = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
@@ -622,10 +757,13 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
     onClick={onClick}
     className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-        ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
-    `}>
+        ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}
+    `}
+  >
     <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-    <span className={`text-sm font-medium ${active ? 'font-semibold' : ''}`}>{label}</span>
+    <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+      {label}
+    </span>
   </div>
 );
 

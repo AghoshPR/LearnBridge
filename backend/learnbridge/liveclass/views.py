@@ -7,6 +7,7 @@ from rest_framework import status
 from django.utils import timezone
 from teacherapp.models import TeacherProfile
 from .models import *
+from django.db.models import Q
 from .serializers import LiveClassSerializer
 from authapp.permissions import *
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -138,6 +139,9 @@ class TeacherLiveClassDetailView(APIView):
 # student side
 
 
+from .pagination import LiveClassPagination
+
+
 class StudentUpCommingLiveClassesView(APIView):
 
     def get(self, request):
@@ -145,12 +149,54 @@ class StudentUpCommingLiveClassesView(APIView):
             now = timezone.now()
             classes = LiveClass.objects.filter(
                 status="scheduled",
-                end_time__gte=now,
+                start_time__gt=now,
             ).order_by("start_time")
 
+            paginator = LiveClassPagination()
+            page = paginator.paginate_queryset(classes, request)
             serializer = LiveClassSerializer(
-                classes, many=True, context={'request': request})
-            return Response(serializer.data)
+                page, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudentLiveNowClassesView(APIView):
+    def get(self, request):
+        try:
+            now = timezone.now()
+            
+            # Base filter: currently happening
+            query = Q(status="scheduled") & Q(start_time__lte=now) & Q(end_time__gte=now)
+            
+            # If user is authenticated, also show classes they are registered for (if scheduled)
+            if request.user.is_authenticated:
+                query |= Q(status="scheduled") & Q(registrations__user=request.user)
+            
+            classes = LiveClass.objects.filter(query).distinct().order_by("start_time")
+
+            paginator = LiveClassPagination()
+            page = paginator.paginate_queryset(classes, request)
+            serializer = LiveClassSerializer(
+                page, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StudentPastLiveClassesView(APIView):
+    def get(self, request):
+        try:
+            now = timezone.now()
+            classes = LiveClass.objects.filter(
+                Q(status="completed") | Q(status="cancelled") | Q(end_time__lt=now)
+            ).order_by("-start_time")
+
+            paginator = LiveClassPagination()
+            page = paginator.paginate_queryset(classes, request)
+            serializer = LiveClassSerializer(
+                page, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

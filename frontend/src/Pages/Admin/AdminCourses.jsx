@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { logout } from '@/Store/authSlice';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "@/Store/authSlice";
 import { toast } from "sonner";
 import {
   LayoutDashboard,
@@ -26,22 +26,21 @@ import {
   Star,
   Unlock,
   Lock,
-  PlayCircle
-} from 'lucide-react';
-import Api from '../Services/Api';
+  PlayCircle,
+} from "lucide-react";
+import Api from "../Services/Api";
 
 const AdminCourses = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const [courses, setCourses] = useState([]);
 
-  const [courses, setCourses] = useState([])
-
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const PAGE_SIZE = 10
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 10;
 
   // admin Course lesson
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -49,80 +48,65 @@ const AdminCourses = () => {
   const [courseVideos, setCourseVideos] = useState([]);
   const [activeVideo, setActiveVideo] = useState(null);
 
-
-
-
-
   const fetchCourses = async () => {
     try {
-      const res = await Api.get('/courses/admin/courses/', {
+      const res = await Api.get("/courses/admin/courses/", {
         params: {
           page,
-          search: searchQuery || undefined
-        }
-      })
+          search: searchQuery || undefined,
+        },
+      });
 
-      setCourses(res.data.results)
-      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE))
+      setCourses(res.data.results);
+      setTotalPages(Math.ceil(res.data.count / PAGE_SIZE));
     } catch {
-      toast.error("Failed to load courses")
+      toast.error("Failed to load courses");
     }
-  }
+  };
 
   const toggleCourseStatus = async (id) => {
-
     try {
-      await Api.post(`/courses/admin/courses/toggle/${id}/`)
-      toast.success("Course status updated")
-      fetchCourses()
+      await Api.post(`/courses/admin/courses/toggle/${id}/`);
+      toast.success("Course status updated");
+      fetchCourses();
     } catch {
-      toast.error("Action Failed")
+      toast.error("Action Failed");
     }
-  }
+  };
 
   const deleteCourse = async (id) => {
-
     try {
-      await Api.delete(`/courses/admin/courses/${id}/`)
-      toast.success("Course deleted")
-      fetchCourses()
+      await Api.delete(`/courses/admin/courses/${id}/`);
+      toast.success("Course deleted");
+      fetchCourses();
     } catch {
-      toast.error("Delete failed")
+      toast.error("Delete failed");
     }
-  }
+  };
 
   useEffect(() => {
-    fetchCourses()
-  }, [page, searchQuery])
-
+    fetchCourses();
+  }, [page, searchQuery]);
 
   // admin course view
 
   const handleViewClick = async (course) => {
-
     try {
-
       setSelectedCourse(course);
       setIsViewModalOpen(true);
 
-      const res = await Api.get(`/courses/admin/lessons/${course.id}/`)
-      setCourseVideos(res.data)
-
+      const res = await Api.get(`/courses/admin/lessons/${course.id}/`);
+      setCourseVideos(res.data);
     } catch {
-      toast.error("Failed to load lessons")
+      toast.error("Failed to load lessons");
     }
-
   };
-
 
   const handleDeleteVideo = async (lessonId) => {
-    await Api.delete(`/courses/lessons/${lessonId}/`)
-    setCourseVideos(prev => prev.filter(v => v.id !== lessonId));
+    await Api.delete(`/courses/lessons/${lessonId}/`);
+    setCourseVideos((prev) => prev.filter((v) => v.id !== lessonId));
     toast.success("Video deleted");
   };
-
-
-
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -148,16 +132,18 @@ const AdminCourses = () => {
       onClick={onClick}
       className={`
         flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
-        ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
-      `}>
+        ${active ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" : "text-gray-400 hover:text-white hover:bg-gray-800/50"}
+      `}
+    >
       <Icon size={20} strokeWidth={active ? 2.5 : 2} />
-      <span className={`text-sm font-medium ${active ? 'font-semibold' : ''}`}>{label}</span>
+      <span className={`text-sm font-medium ${active ? "font-semibold" : ""}`}>
+        {label}
+      </span>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-[#050505] flex font-sans text-gray-100">
-
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#0A0B0F] border-b border-gray-800 flex items-center justify-between px-4 z-30">
         <div className="flex items-center gap-2">
@@ -183,10 +169,12 @@ const AdminCourses = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`
+      <aside
+        className={`
                 w-64 bg-[#0A0B0F] border-r border-gray-800 flex flex-col fixed h-full z-40 transition-transform duration-300 ease-in-out
-                ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            `}>
+                ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+            `}
+      >
         {/* Sidebar Header */}
         <div className="h-20 flex items-center px-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -194,8 +182,12 @@ const AdminCourses = () => {
               <ShieldCheck className="w-6 h-6 text-blue-500" />
             </div>
             <div>
-              <h1 className="font-bold text-white text-lg leading-tight">LearnBridge</h1>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Admin Panel</p>
+              <h1 className="font-bold text-white text-lg leading-tight">
+                LearnBridge
+              </h1>
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">
+                Admin Panel
+              </p>
             </div>
           </div>
         </div>
@@ -273,11 +265,19 @@ const AdminCourses = () => {
                   A
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white leading-none">Admin</span>
-                  <span className="text-[10px] text-gray-400 mt-1 font-medium">Super User</span>
+                  <span className="text-sm font-bold text-white leading-none">
+                    Admin
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                    Super User
+                  </span>
                 </div>
               </div>
-              <button onClick={handleLogout} className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all" title="Logout">
+              <button
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-red-400 p-2 hover:bg-red-400/10 rounded-lg transition-all"
+                title="Logout"
+              >
                 <LogOut size={18} />
               </button>
             </div>
@@ -287,7 +287,6 @@ const AdminCourses = () => {
 
       {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-64 p-6 md:p-10 pt-20 lg:pt-10 transition-all duration-300">
-
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-white">Courses</h1>
@@ -310,7 +309,10 @@ const AdminCourses = () => {
           </div>
           {/* Actual Search Implementation replacing the strip placeholder */}
           <div className="relative bg-[#0F1014] rounded-xl border border-gray-800 focus-within:border-blue-500/50 transition-colors w-full mt-2">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search courses..."
@@ -327,50 +329,85 @@ const AdminCourses = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-800 bg-[#0A0B0F]/50">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Course</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Instructor</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Students</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Rating</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Price</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Course
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Instructor
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Students
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Rating
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50">
                 {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-gray-800/20 transition-colors group">
+                  <tr
+                    key={course.id}
+                    className="hover:bg-gray-800/20 transition-colors group"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-white mb-1">{course.title}</span>
-                        <span className="text-xs text-gray-500">{course.total_lessons} lessons</span>
+                        <span className="text-sm font-medium text-white mb-1">
+                          {course.title}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {course.total_lessons} lessons
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{course.instructor}</td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{course.students_count}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                      {course.instructor}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                      {course.students_count}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1.5 text-sm text-white">
-                        <Star size={14} className="text-amber-400 fill-amber-400" />
+                        <Star
+                          size={14}
+                          className="text-amber-400 fill-amber-400"
+                        />
                         <span>{course.average_rating || 0}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{course.price}</td>
+                    <td className="px-6 py-4 text-sm text-gray-400">
+                      {course.price}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${course.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10'
-                        : 'bg-red-500/10 text-gray-400 border-gray-500/20'
-                        }`}>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+                          course.status === "active"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-900/10"
+                            : "bg-red-500/10 text-gray-400 border-gray-500/20"
+                        }`}
+                      >
                         {course.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-
-
-
                         <button
                           onClick={() => toggleCourseStatus(course.id)}
-                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer">
-                          {course.status === 'blocked' ? <Lock size={16} /> : <Unlock size={16} />}
+                          className="p-2 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors cursor-pointer"
+                        >
+                          {course.status === "blocked" ? (
+                            <Lock size={16} />
+                          ) : (
+                            <Unlock size={16} />
+                          )}
                         </button>
 
                         <button
@@ -386,7 +423,6 @@ const AdminCourses = () => {
                         >
                           <Trash2 size={16} />
                         </button>
-
                       </div>
                     </td>
                   </tr>
@@ -409,10 +445,11 @@ const AdminCourses = () => {
                     key={i}
                     onClick={() => setPage(i + 1)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium
-                    ${page === i + 1
+                    ${
+                      page === i + 1
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 hover:bg-gray-700"
-                      }`}
+                    }`}
                   >
                     {i + 1}
                   </button>
@@ -427,11 +464,8 @@ const AdminCourses = () => {
                 </button>
               </div>
             )}
-
-
           </div>
         </div>
-
       </main>
 
       {/* View Course Modal */}
@@ -446,8 +480,12 @@ const AdminCourses = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-4">
               <div>
-                <h3 className="text-xl font-bold text-white">{selectedCourse.title}</h3>
-                <p className="text-gray-400 text-xs mt-1">Course Content & Videos</p>
+                <h3 className="text-xl font-bold text-white">
+                  {selectedCourse.title}
+                </h3>
+                <p className="text-gray-400 text-xs mt-1">
+                  Course Content & Videos
+                </p>
               </div>
               <button
                 onClick={() => setIsViewModalOpen(false)}
@@ -527,7 +565,6 @@ const AdminCourses = () => {
       {activeVideo && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-[#181a20] rounded-xl w-full max-w-4xl p-4 relative border border-gray-700 shadow-2xl">
-
             <button
               onClick={() => setActiveVideo(null)}
               className="absolute -top-12 right-0 text-white hover:text-red-500 transition-colors"
@@ -535,7 +572,9 @@ const AdminCourses = () => {
               <X size={32} />
             </button>
 
-            <h3 className="text-white text-lg font-bold mb-4 px-1">{activeVideo.title}</h3>
+            <h3 className="text-white text-lg font-bold mb-4 px-1">
+              {activeVideo.title}
+            </h3>
 
             {activeVideo.video_url ? (
               <video
@@ -556,10 +595,6 @@ const AdminCourses = () => {
           </div>
         </div>
       )}
-
-
-
-
     </div>
   );
 };

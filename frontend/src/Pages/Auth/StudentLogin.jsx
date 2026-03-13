@@ -1,26 +1,23 @@
-
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
-import bgImage from '../../assets/otp-background.jpg';
-import logo from '../../assets/learnbridge-logo.png';
-import { useSelector, useDispatch } from 'react-redux';
-import { loginStart, loginSuccess, loginFailure } from '../../Store/authSlice';
-import Api from '../Services/Api';
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from "react";
+import { BookOpen, Users, TrendingUp, Eye, EyeOff } from "lucide-react";
+import bgImage from "../../assets/otp-background.jpg";
+import logo from "../../assets/learnbridge-logo.png";
+import { useSelector, useDispatch } from "react-redux";
+import { loginStart, loginSuccess, loginFailure } from "../../Store/authSlice";
+import Api from "../Services/Api";
+import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
 
-
-
 const StudentLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isAuthenticated, username } = useSelector((state) => state.auth)
+  const { isAuthenticated, username } = useSelector((state) => state.auth);
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -33,10 +30,8 @@ const StudentLogin = () => {
     return regex.test(email);
   };
 
-
   const handleSignIn = async (e) => {
     e.preventDefault();
-
 
     if (!email.trim()) {
       toast.error("Email is required");
@@ -53,33 +48,24 @@ const StudentLogin = () => {
       return;
     }
 
-
-
-
-
-    dispatch(loginStart())
-
+    dispatch(loginStart());
 
     try {
       const res = await Api.post("/auth/login/", {
         email,
         password,
         role: "student",
-      })
+      });
 
       dispatch(
         loginSuccess({
           role: res.data.role,
           username: res.data.username,
-        })
-      )
+        }),
+      );
       toast.success(`Welcome back, ${res.data.username}`);
-      navigate("/")
-
-
-    }
-
-    catch (err) {
+      navigate("/");
+    } catch (err) {
       const message =
         err.response?.data?.error ||
         err.response?.data?.non_field_errors?.[0] ||
@@ -89,17 +75,11 @@ const StudentLogin = () => {
       dispatch(loginFailure(message));
       toast.error(message);
     }
-
-
-
-
-
   };
-
 
   const hangleGoogle = async (credentialResponse) => {
     dispatch(loginStart());
-    toast("Login with google")
+    toast("Login with google");
 
     try {
       const res = await Api.post(
@@ -108,24 +88,21 @@ const StudentLogin = () => {
           token: credentialResponse.credential,
           role: "student",
         },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       dispatch(
         loginSuccess({
           role: res.data.role,
           username: res.data.username,
-        })
+        }),
       );
 
       navigate("/", { replace: true });
     } catch (err) {
       dispatch(loginFailure("Google login failed"));
     }
-  }
-
-
-
+  };
 
   return (
     <div
@@ -136,10 +113,8 @@ const StudentLogin = () => {
       <div className="absolute inset-0 bg-slate-900/40"></div>
 
       <div className="relative z-10 w-full max-w-7xl grid lg:grid-cols-2 gap-12 items-center">
-
         {/* Left Side - Promotional Content */}
         <div className="hidden lg:flex flex-col text-white space-y-12 pr-12">
-
           {/* Header */}
           <div className="space-y-4">
             <h1 className="text-5xl font-bold leading-tight drop-shadow-lg">
@@ -147,7 +122,8 @@ const StudentLogin = () => {
               with Premium Learning
             </h1>
             <p className="text-gray-200 text-lg max-w-lg">
-              Join over 50,000 learners who are mastering new skills and advancing their careers with our world-class courses.
+              Join over 50,000 learners who are mastering new skills and
+              advancing their careers with our world-class courses.
             </p>
           </div>
 
@@ -160,7 +136,10 @@ const StudentLogin = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">1,500+ Courses</h3>
-                <p className="text-sm text-gray-300">Access expert-led courses in technology, business, design, and more</p>
+                <p className="text-sm text-gray-300">
+                  Access expert-led courses in technology, business, design, and
+                  more
+                </p>
               </div>
             </div>
 
@@ -171,7 +150,9 @@ const StudentLogin = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Expert Instructors</h3>
-                <p className="text-sm text-gray-300">Learn from industry professionals with real-world experience</p>
+                <p className="text-sm text-gray-300">
+                  Learn from industry professionals with real-world experience
+                </p>
               </div>
             </div>
 
@@ -182,11 +163,12 @@ const StudentLogin = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Career Growth</h3>
-                <p className="text-sm text-gray-300">95% of our learners report career advancement within 6 months</p>
+                <p className="text-sm text-gray-300">
+                  95% of our learners report career advancement within 6 months
+                </p>
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Right Side - Login Form */}
@@ -200,15 +182,21 @@ const StudentLogin = () => {
                 alt="LearnBridge Logo"
                 className="w-10 h-10 md:w-14 md:h-14 brightness-0 invert"
               />
-              <span className="text-2xl md:text-3xl font-bold tracking-tight">LearnBridge</span>
+              <span className="text-2xl md:text-3xl font-bold tracking-tight">
+                LearnBridge
+              </span>
             </div>
           </div>
 
           {/* Glass Card */}
           <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-8 rounded-3xl shadow-2xl">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Welcome back</h2>
-              <p className="text-gray-400 text-sm">Sign in to continue learning</p>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Welcome back
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Sign in to continue learning
+              </p>
             </div>
 
             <form onSubmit={handleSignIn} className="space-y-4">
@@ -246,7 +234,11 @@ const StudentLogin = () => {
               </div>
 
               <div className="flex justify-end">
-                <button onClick={() => navigate("/student/forgotpass")} type="button" className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer hover:underline">
+                <button
+                  onClick={() => navigate("/student/forgotpass")}
+                  type="button"
+                  className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer hover:underline"
+                >
                   Forgot Password?
                 </button>
               </div>
@@ -263,7 +255,13 @@ const StudentLogin = () => {
             <div className="mt-6 text-center space-y-4">
               <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
                 Don't have an account?
-                <button onClick={() => navigate("/student/register")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"> Sign up</button>
+                <button
+                  onClick={() => navigate("/student/register")}
+                  className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"
+                >
+                  {" "}
+                  Sign up
+                </button>
               </p>
 
               {/* Divider */}
@@ -289,14 +287,13 @@ const StudentLogin = () => {
                 <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
                   Are you a teacher?
                   <span
-                    onClick={() => navigate('/teacher/login')}
+                    onClick={() => navigate("/teacher/login")}
                     className="text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer hover:underline"
                   >
                     Login here
                   </span>
                 </p>
               </div>
-
             </div>
           </div>
         </div>

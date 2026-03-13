@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
-import { BookOpen, Users, TrendingUp, Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
-import bgImage from '../../assets/otp-background.jpg';
-import logo from '../../assets/learnbridge-logo.png';
-import Api from "../Services/Api"
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from "react";
+import {
+  BookOpen,
+  Users,
+  TrendingUp,
+  Eye,
+  EyeOff,
+  User,
+  Mail,
+  Lock,
+} from "lucide-react";
+import bgImage from "../../assets/otp-background.jpg";
+import logo from "../../assets/learnbridge-logo.png";
+import Api from "../Services/Api";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-
-
 const StudentRegister = () => {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
 
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const isStrongPassword = (password) => {
-  const regex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
-  return regex.test(password);
-};
-
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}[\]:;"'<>,.?/]).{6,}$/;
+    return regex.test(password);
+  };
 
   const handleCreateAccount = async (e) => {
     e.preventDefault();
@@ -36,59 +40,46 @@ const StudentRegister = () => {
     }
 
     if (!email.includes("@")) {
-    toast.error("Please enter a valid email address");
-    return;
-  }
-
-  
-  if (!isStrongPassword(password)) {
-    toast.error(
-      "Password must contain uppercase, lowercase, number & special character"
-    );
-    return;
-  }
-
-  
-  if (!fullName.trim()) {
-    toast.error("Full name is required");
-    return;
-  }
-
-  
-  if (!password) {
-    toast.error("Password is required");
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    toast.error("Passwords do not match");
-    return;
-  }
-    
-    
-    try{
-
-      const res= await Api.post("/auth/student/register/",{
-          username : fullName,
-          email,
-          password,
-
-      })
-
-      sessionStorage.setItem("otp_email",res.data.email)
-      sessionStorage.setItem("otp_role","student")
-
-      navigate("/otp-verify")
-
-    } catch(err){
-      alert("Registration failed")
+      toast.error("Please enter a valid email address");
+      return;
     }
 
+    if (!isStrongPassword(password)) {
+      toast.error(
+        "Password must contain uppercase, lowercase, number & special character",
+      );
+      return;
+    }
 
+    if (!fullName.trim()) {
+      toast.error("Full name is required");
+      return;
+    }
 
+    if (!password) {
+      toast.error("Password is required");
+      return;
+    }
 
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
 
+    try {
+      const res = await Api.post("/auth/student/register/", {
+        username: fullName,
+        email,
+        password,
+      });
 
+      sessionStorage.setItem("otp_email", res.data.email);
+      sessionStorage.setItem("otp_role", "student");
+
+      navigate("/otp-verify");
+    } catch (err) {
+      alert("Registration failed");
+    }
   };
 
   return (
@@ -100,10 +91,8 @@ const StudentRegister = () => {
       <div className="absolute inset-0 bg-slate-900/40"></div>
 
       <div className="relative z-10 w-full max-w-7xl grid lg:grid-cols-2 gap-12 items-center">
-
         {/* Left Side - Promotional Content */}
         <div className="hidden lg:flex flex-col text-white space-y-12 pr-12">
-
           {/* Header */}
           <div className="space-y-4">
             <h1 className="text-5xl font-bold leading-tight drop-shadow-lg">
@@ -111,7 +100,8 @@ const StudentRegister = () => {
               with Premium Learning
             </h1>
             <p className="text-gray-200 text-lg max-w-lg">
-              Join over 50,000 learners who are mastering new skills and advancing their careers with our world-class courses.
+              Join over 50,000 learners who are mastering new skills and
+              advancing their careers with our world-class courses.
             </p>
           </div>
 
@@ -124,7 +114,10 @@ const StudentRegister = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">1,500+ Courses</h3>
-                <p className="text-sm text-gray-300">Access expert-led courses in technology, business, design, and more</p>
+                <p className="text-sm text-gray-300">
+                  Access expert-led courses in technology, business, design, and
+                  more
+                </p>
               </div>
             </div>
 
@@ -135,7 +128,9 @@ const StudentRegister = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Expert Instructors</h3>
-                <p className="text-sm text-gray-300">Learn from industry professionals with real-world experience</p>
+                <p className="text-sm text-gray-300">
+                  Learn from industry professionals with real-world experience
+                </p>
               </div>
             </div>
 
@@ -146,11 +141,12 @@ const StudentRegister = () => {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">Career Growth</h3>
-                <p className="text-sm text-gray-300">95% of our learners report career advancement within 6 months</p>
+                <p className="text-sm text-gray-300">
+                  95% of our learners report career advancement within 6 months
+                </p>
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Right Side - Register Form */}
@@ -163,19 +159,24 @@ const StudentRegister = () => {
                 alt="LearnBridge Logo"
                 className="w-12 h-12 md:w-20 md:h-20 brightness-0 invert"
               />
-              <span className="text-3xl md:text-5xl font-bold tracking-tight">LearnBridge</span>
+              <span className="text-3xl md:text-5xl font-bold tracking-tight">
+                LearnBridge
+              </span>
             </div>
           </div>
 
           {/* Glass Card */}
           <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-3xl shadow-2xl">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Create your account</h2>
-              <p className="text-gray-400 text-sm">Join thousands of learners</p>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Create your account
+              </h2>
+              <p className="text-gray-400 text-sm">
+                Join thousands of learners
+              </p>
             </div>
 
             <form onSubmit={handleCreateAccount} className="space-y-4">
-
               {/* Full Name */}
               <div className="space-y-1">
                 <label className="text-xs text-gray-300 ml-1">Full Name</label>
@@ -236,7 +237,9 @@ const StudentRegister = () => {
 
               {/* Confirm Password */}
               <div className="space-y-1">
-                <label className="text-xs text-gray-300 ml-1">Confirm Password</label>
+                <label className="text-xs text-gray-300 ml-1">
+                  Confirm Password
+                </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                     <Lock size={18} />
@@ -253,7 +256,11 @@ const StudentRegister = () => {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -269,16 +276,19 @@ const StudentRegister = () => {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-400">
-                Already have an account? <button onClick={()=>navigate("/student/login")} className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer">Login</button>
+                Already have an account?{" "}
+                <button
+                  onClick={() => navigate("/student/login")}
+                  className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors hover:underline cursor-pointer"
+                >
+                  Login
+                </button>
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-
-    
   );
 };
 

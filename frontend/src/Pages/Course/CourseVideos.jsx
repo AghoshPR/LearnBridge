@@ -27,7 +27,7 @@ import {
   Bot,
   SquarePlay,
 } from "lucide-react";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../Store/authSlice";
 import { useNavigate, Link, useParams } from "react-router-dom";
@@ -70,8 +70,8 @@ const CourseVideos = () => {
   const [aiMessages, setAiMessages] = useState([
     {
       sender: "ai",
-      text: "Hi! I'm your AI learning assistant. How can I help you today?"
-    }
+      text: "Hi! I'm your AI learning assistant. How can I help you today?",
+    },
   ]);
 
   const [aiInput, setAiInput] = useState("");
@@ -159,8 +159,6 @@ const CourseVideos = () => {
       setLiked(res.data.liked);
     };
 
-
-
     return (
       <div
         className={`flex gap-4 ${isReply ? "mt-4 pt-4 border-t border-gray-50" : ""}`}
@@ -219,8 +217,9 @@ const CourseVideos = () => {
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <button
               onClick={toggleLike}
-              className={`flex items-center gap-1 ${liked ? "text-blue-600" : ""
-                }`}
+              className={`flex items-center gap-1 ${
+                liked ? "text-blue-600" : ""
+              }`}
             >
               <ThumbsUp
                 className={`w-3 h-3 ${!liked ? "fill-blue-600" : ""}`}
@@ -314,19 +313,18 @@ const CourseVideos = () => {
           setActiveLesson(res.data[0]);
         }
       })
-      .catch(() => toast.error("Failed to load lessons"))
+      .catch(() => toast.error("Failed to load lessons"));
 
     Api.get(`/student/courses/${courseId}/status/`)
-      .then(res => setCourseStatus(res.data.status))
-      .catch(err => console.log("Failed to load course status", err));
-
+      .then((res) => setCourseStatus(res.data.status))
+      .catch((err) => console.log("Failed to load course status", err));
   }, [courseId]);
 
   const toggleCourseStatus = async () => {
     try {
       const res = await Api.post(`/student/courses/${courseId}/status/`);
       setCourseStatus(res.data.status);
-      if (res.data.status === 'completed') {
+      if (res.data.status === "completed") {
         toast.success("Course marked as completed!");
       } else {
         toast.success("Course marked as in progress.");
@@ -334,7 +332,7 @@ const CourseVideos = () => {
     } catch (err) {
       toast.error("Failed to toggle status");
     }
-  }
+  };
 
   // Load video when lesson changes
 
@@ -395,52 +393,38 @@ const CourseVideos = () => {
     loadReviews();
   };
 
-
   const handleAskAI = async () => {
-
-    if (!aiInput.trim()) return
+    if (!aiInput.trim()) return;
 
     const userMessage = aiInput;
 
+    setAiMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
 
-    setAiMessages(prev => [
-      ...prev,
-      { sender: "user", text: userMessage }
-
-    ])
-
-    setAiInput("")
-    setAiLoading(true)
-
+    setAiInput("");
+    setAiLoading(true);
 
     try {
       const res = await Api.post("/ai/ask/", {
         question: userMessage,
       });
 
-      setAiMessages(prev => [
+      setAiMessages((prev) => [
         ...prev,
-        { sender: "ai", text: res.data.answer || "No response" }
+        { sender: "ai", text: res.data.answer || "No response" },
       ]);
-
     } catch (error) {
       const errorMessage =
-        error.response?.data?.error ||
-        error.message ||
-        "AI failed to respond";
-
-
+        error.response?.data?.error || error.message || "AI failed to respond";
     } finally {
       setAiLoading(false);
     }
-
-  }
+  };
 
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   }, [aiMessages, aiLoading]);
@@ -834,13 +818,18 @@ const CourseVideos = () => {
                   {/* Mark as Completed Toggle */}
                   <button
                     onClick={toggleCourseStatus}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${courseStatus === 'completed'
-                      ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                      }`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                      courseStatus === "completed"
+                        ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                    }`}
                   >
-                    <CheckCircle className={`w-4 h-4 ${courseStatus === 'completed' ? 'text-green-500' : 'text-gray-400'}`} />
-                    {courseStatus === 'completed' ? 'Completed' : 'Mark as Completed'}
+                    <CheckCircle
+                      className={`w-4 h-4 ${courseStatus === "completed" ? "text-green-500" : "text-gray-400"}`}
+                    />
+                    {courseStatus === "completed"
+                      ? "Completed"
+                      : "Mark as Completed"}
                   </button>
                 </div>
                 <p className="text-xs text-gray-500">
@@ -911,29 +900,41 @@ const CourseVideos = () => {
               </div>
 
               {/* Chat Area */}
-              <div ref={chatContainerRef} className="flex-1 p-4 bg-gray-50 space-y-4 overflow-y-auto">
+              <div
+                ref={chatContainerRef}
+                className="flex-1 p-4 bg-gray-50 space-y-4 overflow-y-auto"
+              >
                 {aiMessages.map((msg, index) => (
-                  <div key={index} className={`flex gap-3 ${msg.sender === "user" ? "justify-end" : ""}`}>
-
+                  <div
+                    key={index}
+                    className={`flex gap-3 ${msg.sender === "user" ? "justify-end" : ""}`}
+                  >
                     {msg.sender === "ai" && (
                       <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                         <Bot className="w-3 h-3 text-orange-600" />
                       </div>
                     )}
 
-                    <div className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm border overflow-hidden
-                      ${msg.sender === "user"
-                        ? "bg-blue-600 text-white rounded-tr-none"
-                        : "bg-white text-gray-600 rounded-tl-none border-gray-100"
-                      }`}>
+                    <div
+                      className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm border overflow-hidden
+                      ${
+                        msg.sender === "user"
+                          ? "bg-blue-600 text-white rounded-tr-none"
+                          : "bg-white text-gray-600 rounded-tl-none border-gray-100"
+                      }`}
+                    >
                       {msg.sender === "ai" ? (
                         <div className="prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-li:my-0 text-gray-600">
                           <ReactMarkdown>
-                            {typeof msg.text === "string" ? msg.text : JSON.stringify(msg.text)}
+                            {typeof msg.text === "string"
+                              ? msg.text
+                              : JSON.stringify(msg.text)}
                           </ReactMarkdown>
                         </div>
+                      ) : typeof msg.text === "string" ? (
+                        msg.text
                       ) : (
-                        typeof msg.text === "string" ? msg.text : JSON.stringify(msg.text)
+                        JSON.stringify(msg.text)
                       )}
                     </div>
                   </div>
@@ -944,7 +945,6 @@ const CourseVideos = () => {
                     <Bot className="w-3 h-3 animate-bounce" /> AI is thinking...
                   </div>
                 )}
-
               </div>
 
               {/* Input */}
@@ -956,13 +956,14 @@ const CourseVideos = () => {
                     placeholder="Message AI Assistant..."
                     onChange={(e) => setAiInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAskAI()
+                      if (e.key === "Enter") handleAskAI();
                     }}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-10 py-3 text-sm focus:outline-none focus:border-blue-300 transition-colors"
                   />
                   <button
                     onClick={handleAskAI}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white hover:shadow-md transition-all">
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white hover:shadow-md transition-all"
+                  >
                     <Send className="w-3 h-3" />
                   </button>
                 </div>
@@ -1095,10 +1096,11 @@ const CourseVideos = () => {
                       className="focus:outline-none transition-transform hover:scale-110"
                     >
                       <Star
-                        className={`w-8 h-8 ${star <= (hoverRating || rating)
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
-                          }`}
+                        className={`w-8 h-8 ${
+                          star <= (hoverRating || rating)
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
+                        }`}
                       />
                     </button>
                   ))}
