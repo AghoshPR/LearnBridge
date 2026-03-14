@@ -220,19 +220,20 @@ const TeacherWallet = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Wallet</h1>
-          <p className="text-slate-400">
-            Manage your earnings and transactions
-          </p>
-        </header>
+      <main className="flex-1 min-w-0 w-full ml-0 lg:ml-64 p-4 md:p-8 pt-20 lg:pt-8 transition-all duration-300">
+        <div className="max-w-6xl w-full mx-auto mt-12 md:mt-0">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Wallet</h1>
+            <p className="text-slate-400">
+              Manage your earnings and transactions
+            </p>
+          </header>
 
         {/* Revenue Share Banner */}
-        <div className="bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] rounded-xl p-4 mb-8 flex items-center justify-between text-slate-950">
-          <div>
+        <div className="bg-gradient-to-r from-[#e0c3fc] to-[#8ec5fc] rounded-xl p-4 md:p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between text-slate-950 gap-2">
+          <div className="flex flex-wrap items-center">
             <span className="font-bold mr-2">Your Revenue Share:</span>
-            <span className="text-sm font-medium opacity-80">
+            <span className="text-sm font-medium opacity-80 break-words">
               Course Sales:{" "}
               <span className="font-bold text-green-800">80%</span> | Live
               Classes: <span className="font-bold text-green-800">80%</span>
@@ -326,9 +327,9 @@ const TeacherWallet = () => {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl mt-6">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                   <tr className="border-b border-slate-800 bg-slate-900/50">
                     <th className="px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -467,6 +468,7 @@ const TeacherWallet = () => {
               </button>
             </div>
           )}
+        </div>
         </div>
       </main>
     </div>
