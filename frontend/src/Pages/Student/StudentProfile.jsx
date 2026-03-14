@@ -543,6 +543,7 @@ const StudentProfile = () => {
                   <input
                     type="text"
                     name="username"
+                    readOnly
                     value={profileData.username}
                     onChange={handleInputChange}
                     className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-gray-400"

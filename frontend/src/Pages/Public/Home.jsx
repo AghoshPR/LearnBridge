@@ -348,19 +348,7 @@ const Home = () => {
             courses, live classes, and a vibrant community.
           </p>
 
-          <div className="max-w-2xl mx-auto bg-white p-2 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-2 mb-8">
-            <div className="w-full flex-1 flex items-center gap-3 px-4 h-12">
-              <Search className="w-5 h-5 text-gray-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="What do you want to learn today?"
-                className="w-full bg-transparent border-none focus:outline-none text-gray-800 placeholder-gray-400 h-full"
-              />
-            </div>
-            <button className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 shrink-0">
-              Search
-            </button>
-          </div>
+          
 
           <div className="flex flex-wrap justify-center gap-3 text-sm text-blue-100 items-center justify-center">
             <span className="opacity-70">Popular:</span>

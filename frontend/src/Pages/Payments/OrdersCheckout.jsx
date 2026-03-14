@@ -602,7 +602,7 @@ const OrdersCheckout = () => {
                   <h2 className="font-semibold">Apply Coupon</h2>
                 </div>
 
-                <div className="flex gap-2 mb-4">
+                {/* <div className="flex gap-2 mb-4">
                   <input
                     type="text"
                     placeholder="ENTER COUPON CODE"
@@ -613,11 +613,11 @@ const OrdersCheckout = () => {
                   <button className="px-4 py-2 text-sm font-medium bg-secondary hover:bg-secondary/80 rounded-lg transition-colors">
                     Apply
                   </button>
-                </div>
+                </div> */}
 
                 <div className="relative">
                   <p className="text-xs text-muted-foreground mb-2">
-                    Or select from available coupons:
+                    select from available coupons:
                   </p>
                   <select
                     value={selectedCouponId || ""}
