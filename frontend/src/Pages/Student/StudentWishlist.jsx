@@ -119,7 +119,7 @@ const StudentWishlist = () => {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/student/cart")}
+              onClick={() => navigate("/cart")}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
             >
               <ShoppingCart className="w-5 h-5" />

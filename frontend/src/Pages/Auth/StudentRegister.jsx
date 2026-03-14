@@ -32,6 +32,7 @@ const StudentRegister = () => {
   };
 
   const handleCreateAccount = async (e) => {
+
     e.preventDefault();
 
     if (!email.trim()) {
@@ -75,10 +76,12 @@ const StudentRegister = () => {
 
       sessionStorage.setItem("otp_email", res.data.email);
       sessionStorage.setItem("otp_role", "student");
+      sessionStorage.setItem("otp_flow", "register");
 
       navigate("/otp-verify");
     } catch (err) {
-      alert("Registration failed");
+      console.log(err.response?.data);
+      toast.error(err.response?.data?.error || "Registration failed");
     }
   };
 

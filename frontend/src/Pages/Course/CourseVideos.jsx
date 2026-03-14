@@ -679,7 +679,7 @@ const CourseVideos = () => {
             {/* Video Player Placeholder */}
             <div className="relative aspect-video bg-black rounded-2xl overflow-hidden group shadow-2xl">
               {videoUrl ? (
-                <video src={videoUrl} controls className="w-full h-full" />
+                <video src={videoUrl} controls controlsList="nodownload" className="w-full h-full" />
               ) : (
                 <div className="text-white flex items-center justify-center h-full">
                   Loading video...

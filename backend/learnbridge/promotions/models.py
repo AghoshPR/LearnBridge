@@ -49,7 +49,7 @@ class Offer(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
 
-    max_uses = models.PositiveIntegerField(default=0)
+    
     used_count = models.PositiveIntegerField(default=0)
 
     is_active = models.BooleanField(default=True)

@@ -51,7 +51,6 @@ const AdminOffer = () => {
     category: "",
     start_date: "",
     end_date: "",
-    max_uses: "",
     is_active: true,
   };
 
@@ -116,7 +115,7 @@ const AdminOffer = () => {
       const payload = {
         ...formData,
         discount_value: parseFloat(formData.discount_value) || 0,
-        max_uses: parseInt(formData.max_uses) || 0,
+        
       };
 
       if (payload.apply_type === "Category") {
@@ -663,21 +662,7 @@ const AdminOffer = () => {
                 </div>
               </div>
 
-              {/* Max Uses */}
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
-                  Max Uses
-                </label>
-                <input
-                  type="number"
-                  name="max_uses"
-                  value={formData.max_uses}
-                  onChange={handleChange}
-                  min="0"
-                  placeholder="Ex: 100"
-                  className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
-                />
-              </div>
+              
 
               {/* Apply To Selector */}
               <div>

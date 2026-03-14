@@ -33,23 +33,19 @@ const LiveClass = () => {
   const [pastTotal, setPastTotal] = useState(1);
 
   const [liveNowCount, setLiveNowCount] = useState(0);
-
-
-
-
-
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     fetchUpcomingClasses();
-  }, [upcomingPage]);
+  }, [upcomingPage, refreshTrigger]);
 
   useEffect(() => {
     fetchLiveNowClasses();
-  }, [livePage]);
+  }, [livePage, refreshTrigger]);
 
   useEffect(() => {
     fetchPastClasses();
-  }, [pastPage]);
+  }, [pastPage, refreshTrigger]);
 
   const fetchUpcomingClasses = async () => {
     try {
@@ -122,7 +118,7 @@ const LiveClass = () => {
             setSelectedClass(null);
 
 
-            await fetchUpcomingClasses();
+            setRefreshTrigger(prev => prev + 1);
 
           } catch (err) {
             toast.error("Verification failed");
@@ -331,7 +327,12 @@ const LiveClass = () => {
         {activeTab === 'upcoming' && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingClasses.map(cls => (
+            {upcomingClasses.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl border border-gray-100 shadow-sm">
+                No upcoming live classes available.
+              </div>
+            ) : (
+            upcomingClasses.map(cls => (
               <div key={cls.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                 <img
                   src={cls.thumbnail ? (cls.thumbnail.startsWith("http") ? cls.thumbnail : `http://localhost:8000${cls.thumbnail}`) : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800"}
@@ -381,7 +382,7 @@ const LiveClass = () => {
 
                 </div>
               </div>
-            ))}
+            )))}
           </div>
 
           {/* Pagination for Upcoming */}
@@ -430,7 +431,12 @@ const LiveClass = () => {
       {activeTab === 'live' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {liveNowClasses.map(cls => (
+            {liveNowClasses.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500 bg-white rounded-xl border border-gray-100 shadow-sm">
+                No live sessions available.
+              </div>
+            ) : (
+            liveNowClasses.map(cls => (
               <div key={cls.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative">
                   <img
@@ -479,7 +485,7 @@ const LiveClass = () => {
 
                 </div>
               </div>
-            ))}
+            )))}
           </div>
 
           {/* Pagination for Live */}

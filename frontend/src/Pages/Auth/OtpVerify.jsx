@@ -13,7 +13,8 @@ const OtpVerify = () => {
 
   const [timer, setTimer] = useState(OTP_EXPIRY);
   const [expired, setExpired] = useState(false);
-  // const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  
 
   const navigate = useNavigate();
   const email = sessionStorage.getItem("otp_email");
@@ -60,10 +61,7 @@ const OtpVerify = () => {
 
     const flow = sessionStorage.getItem("otp_flow");
 
-    // if (expired){
-    //     setError("OTP expired. Please send OTP");
-    //     return
-    // }
+    
 
     if (expired) {
       toast.error("OTP has expired. Please request a new one.");
@@ -102,6 +100,7 @@ const OtpVerify = () => {
 
       sessionStorage.removeItem("otp_email");
       sessionStorage.removeItem("otp_role");
+      sessionStorage.removeItem("otp_flow");
 
       if (role === "teacher") {
         navigate("/teacher/verify", { replace: true });
@@ -119,6 +118,9 @@ const OtpVerify = () => {
   /* ---------------- Resend OTP ---------------- */
 
   const handleResendOtp = async () => {
+
+    setLoading(true);
+
     try {
       await Api.post("/auth/resend-otp/", { email });
 
@@ -126,11 +128,15 @@ const OtpVerify = () => {
       setTimer(OTP_EXPIRY);
       setExpired(false);
       toast.success("A new OTP has been sent to your email 📧");
-      setError("");
+      
     } catch (err) {
       toast.error("Failed to resend OTP. Please try again.");
-      setError("Failed to resend OTP");
+      
+    }finally {
+        setLoading(false);
     }
+
+
   };
 
   return (
@@ -189,8 +195,7 @@ const OtpVerify = () => {
             <p className="text-red-400 mb-4">OTP expired</p>
           )}
 
-          {/* ERROR MESSAGE */}
-          {/* {error && <p className="text-red-500 mb-3">{error}</p>} */}
+         
 
           {/* Verify Button */}
 

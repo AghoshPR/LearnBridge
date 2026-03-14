@@ -189,10 +189,12 @@ class StudentPastLiveClassesView(APIView):
     def get(self, request):
         try:
             now = timezone.now()
-            classes = LiveClass.objects.filter(
-                Q(status="completed") | Q(
-                    status="cancelled") | Q(end_time__lt=now)
-            ).order_by("-start_time")
+            
+            if request.user.is_authenticated:
+                query = (Q(status="completed") | Q(status="cancelled") | Q(end_time__lt=now)) & Q(registrations__user=request.user)
+                classes = LiveClass.objects.filter(query).distinct().order_by("-start_time")
+            else:
+                classes = LiveClass.objects.none()
 
             paginator = LiveClassPagination()
             page = paginator.paginate_queryset(classes, request)
