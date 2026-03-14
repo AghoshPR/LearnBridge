@@ -16,6 +16,7 @@ from studentapp.models import *
 from notifications.models import Notification
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from rest_framework.parsers import MultiPartParser, FormParser
 # Create your views here.
 
 
@@ -487,6 +488,7 @@ class TeacherCourseView(APIView):
 class TeacherLessonCreateView(APIView):
 
     permission_classes = [IsTeacher]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request, course_id):
         try:
