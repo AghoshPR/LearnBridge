@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package, Ticket } from 'lucide-react';
+import { Search, ShoppingCart, Bell, User, Menu, X, ChevronDown, Clock, Star, Check, PlayCircle, FileText, Globe, AlertCircle, Heart, LogOut, BookOpen, Package, Ticket, CheckCircle } from 'lucide-react';
 import Logo from '../../assets/learnbridge-logo.png';
 import Api from "../Services/Api";
 
@@ -23,6 +23,47 @@ const CourseDetail = () => {
     const [loading, setLoading] = useState(true);
 
     const [relatedCourses, setRelatedCourses] = useState([]);
+    const [wishlistIds, setWishlistIds] = useState([]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            Api.get("/student/wishlist").then((res) => {
+                const ids = res.data.map((item) => item.course);
+                setWishlistIds(ids);
+            });
+        }
+    }, [isAuthenticated]);
+
+    const handleWishlistToggle = async (e, courseId) => {
+        e.stopPropagation();
+
+        if (!isAuthenticated) {
+            toast.info("Please login to use wishlist");
+            navigate("/student/login");
+            return;
+        }
+
+        try {
+            await Api.post("/student/wishlist/add/", {
+                course_id: courseId,
+            });
+
+            setWishlistIds((prev) => [...prev, courseId]);
+            toast.success("Added to wishlist ❤️");
+        } catch (err) {
+            if (err.response?.status === 400) {
+                toast.warning("Already in wishlist");
+                setWishlistIds((prev) => [...prev, courseId]);
+            } else {
+                toast.error("Failed to add to wishlist");
+            }
+        }
+    };
+
+    const goToCourseDetail = (id) => {
+        navigate(`/courseview/${id}`);
+        window.scrollTo(0, 0);
+    };
 
 
     useEffect(() => {
@@ -45,9 +86,10 @@ const CourseDetail = () => {
             params: { category: course.category_id }
         })
             .then(res => {
-                const filtered = res.data
+                const data = res.data.results || res.data;
+                const filtered = data
                     .filter(c => c.id !== course.id)
-                    .slice(0, 3);
+                    .slice(0, 4);
 
                 setRelatedCourses(filtered);
             })
@@ -57,7 +99,8 @@ const CourseDetail = () => {
     }, [course]);
 
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async (e, courseId) => {
+        if (e) e.stopPropagation();
 
         if (!isAuthenticated) {
             toast.info("Please login to add course to cart");
@@ -68,7 +111,7 @@ const CourseDetail = () => {
         try {
 
             await Api.post("/cart/add/", {
-                course_id: id,
+                course_id: courseId || id,
             })
 
             toast.success("Course added to cart 🛒")
@@ -366,51 +409,124 @@ const CourseDetail = () => {
                         </div>
 
                         {/* Related Courses */}
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Courses</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {relatedCourses.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Courses</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                                 {relatedCourses.map((course) => (
-                                    <div key={course.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col">
-                                        <div className="relative h-40 overflow-hidden">
-                                            <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                            <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full text-white ${course.level === 'Intermediate' ? 'bg-orange-400' : course.level === 'Advanced' ? 'bg-orange-500' : 'bg-orange-400'}`}>
-                                                {course.level}
-                                            </span>
-                                            <button className="absolute top-3 left-3 p-1.5 bg-white/80 rounded-full hover:bg-white text-gray-600 hover:text-red-500 transition-colors">
-                                                <Heart className="w-4 h-4" />
-                                            </button>
+                                    <div
+                                        key={course.id}
+                                        className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col"
+                                    >
+                                        {/* ================= CLICKABLE AREA ================= */}
+                                        <div
+                                            onClick={() => goToCourseDetail(course.id)}
+                                            className="cursor-pointer"
+                                        >
+                                            <div className="relative h-60 overflow-hidden bg-gray-100">
+                                                <img
+                                                    src={course.thumbnail}
+                                                    alt={course.title}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+
+                                                <span
+                                                    className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white 
+                                                                ${course.level === "Intermediate"
+                                                            ? "bg-orange-400"
+                                                            : course.level === "Advanced"
+                                                                ? "bg-red-500"
+                                                                : "bg-orange-400"
+                                                        }`}
+                                                >
+                                                    {course.level}
+                                                </span>
+                                            </div>
+
+                                            <div className="p-5">
+                                                <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-lg">
+                                                    {course.title}
+                                                </h3>
+                                                <p className="text-xs font-medium text-blue-600 mb-2">
+                                                    {course.category}
+                                                </p>
+                                                <p className="text-sm text-gray-500 mb-3">
+                                                    {course.instructor}
+                                                </p>
+
+                                                <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
+                                                    <span className="flex items-center gap-1 text-orange-500">
+                                                        <Star className="w-3.5 h-3.5 fill-current" />
+                                                        {course.average_rating
+                                                            ? Number(course.average_rating).toFixed(1)
+                                                            : "0.0"}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <User className="w-3.5 h-3.5" />{" "}
+                                                        {course.students_count || 0}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Clock className="w-3.5 h-3.5" />{" "}
+                                                        {course.total_duration || "0m"}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="p-4 flex flex-col flex-1">
-                                            <h3 className="font-bold text-gray-900 mb-1 leading-tight line-clamp-2 text-sm md:text-base">{course.title}</h3>
-                                            <p className="text-xs text-gray-500 mb-2">{course.instructor}</p>
-
-                                            <div className="flex items-center gap-3 text-xs text-gray-500 mb-3 font-medium">
-                                                <span className="flex items-center gap-1 text-orange-500">
-                                                    <Star className="w-3 h-3 fill-current" /> {Number(course.average_rating || 0).toFixed(1)}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <User className="w-3 h-3" /> {course.students_count || 0}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" />  {course.total_duration || "0m"}
-                                                </span>
+                                        <div className="mt-auto px-5 pb-5 pt-4 border-t border-gray-50 flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                {course.has_offer ? (
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <span className="text-xl font-bold text-blue-600 tracking-tight">
+                                                            ₹{Number(course.final_price || 0).toFixed(2)}
+                                                        </span>
+                                                        <span className="text-xs font-medium text-gray-500 line-through decoration-gray-400/60 decoration-1">
+                                                            ₹{course.original_price}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xl font-bold text-blue-600 tracking-tight">
+                                                        ₹{course.original_price}
+                                                    </span>
+                                                )}
                                             </div>
 
-                                            <div className="mt-auto pt-3 border-t border-gray-50">
-                                                <span className="text-lg font-bold text-blue-600">{course.price}</span>
+                                            {isAuthenticated && course.is_purchased ? (
+                                                <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100 flex items-center gap-1">
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    Purchased
+                                                </span>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={(e) => handleAddToCart(e, course.id)}
+                                                        className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 cursor-pointer"
+                                                    >
+                                                        <ShoppingCart className="w-5 h-5" />
+                                                    </button>
 
-                                            </div>
-
-                                            {/* <button className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
-                                                <ShoppingCart className="w-5 h-5" />
-                                            </button> */}
-
+                                                    <button
+                                                        onClick={(e) => handleWishlistToggle(e, course.id)}
+                                                        className={`p-2 rounded-full transition
+                                                                    ${wishlistIds.includes(course.id)
+                                                                ? "bg-red-100 text-red-500"
+                                                                : "bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500"
+                                                            }
+                                                                `}
+                                                    >
+                                                        <Heart
+                                                            className={`cursor-pointer w-4 h-4 ${wishlistIds.includes(course.id) ? "fill-red-500" : ""
+                                                                }`}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
+                        )}
 
                     </div>
 

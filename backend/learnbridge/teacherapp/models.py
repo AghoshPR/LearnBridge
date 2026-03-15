@@ -27,7 +27,7 @@ class TeacherProfile(models.Model):
         User, on_delete=models.CASCADE, related_name='teacher_profile')
 
     teacher_type = models.CharField(
-        max_length=20, choices=TEACHER_TYPE_CHOICES)
+        max_length=20, choices=TEACHER_TYPE_CHOICES,null=True,blank=True)
 
     phone = models.CharField(max_length=15)
 

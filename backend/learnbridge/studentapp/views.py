@@ -10,6 +10,7 @@ from .serializers import *
 from courses.models import Course
 from studentapp.models import *
 from courses.utils import generate_signed_url
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Create your views here.
 
@@ -20,6 +21,7 @@ class StudentProfile(APIView):
         CookieJWTAuthentication, CsrfExemptSessionAuthentication]
 
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         try:

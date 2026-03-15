@@ -6,6 +6,8 @@ from studentapp.models import *
 
 class StudentProfileSerializer(serializers.ModelSerializer):
 
+    profile_image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = User
         fields = [
@@ -16,6 +18,12 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             "profile_image"
         ]
         read_only_fields = ["username", "email"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.profile_image and hasattr(instance.profile_image, 'url'):
+            representation['profile_image'] = instance.profile_image.url
+        return representation
 
     def validate_phone(self, value):
         if not value:

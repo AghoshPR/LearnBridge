@@ -7,8 +7,10 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
-    profile_image = serializers.SerializerMethodField()
+    profile_image = serializers.ImageField(required=False, allow_null=True)
     resume = serializers.FileField(required=False, allow_null=True)
+    account_number = serializers.CharField(source='bank_account_number', required=False, allow_blank=True)
+    ifsc_code = serializers.CharField(source='ifse_code', required=False, allow_blank=True)
 
     class Meta:
 
@@ -23,13 +25,17 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
             "bio",
             "years_of_experience",
             "profile_image",
-            "resume"
+            "resume",
+            "account_holder_name",
+            "account_number",
+            "ifsc_code",
         ]
 
-    def get_profile_image(self, obj):
-        if obj.profile_image:
-            return obj.profile_image.url
-        return None
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.profile_image and hasattr(instance.profile_image, 'url'):
+            representation['profile_image'] = instance.profile_image.url
+        return representation
 
     def validate_phone(self, value):
         if not value.isdigit() or len(value) != 10:
