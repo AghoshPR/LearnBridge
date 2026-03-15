@@ -76,7 +76,7 @@ class LoginView(APIView):
                     key="access_token",
                     value=str(refresh.access_token),
                     httponly=True,
-                    secure=False,
+                    secure=not settings.DEBUG,
                     samesite="Lax"
                 )
 
@@ -84,7 +84,7 @@ class LoginView(APIView):
                     key="refresh_token",
                     value=str(refresh),
                     httponly=True,
-                    secure=False,
+                    secure=not settings.DEBUG,
                     samesite="Lax"
                 )
 
@@ -174,7 +174,7 @@ class VerifyOTPView(APIView):
                 key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=False,      # True in production
+                secure=not settings.DEBUG,     
                 samesite="Lax"
             )
 
@@ -182,7 +182,7 @@ class VerifyOTPView(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=False,
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -328,7 +328,7 @@ class AdminLogin(APIView):
                 key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=False,
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -336,7 +336,7 @@ class AdminLogin(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
-                secure=False,
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -393,6 +393,7 @@ class TeacherLogin(APIView):
                 key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -400,6 +401,7 @@ class TeacherLogin(APIView):
                 key="refresh_token",
                 value=str(refresh),
                 httponly=True,
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -494,6 +496,7 @@ class GoogleLoginView(APIView):
                     key="access_token",
                     value=str(refresh.access_token),
                     httponly=True,
+                    secure=not settings.DEBUG,
                     samesite="Lax"
                 )
 
@@ -501,6 +504,7 @@ class GoogleLoginView(APIView):
                     key="refresh_token",
                     value=str(refresh),
                     httponly=True,
+                    secure=not settings.DEBUG,
                     samesite="Lax"
                 )
 
@@ -537,6 +541,7 @@ class RefreshTokenView(APIView):
                 key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
+                secure=not settings.DEBUG,
                 samesite="Lax"
 
             )

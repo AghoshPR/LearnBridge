@@ -21,6 +21,7 @@ import {
   Package,
   Clock,
   CheckCircle,
+  Star,
 } from "lucide-react";
 import Logo from "../../assets/learnbridge-logo.png";
 
@@ -467,7 +468,7 @@ const Home = () => {
 
                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-4 font-medium">
                       <span className="flex items-center gap-1 text-orange-500">
-                        <BookOpen className="w-3.5 h-3.5 fill-current" />
+                        <Star className="w-3.5 h-3.5 fill-current" />
                         {course.average_rating
                           ? Number(course.average_rating).toFixed(1)
                           : "0.0"}
