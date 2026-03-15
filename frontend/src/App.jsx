@@ -48,6 +48,7 @@ import TeacherLiveClass from "./Pages/Teacher/TeacherLiveClass";
 import StudentNotification from "./Pages/Student/StudentNotification";
 import LiveClass from "./Pages/LiveClasses/LiveClass";
 import VideoChat from "./Pages/LiveClasses/VideoChat";
+import NotFound from "./Pages/Public/NotFound";
 
 function App() {
   return (
@@ -341,6 +342,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* 404 fallback */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
