@@ -573,6 +573,7 @@ const AdminCourses = () => {
                 key={activeVideo.id}
                 src={activeVideo.video_url}
                 controls
+                controlsList="nodownload"
                 autoPlay
                 playsInline
                 className="w-full rounded-lg bg-black aspect-video"

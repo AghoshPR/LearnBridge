@@ -46,6 +46,7 @@ const AdminOffer = () => {
     title: "",
     discount_type: "percentage",
     discount_value: "",
+    min_course_price: "",
     apply_type: "Category", // Default to Category
     course: "",
     category: "",
@@ -115,7 +116,7 @@ const AdminOffer = () => {
       const payload = {
         ...formData,
         discount_value: parseFloat(formData.discount_value) || 0,
-        
+        min_course_price: parseFloat(formData.min_course_price) || 0,
       };
 
       if (payload.apply_type === "Category") {
@@ -662,7 +663,23 @@ const AdminOffer = () => {
                 </div>
               </div>
 
-              
+              {/* Min Course Price */}
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase">
+                  Min Course Price *
+                </label>
+                <input
+                  type="number"
+                  name="min_course_price"
+                  value={formData.min_course_price}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  step="0.01"
+                  className="w-full bg-[#111216] border border-gray-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder-gray-600"
+                  placeholder="Ex: 500"
+                />
+              </div>
 
               {/* Apply To Selector */}
               <div>

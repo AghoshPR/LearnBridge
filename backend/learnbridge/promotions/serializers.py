@@ -16,6 +16,8 @@ class OfferSerializer(serializers.ModelSerializer):
         start_date = data.get("start_date")
         end_date = data.get("end_date")
 
+        min_course_price = data.get("min_course_price")
+
         if self.instance:
             if apply_type is None:
                 apply_type = self.instance.apply_type
@@ -27,6 +29,8 @@ class OfferSerializer(serializers.ModelSerializer):
                 start_date = self.instance.start_date
             if end_date is None:
                 end_date = self.instance.end_date
+            if min_course_price is None:
+                min_course_price = self.instance.min_course_price
 
         if apply_type == "Course" and not course:
             raise serializers.ValidationError(
@@ -40,8 +44,8 @@ class OfferSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"end_date": "End date must be after start date."})
 
-        discount_type = data.get("discount_type")
-        discount_value = data.get("discount_value")
+        discount_type = data.get("discount_type") or (self.instance.discount_type if self.instance else None)
+        discount_value = data.get("discount_value") or (self.instance.discount_value if self.instance else None)
 
         if discount_value is not None:
             if discount_value <= 0:
@@ -51,6 +55,23 @@ class OfferSerializer(serializers.ModelSerializer):
             if discount_type == "percentage" and discount_value > 100:
                 raise serializers.ValidationError(
                     {"discount_value": "Percentage cannot exceed 100%."})
+            
+            # Validation logic for min_course_price
+            if discount_type == "fixed" and min_course_price is not None and discount_value > min_course_price:
+                raise serializers.ValidationError(
+                    {"min_course_price": "Minimum course price must be greater than or equal to the fixed discount value."}
+                )
+
+        # Validation for a direct Course promotion
+        if course and apply_type == "Course":
+            if min_course_price is not None and course.price < min_course_price:
+                raise serializers.ValidationError(
+                    {"course": f"Course price (₹{course.price}) is less than the minimum course price (₹{min_course_price})."}
+                )
+            if discount_type == "fixed" and discount_value is not None and discount_value >= course.price:
+                raise serializers.ValidationError(
+                    {"discount_value": f"Fixed discount cannot exceed course price (₹{course.price})."}
+                )
 
         return data
 

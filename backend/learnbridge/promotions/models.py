@@ -49,6 +49,9 @@ class Offer(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
 
+    min_course_price = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
     
     used_count = models.PositiveIntegerField(default=0)
 
