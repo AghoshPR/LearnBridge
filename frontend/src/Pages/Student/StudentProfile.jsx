@@ -122,7 +122,7 @@ const StudentProfile = () => {
       color: "text-blue-600",
     },
     {
-      label: "Completed",
+      label: "Completed Courses",
       value: profileData.stats?.completed || 0,
       color: "text-green-600",
     },

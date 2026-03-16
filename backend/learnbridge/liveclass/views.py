@@ -164,11 +164,11 @@ class StudentLiveNowClassesView(APIView):
         try:
             now = timezone.now()
 
-            # Base filter: currently happening
+            
             query = Q(status="scheduled") & Q(
                 start_time__lte=now) & Q(end_time__gte=now)
 
-            # If user is authenticated, also show classes they are registered for (if scheduled)
+            
             if request.user.is_authenticated:
                 query |= Q(status="scheduled") & Q(
                     registrations__user=request.user)
@@ -189,10 +189,12 @@ class StudentPastLiveClassesView(APIView):
     def get(self, request):
         try:
             now = timezone.now()
-            
+
             if request.user.is_authenticated:
-                query = (Q(status="completed") | Q(status="cancelled") | Q(end_time__lt=now)) & Q(registrations__user=request.user)
-                classes = LiveClass.objects.filter(query).distinct().order_by("-start_time")
+                query = (Q(status="completed") | Q(status="cancelled") | Q(
+                    end_time__lt=now)) & Q(registrations__user=request.user)
+                classes = LiveClass.objects.filter(
+                    query).distinct().order_by("-start_time")
             else:
                 classes = LiveClass.objects.none()
 

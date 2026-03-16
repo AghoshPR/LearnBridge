@@ -480,6 +480,7 @@ const QACommunityAnswers = () => {
                   </span>
                   <span className="text-gray-500 ml-1">
                     asked {formatDateTime(question?.created_at)}
+                    year:{getFullYear()}
                   </span>
                 </div>
               </div>
