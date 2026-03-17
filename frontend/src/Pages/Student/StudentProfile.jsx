@@ -123,7 +123,7 @@ const StudentProfile = () => {
     },
     {
       label: "Completed Courses",
-      value: profileData.stats?.completed || 0,
+      value: profileData.stats?.completed  || 0,
       color: "text-green-600",
     },
     {
