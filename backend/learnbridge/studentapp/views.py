@@ -37,7 +37,6 @@ class StudentProfile(APIView):
                 "username": user.username,
                 "email": user.email,
                 "phone": user.phone,
-                "testkey":"hello",
                 "address": user.address,
                 "profile_image": user.profile_image.url if user.profile_image else None,
                 "stats": {

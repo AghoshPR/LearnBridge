@@ -30,7 +30,15 @@ class TeacherRegisterView(APIView):
             serializer = RegisterTeacherSerializer(data=request.data)
             if serializer.is_valid():
                 user = serializer.save()
-                send_otp(user.email)
+
+                
+
+                try:
+                    send_otp_task.delay(user.email)
+                except Exception as e:
+                    print("Celery failed, fallback to direct OTP:", e)
+                    send_otp(user.email)
+
                 return Response({
                     "message": "OTP sent. Please verify. Waiting for admin approval after verification",
                     "email": user.email
@@ -111,9 +119,10 @@ class StudentRegisterView(APIView):
                 user.save()
 
                 try:
-                    send_otp(user.email)
+                    send_otp_task.delay(user.email)
                 except Exception as e:
-                    print("OTP Sending Failed:", e)
+                    print("Celery OTP Failed:", e)
+                    send_otp(user.email)
 
                 return Response({
                     "message": "OTP send to email",
@@ -143,7 +152,7 @@ class VerifyOTPView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if cached_otp != otp:
+            if str(cached_otp).strip() != str(otp).strip():
                 return Response(
                     {"error": "Invalid OTP"},
                     status=status.HTTP_400_BAD_REQUEST
@@ -206,10 +215,15 @@ class ResendOTPView(APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
+        
+
+            
             try:
-                send_otp(email)
+                send_otp_task.delay(email)
             except Exception as e:
-                print("OTP Sending Failed:", e)
+                print("Celery OTP Failed:", e)
+                send_otp(email)
+
 
             return Response(
                 {"message": "OTP resent successfully"},
@@ -233,7 +247,13 @@ class ForgotPasswordView(APIView):
             except User.DoesNotExist:
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            send_otp(email)
+            
+
+            try:
+                send_otp_task.delay(email)
+            except Exception as e:
+                print("Celery OTP Failed:", e)
+                send_otp(email)
 
             return Response({
                 "message": "OTP send for password reset",

@@ -260,9 +260,19 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [(config("REDIS_HOST", default="127.0.0.1"), 6379)],
+            "hosts": [(config("REDIS_HOST", default="redis"), 6379)],
         },
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
 }
 
 
@@ -273,9 +283,9 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 # celery
 
 CELERY_BROKER_URL = config(
-    "CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+    "CELERY_BROKER_URL",
+    default="redis://redis:6379/0"
+)
 
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000
