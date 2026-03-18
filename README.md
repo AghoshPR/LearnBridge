@@ -1,10 +1,28 @@
 # LearnBridge
-LearnBridge – Smart eLearning Platform
+📘 LearnBridge – Smart eLearning Platform
 
-LearnBridge is a modern, full-stack eLearning platform designed to connect students, teachers, and administrators through a seamless digital learning experience. The system provides structured course delivery, live classes, interactive Q&A, AI-powered doubt assistance, secure payments, and role-based dashboards—all within one unified platform.
+LearnBridge is a modern, full-stack eLearning platform designed to seamlessly connect students, teachers, and administrators within a unified digital learning ecosystem. It delivers a scalable, interactive, and production-ready solution for online education by combining structured course delivery, real-time communication, and intelligent assistance.
 
-Students can browse courses, purchase them securely, access lessons, join live sessions, and interact through Q&A and chat. A built-in AI assistant helps students get instant explanations and clear doubts. Teachers have a dedicated dashboard where they can create courses, upload lessons, schedule live classes, manage enrolled students, and track their earnings through a wallet system. The admin panel provides complete control over platform operations, including user management, teacher verification, course moderation, promotions (coupons and offers), payment tracking, and platform-wide analytics.
+The platform enables students to explore courses, securely purchase them using integrated payment gateways (Razorpay and Stripe), and access high-quality video lessons. Students can participate in live classes with real-time chat, engage in a global Q&A community, and leverage an AI-powered chatbot for instant doubt resolution while learning. Personalized features such as wishlist management, coupon-based discounts, and wallet tracking enhance the overall user experience.
 
-LearnBridge is built with a React frontend for fast, responsive UI and a Django REST API backend for scalable business logic. MySQL is used for structured data storage, and WebSockets support real-time communication. The platform integrates secure payment gateways and includes a flexible authentication system with role-based access control.
+For teachers, LearnBridge provides a powerful dashboard to create and manage courses, upload lessons, schedule and conduct live sessions, and interact with students. Teachers can monitor enrollments, track performance, and manage their earnings through a dedicated wallet system with automated revenue sharing (80% teacher / 20% platform).
 
-LearnBridge aims to deliver a professional, feature-rich, and scalable solution for modern online education.
+The admin panel ensures complete control over the platform, including user and teacher management (approval/rejection/blocking), course moderation, coupon and promotional campaign management, transaction monitoring, and financial operations such as transferring earnings to teachers.
+
+LearnBridge incorporates advanced backend capabilities such as JWT-based authentication with HttpOnly cookies and Google OAuth, ensuring secure and scalable access control. WebSockets (Django Channels) enable real-time features like live chat and notifications, while Celery handles asynchronous background tasks such as email notifications and system processes.
+
+From an infrastructure perspective, the platform is fully containerized using Docker and deployed with a production-ready setup using Nginx, AWS RDS (database), and AWS S3 (media storage). This ensures high availability, scalability, and performance under real-world usage.
+
+Overall, LearnBridge is designed as a feature-rich, scalable, and industry-level Learning Management System (LMS) that combines modern web technologies, real-time interaction, and intelligent assistance to deliver an enhanced digital learning experience.
+
+
+## ⚙️ Tech Stack
+
+Frontend / Libraries      - React.js, Redux Toolkit, Axios, Tailwind CSS, ShadCN UI  
+Backend / Framework       - Django, Django REST Framework, Python  
+Authentication            - JWT , Google OAuth  
+Database                  - MySQL  
+Real-Time / Async         - WebSockets (Django Channels), Celery  
+Payments                  - Razorpay, Stripe  
+Cloud / Storage           - AWS RDS, AWS S3  
+DevOps / Deployment       - Docker, Nginx  
