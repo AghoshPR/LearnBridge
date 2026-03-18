@@ -469,6 +469,9 @@ const CourseDetail = () => {
                                                         <Clock className="w-3.5 h-3.5" />{" "}
                                                         {course.total_duration || "0m"}
                                                     </span>
+
+                                                        
+
                                                 </div>
                                             </div>
                                         </div>
@@ -539,6 +542,20 @@ const CourseDetail = () => {
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                     <PlayCircle className="w-16 h-16 text-white opacity-80" />
                                 </div>
+                                {!(isAuthenticated && (course?.is_enrolled === true || course?.is_purchased)) && (
+                                    <button
+                                        onClick={(e) => handleWishlistToggle(e, course.id)}
+                                        className={`absolute top-3 right-3 p-2.5 rounded-full transition shadow-md z-20
+                                                    ${wishlistIds.includes(course.id)
+                                                ? "bg-white text-red-500"
+                                                : "bg-white/90 text-gray-500 hover:bg-white hover:text-red-500"
+                                            }`}
+                                    >
+                                        <Heart
+                                            className={`cursor-pointer w-5 h-5 ${wishlistIds.includes(course.id) ? "fill-red-500" : ""}`}
+                                        />
+                                    </button>
+                                )}
                             </div>
                             <div className="p-6">
                                 <div className="mb-6">
@@ -582,13 +599,6 @@ const CourseDetail = () => {
                                         >
                                             Add to Cart
                                         </button>
-
-                                        {/* <button
-                                            onClick={() => navigate("/checkout", { state: { courseId: id } })}
-                                            className="w-full cursor-pointer bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 rounded-lg mb-6 transition-colors"
-                                        >
-                                            Buy Now
-                                        </button> */}
                                     </>
                                 )}
 
