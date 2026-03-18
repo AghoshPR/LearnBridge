@@ -20,7 +20,7 @@ Overall, LearnBridge is designed as a feature-rich, scalable, and industry-level
 
 Frontend / Libraries      - React.js, Redux Toolkit, Axios, Tailwind CSS, ShadCN UI  
 Backend / Framework       - Django, Django REST Framework, Python  
-Authentication            - JWT (HttpOnly Cookies), Google OAuth  
+Authentication            - JWT , Google OAuth  
 Database                  - MySQL  
 Real-Time / Async         - WebSockets (Django Channels), Celery  
 Payments                  - Razorpay, Stripe  
