@@ -1,77 +1,183 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Verify your email</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }}{% else %}Verify your email{% endif %}</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            color: #333333;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            background-color: #f4f6f8;
+            padding: 40px 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .email-header {
+            background-color: #0F1014;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .brand-container {
+            display: inline-block;
+        }
+
+        .brand-logo {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: rgba(37,99,235,0.2);
+            border-radius: 8px;
+            line-height: 32px;
+            text-align: center;
+            color: #3b82f6;
+            font-weight: bold;
+            font-size: 18px;
+            vertical-align: middle;
+            margin-right: 12px;
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            vertical-align: middle;
+        }
+
+        /* Content */
+        .email-body {
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #555555;
+            font-size: 16px;
+        }
+
+        /* OTP Box */
+        .otp-box-container {
+            margin: 30px 0;
+        }
+
+        .otp-box {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            background-color: #f8fafc;
+            color: #0f172a;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        /* Footer */
+        .email-footer {
+            background-color: #f9fafb;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #999999;
+            margin: 0;
+        }
+    </style>
 </head>
-<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+<body>
+    <div class="email-wrapper">
+        <div class="email-container">
 
-  <table width="100%" cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center" style="padding:40px 0;">
+            <!-- Header with Logo & Name -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0F1014;">
+                <tr>
+                    <td align="center" style="padding: 30px 40px;">
+                        <span class="brand-logo" style="display:inline-block; width:32px; height:32px; background:rgba(37,99,235,0.2); border-radius:8px; line-height:32px; text-align:center; color:#3b82f6; font-weight:bold; font-size:18px; vertical-align:middle; margin-right:12px;">LB</span>
+                        <span class="brand-text" style="color:#ffffff; font-size:20px; font-weight:700; letter-spacing:0.5px; vertical-align:middle;">LearnBridge</span>
+                    </td>
+                </tr>
+            </table>
 
-        <table width="100%" max-width="500px" style="background:#ffffff; border-radius:10px; padding:30px; box-shadow:0 10px 30px rgba(0,0,0,0.08);">
-          
-          <!-- Logo / Title -->
-          <tr>
-            <td align="center" style="font-size:26px; font-weight:bold; color:#1e293b;">
-              LearnBridge
-            </td>
-          </tr>
+            <!-- Email Content -->
+            <div class="email-body">
+                {% if title %}
+                <h1>{{ title }}</h1>
+                {% else %}
+                <h1>Verify your email</h1>
+                {% endif %}
 
-          <tr><td height="20"></td></tr>
+                <p style="margin-bottom: 16px; color: #555555; font-size: 16px;">
+                  {% if message %}
+                    {{ message|safe }}
+                  {% else %}
+                    Use the OTP below to verify your email address.
+                  {% endif %}
+                </p>
 
-          <!-- Message -->
-          <tr>
-            <td style="font-size:15px; color:#475569; text-align:center;">
-              Use the OTP below to verify your email address.
-            </td>
-          </tr>
+                <!-- OTP Box -->
+                <div class="otp-box-container">
+                    <div class="otp-box">
+                        {{ otp }}
+                    </div>
+                </div>
 
-          <tr><td height="25"></td></tr>
+                <p style="font-size: 14px; color: #64748b; margin-bottom: 16px;">
+                    This OTP is valid for <strong>1 minute</strong>.<br>
+                    Do not share it with anyone.
+                </p>
+                
+                <p style="margin-top: 30px; text-align: left; margin-bottom: 16px; color: #555555; font-size: 16px;">
+                    Best regards,<br>
+                    <strong>The LearnBridge Team</strong>
+                </p>
+            </div>
 
-          <!-- OTP Box -->
-          <tr>
-            <td align="center">
-              <div style="
-                display:inline-block;
-                padding:15px 30px;
-                font-size:28px;
-                font-weight:bold;
-                letter-spacing:6px;
-                background:#0f172a;
-                color:#ffffff;
-                border-radius:8px;
-              ">
-                {{ otp }}
-              </div>
-            </td>
-          </tr>
+            <!-- Footer -->
+            <div class="email-footer">
+                <p class="footer-text">
+                    &copy; {{ year }} LearnBridge. All rights reserved.<br>
+                    This is an automated message, please do not reply directly to this email.
+                </p>
+            </div>
 
-          <tr><td height="25"></td></tr>
-
-          <!-- Expiry -->
-          <tr>
-            <td style="font-size:13px; color:#64748b; text-align:center;">
-              This OTP is valid for <b>1 minutes</b>.  
-              Do not share it with anyone.
-            </td>
-          </tr>
-
-          <tr><td height="30"></td></tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="font-size:12px; color:#94a3b8; text-align:center;">
-              © {{ year }} LearnBridge. All rights reserved.
-            </td>
-          </tr>
-
-        </table>
-
-      </td>
-    </tr>
-  </table>
-
+        </div>
+    </div>
 </body>
 </html>

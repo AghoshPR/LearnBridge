@@ -8,7 +8,12 @@ from .models import *
 from teacherapp.models import TeacherProfile
 from django.core.cache import cache
 from rest_framework import status
-from .utils import send_otp
+from .utils import (
+    send_student_register_otp,
+    send_teacher_register_otp,
+    send_student_reset_otp,
+    send_teacher_reset_otp,
+)
 from .authentication import CsrfExemptSessionAuthentication, CookieJWTAuthentication
 from django.contrib.auth.hashers import make_password
 from google.oauth2 import id_token
@@ -17,7 +22,12 @@ from django.conf import settings
 import requests as py_requests
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.exceptions import TokenError
-from authapp.tasks import send_otp_task
+from authapp.tasks import (
+    send_student_register_otp_task,
+    send_teacher_register_otp_task,
+    send_student_reset_otp_task,
+    send_teacher_reset_otp_task,
+)
 
 
 class TeacherRegisterView(APIView):
@@ -34,10 +44,10 @@ class TeacherRegisterView(APIView):
                 
 
                 try:
-                    send_otp_task.delay(user.email)
+                    send_teacher_register_otp_task.delay(user.email)
                 except Exception as e:
                     print("Celery failed, fallback to direct OTP:", e)
-                    send_otp(user.email)
+                    send_teacher_register_otp(user.email)
 
                 return Response({
                     "message": "OTP sent. Please verify. Waiting for admin approval after verification",
@@ -119,10 +129,10 @@ class StudentRegisterView(APIView):
                 user.save()
 
                 try:
-                    send_otp_task.delay(user.email)
+                    send_student_register_otp_task.delay(user.email)
                 except Exception as e:
                     print("Celery OTP Failed:", e)
-                    send_otp(user.email)
+                    send_student_register_otp(user.email)
 
                 return Response({
                     "message": "OTP send to email",
@@ -209,20 +219,37 @@ class ResendOTPView(APIView):
         try:
             email = request.data.get('email')
 
-            if not User.objects.filter(email=email).exists():
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
                 return Response(
                     {"error": "User not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-        
-
-            
             try:
-                send_otp_task.delay(email)
+                if not user.is_active:
+                    if user.role == 'teacher':
+                        send_teacher_register_otp_task.delay(email)
+                    else:
+                        send_student_register_otp_task.delay(email)
+                else:
+                    if user.role == 'teacher':
+                        send_teacher_reset_otp_task.delay(email)
+                    else:
+                        send_student_reset_otp_task.delay(email)
             except Exception as e:
                 print("Celery OTP Failed:", e)
-                send_otp(email)
+                if not user.is_active:
+                    if user.role == 'teacher':
+                        send_teacher_register_otp(email)
+                    else:
+                        send_student_register_otp(email)
+                else:
+                    if user.role == 'teacher':
+                        send_teacher_reset_otp(email)
+                    else:
+                        send_student_reset_otp(email)
 
 
             return Response(
@@ -243,17 +270,21 @@ class ForgotPasswordView(APIView):
             email = request.data.get("email")
 
             try:
-                User.objects.get(email=email)
+                user = User.objects.get(email=email)
             except User.DoesNotExist:
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            
-
             try:
-                send_otp_task.delay(email)
+                if user.role == 'teacher':
+                    send_teacher_reset_otp_task.delay(email)
+                else:
+                    send_student_reset_otp_task.delay(email)
             except Exception as e:
                 print("Celery OTP Failed:", e)
-                send_otp(email)
+                if user.role == 'teacher':
+                    send_teacher_reset_otp(email)
+                else:
+                    send_student_reset_otp(email)
 
             return Response({
                 "message": "OTP send for password reset",
