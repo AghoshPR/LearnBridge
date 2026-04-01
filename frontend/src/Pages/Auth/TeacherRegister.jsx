@@ -87,8 +87,8 @@ const TeacherRegister = () => {
 
       toast.error(
         error.response?.data?.email?.[0] ||
-          error.response?.data?.message ||
-          "Teacher registration failed",
+        error.response?.data?.message ||
+        "Teacher registration failed",
       );
     }
   };

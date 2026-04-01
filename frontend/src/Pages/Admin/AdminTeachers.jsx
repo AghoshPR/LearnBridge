@@ -184,6 +184,7 @@ const AdminTeachers = () => {
       setIsRejectModalOpen(false);
       setTeacherToReject(null);
       setRejectionReason("");
+      setTeacherToView(null);
     } catch (err) {
       console.log(err.response);
       toast.error(err.response?.data?.error || "Rejection failed");
@@ -556,28 +557,13 @@ const AdminTeachers = () => {
                         {teacher.experience}
                       </td>
                       <td className="hidden xl:table-cell px-3 py-3 text-gray-400">
-                        {teacher.applied_at}
+                        {new Date(teacher.applied_at).toLocaleString()}
                       </td>
                       <td className="px-4 md:px-6 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleApproveClick(teacher)}
-                            className="p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm"
-                            title="Approve"
-                          >
-                            <CheckCircle size={14} />
-                          </button>
-
-                          <button
-                            onClick={() => handleRejectClick(teacher)}
-                            className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors"
-                            title="Reject"
-                          >
-                            <XCircle size={14} />
-                          </button>
-                          <button
                             onClick={() => handleViewClick(teacher)}
-                            className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm"
+                            className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm cursor-pointer"
                             title="View"
                           >
                             <Eye size={14} />
@@ -612,11 +598,10 @@ const AdminTeachers = () => {
                     key={i}
                     onClick={() => setCurrentPagePending(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                            ${
-                                              currentPagePending === i + 1
-                                                ? "bg-blue-600 text-white"
-                                                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                                            }`}
+                                            ${currentPagePending === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -688,7 +673,7 @@ const AdminTeachers = () => {
                             {teacher.subjects}
                           </span>
                           <div className="lg:hidden flex items-center gap-2 mt-1">
-                             <div className="flex items-center gap-0.5 text-amber-400 text-[10px]">
+                            <div className="flex items-center gap-0.5 text-amber-400 text-[10px]">
                               <Star size={10} fill="currentColor" />
                               <span>{teacher.rating}</span>
                             </div>
@@ -723,11 +708,10 @@ const AdminTeachers = () => {
                       <td className="px-4 md:px-6 py-3">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold border
-                                                     ${
-                                                       teacher.is_blocked
-                                                         ? "bg-red-500/10 text-red-500 border-red-500/20"
-                                                         : "bg-green-500/10 text-green-500 border-green-500/20"
-                                                     }`}
+                                                     ${teacher.is_blocked
+                              ? "bg-red-500/10 text-red-500 border-red-500/20"
+                              : "bg-green-500/10 text-green-500 border-green-500/20"
+                            }`}
                         >
                           {teacher.is_blocked ? "Blocked" : "Active"}
                         </span>
@@ -738,17 +722,14 @@ const AdminTeachers = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleUnblockClick(teacher)}
-                              className="p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm"
+                              className="p-2 bg-green-500/10 text-green-500 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm cursor-pointer"
                               title="Unblock"
                             >
                               <CheckCircle size={14} />
                             </button>
-                            <button className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
-                              <Pencil size={14} />
-                            </button>
                             <button
                               onClick={() => handleDeleteClick(teacher)}
-                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm"
+                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm cursor-pointer"
                               title="Delete"
                             >
                               <Trash size={14} />
@@ -758,17 +739,14 @@ const AdminTeachers = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleBlockClick(teacher)}
-                              className="p-2 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                              className="p-2 bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 rounded-lg transition-colors cursor-pointer"
                               title="Block"
                             >
                               <Ban size={14} />
                             </button>
-                            <button className="p-2 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-colors shadow-sm" title="Edit">
-                              <Pencil size={14} />
-                            </button>
                             <button
                               onClick={() => handleDeleteClick(teacher)}
-                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm"
+                              className="p-2 bg-white/5 text-gray-400 hover:text-red-500 hover:bg-white/10 border border-white/10 rounded-lg transition-colors shadow-sm cursor-pointer"
                               title="Delete"
                             >
                               <Trash size={14} />
@@ -804,11 +782,10 @@ const AdminTeachers = () => {
                     key={i}
                     onClick={() => setCurrentPageApproved(i + 1)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                                            ${
-                                              currentPageApproved === i + 1
-                                                ? "bg-blue-600 text-white"
-                                                : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                                            }`}
+                                            ${currentPageApproved === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                      }`}
                   >
                     {i + 1}
                   </button>
@@ -927,11 +904,10 @@ const AdminTeachers = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <label
                     className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer
-                            ${
-                              teacherType === "fresher"
-                                ? "bg-blue-600/10 border-blue-500 text-blue-400"
-                                : "bg-[#0F1014] border-gray-800 text-gray-400"
-                            }`}
+                            ${teacherType === "fresher"
+                        ? "bg-blue-600/10 border-blue-500 text-blue-400"
+                        : "bg-[#0F1014] border-gray-800 text-gray-400"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -945,11 +921,10 @@ const AdminTeachers = () => {
 
                   <label
                     className={`flex items-center justify-center gap-2 p-3 rounded-xl border cursor-pointer
-                            ${
-                              teacherType === "experienced"
-                                ? "bg-blue-600/10 border-blue-500 text-blue-400"
-                                : "bg-[#0F1014] border-gray-800 text-gray-400"
-                            }`}
+                            ${teacherType === "experienced"
+                        ? "bg-blue-600/10 border-blue-500 text-blue-400"
+                        : "bg-[#0F1014] border-gray-800 text-gray-400"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1109,7 +1084,7 @@ const AdminTeachers = () => {
 
       {/* Reject Reason Modal */}
       {isRejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => {
@@ -1346,7 +1321,7 @@ const AdminTeachers = () => {
                     Applied Date
                   </label>
                   <p className="text-xs text-gray-300">
-                    {teacherToView.applied_at || "N/A"}
+                    {teacherToView.applied_at ? new Date(teacherToView.applied_at).toLocaleString() : "N/A"}
                   </p>
                 </div>
               </div>
@@ -1456,14 +1431,25 @@ const AdminTeachers = () => {
                     </div>
 
                     {teacherToView.resume ? (
-                      <a
-                        href={teacherToView.resume}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-blue-600/20"
-                      >
-                        View Resume
-                      </a>
+                      <div className="flex gap-2">
+                        <a
+                          href={teacherToView.resume}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-blue-600/20"
+                        >
+                          View Resume
+                        </a>
+                        <a
+                          href={teacherToView.resume.includes('/upload/') ? teacherToView.resume.replace('/upload/', '/upload/fl_attachment/') : teacherToView.resume}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-colors shadow-lg shadow-emerald-600/20 cursor-pointer"
+                        >
+                          Download CV
+                        </a>
+                      </div>
                     ) : (
                       <span className="text-xs text-gray-500">No Resume</span>
                     )}
@@ -1475,8 +1461,29 @@ const AdminTeachers = () => {
             {/* Footer Actions */}
             <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-800">
               <button
+                onClick={() => {
+                  handleApproveClick(teacherToView);
+                  setTeacherToView(null);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500/10 text-green-500 text-sm font-medium hover:bg-green-500/20 border border-green-500/20 rounded-lg transition-colors shadow-sm cursor-pointer"
+                title="Approve"
+              >
+                <CheckCircle size={14} />
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  handleRejectClick(teacherToView);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 text-red-500 text-sm font-medium hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors cursor-pointer"
+                title="Reject"
+              >
+                <XCircle size={14} />
+                Reject
+              </button>
+              <button
                 onClick={() => setTeacherToView(null)}
-                className="px-4 py-2 rounded-lg bg-gray-800 text-gray-300 text-sm font-medium hover:bg-gray-700 transition-colors border border-gray-700"
+                className="px-4 py-2 rounded-lg bg-gray-800 text-gray-300 text-sm font-medium hover:bg-gray-700 transition-colors border border-gray-700 cursor-pointer"
               >
                 Close
               </button>
