@@ -10,3 +10,7 @@
 node_modules/
 dist/
 build/
+
+# Logs
+*.log
+logs/
