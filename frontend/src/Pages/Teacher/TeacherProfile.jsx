@@ -45,6 +45,7 @@ const TeacherProfile = () => {
   });
 
   // Mock Data
+  const [initialProfileData, setInitialProfileData] = useState(null);
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
@@ -64,8 +65,7 @@ const TeacherProfile = () => {
     const fetchProfile = async () => {
       try {
         const res = await Api.get("/teacher/profileview/");
-        setProfileData((prev) => ({
-          ...prev,
+        const fetchedData = {
           ...res.data,
           experience: res.data.years_of_experience
             ? `${res.data.years_of_experience}`
@@ -76,7 +76,14 @@ const TeacherProfile = () => {
           account_holder_name: res.data.account_holder_name || "",
           account_number: res.data.account_number || "",
           ifsc_code: res.data.ifsc_code || "",
+        };
+
+        setProfileData((prev) => ({
+          ...prev,
+          ...fetchedData,
         }));
+
+        setInitialProfileData(fetchedData);
       } catch (err) {
         toast.error("Failed to load profile");
       }
@@ -115,20 +122,35 @@ const TeacherProfile = () => {
       return;
     }
 
+    if (!/^[A-Za-z\s.]+$/.test(profileData.qualification.trim())) {
+      toast.error("Qualification can only contain characters, spaces, and periods");
+      return;
+    }
+
     if (!profileData.subjects.trim()) {
       toast.error("Subjects are required");
       return;
     }
 
-    // if (!profileData.experience.trim()) {
-    //     toast.error("Experience is required");
-    //     return;
-    // }
+    if (!/^[A-Za-z\s]+$/.test(profileData.subjects.trim())) {
+      toast.error("Subjects can only contain characters and spaces");
+      return;
+    }
 
-    // if (isNaN(profileData.experience) || profileData.experience < 0) {
-    //     toast.error("Experience must be a valid number");
-    //     return;
-    // }
+    if (!profileData.experience) {
+      toast.error("Experience is required");
+      return;
+    }
+
+    if (!/^\d+$/.test(profileData.experience)) {
+      toast.error("Experience must be a valid number");
+      return;
+    }
+
+    if (parseInt(profileData.experience, 10) > 50) {
+      toast.error("Experience cannot exceed 50 years");
+      return;
+    }
 
     if (!profileData.bio.trim()) {
       toast.error("Bio is required");
@@ -176,7 +198,31 @@ const TeacherProfile = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Profile updated successfully");
+      const updatedFields = [];
+      if (initialProfileData) {
+        if (profileData.phone !== initialProfileData.phone) updatedFields.push("Phone number");
+        if (profileData.qualification !== initialProfileData.qualification) updatedFields.push("Qualification");
+        if (profileData.subjects !== initialProfileData.subjects) updatedFields.push("Subjects");
+        if (profileData.experience !== initialProfileData.experience) updatedFields.push("Experience");
+        if (profileData.bio !== initialProfileData.bio) updatedFields.push("Bio");
+        if (profileData.account_holder_name !== initialProfileData.account_holder_name ||
+          profileData.account_number !== initialProfileData.account_number ||
+          profileData.ifsc_code !== initialProfileData.ifsc_code) {
+          updatedFields.push("Bank Details");
+        }
+      }
+      if (profileData.avatar instanceof File) updatedFields.push("Profile photo");
+
+      let successMessage = "Profile updated successfully";
+      if (updatedFields.length === 1) {
+        successMessage = `${updatedFields[0]} updated successfully`;
+      } else if (updatedFields.length > 1) {
+        successMessage = `${updatedFields.join(", ")} updated successfully`;
+      } else if (updatedFields.length === 0) {
+        successMessage = "No changes were made";
+      }
+
+      toast.success(successMessage);
       setIsEditModalOpen(false);
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to update profile");
@@ -205,6 +251,20 @@ const TeacherProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "experience" && value !== "") {
+      if (!/^\d+$/.test(value)) return;
+      if (parseInt(value, 10) > 50) return;
+    }
+
+    if (name === "subjects" && value !== "") {
+      if (!/^[A-Za-z\s]+$/.test(value)) return;
+    }
+
+    if (name === "qualification" && value !== "") {
+      if (!/^[A-Za-z\s.]+$/.test(value)) return;
+    }
+
     setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -596,6 +656,8 @@ const TeacherProfile = () => {
                   <input
                     type="text"
                     name="name"
+                    disabled
+                    readOnly
                     value={profileData.name}
                     onChange={handleInputChange}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all placeholder:text-slate-600"

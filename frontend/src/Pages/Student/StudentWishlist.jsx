@@ -31,7 +31,8 @@ const StudentWishlist = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
 
-  const handleDeleteClick = (item) => {
+  const handleDeleteClick = (e, item) => {
+    e.stopPropagation();
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
@@ -68,10 +69,6 @@ const StudentWishlist = () => {
       setItemToDelete(null);
     }
   };
-
-  const totalValue = wishlistItems
-    .reduce((acc, item) => acc + (parseFloat(item.price) || 0), 0)
-    .toFixed(2);
 
   if (loading) {
     return (
@@ -220,13 +217,13 @@ const StudentWishlist = () => {
             </div>
 
             <button
-              className="md:hidden p-2 text-gray-600"
+              className="md:hidden p-2 text-gray-600 cursor-pointer"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6 cursor-pointer" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className="w-6 h-6 cursor-pointer" />
               )}
             </button>
           </div>
@@ -327,7 +324,8 @@ const StudentWishlist = () => {
               {wishlistItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 flex flex-col md:flex-row gap-8 items-start md:items-center hover:bg-gray-50/50 transition-all duration-300 group"
+                  onClick={() => navigate(`/courseview/${item.course}`)}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 flex flex-col md:flex-row gap-8 items-start md:items-center hover:bg-gray-50/50 transition-all duration-300 group cursor-pointer"
                 >
                   <div className="w-full md:w-80 aspect-video md:h-48 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 shadow-inner ring-1 ring-gray-100">
                     <img
@@ -359,55 +357,25 @@ const StudentWishlist = () => {
                         <span className="text-xl font-bold text-blue-600 tracking-tight">
                           ₹{item.price}
                         </span>
-                        <span className="text-sm text-gray-400 line-through font-medium">
+                        {/* <span className="text-sm text-gray-400 line-through font-medium">
                           ₹3999
-                        </span>
+                        </span> */}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex flex-row md:flex-col items-center justify-end md:justify-center h-full pt-4 md:pt-0 border-t md:border-t-0 border-gray-50 md:pl-6">
                     <button
-                      onClick={() => handleDeleteClick(item)}
+                      onClick={(e) => handleDeleteClick(e, item)}
                       className="group/delete p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all duration-300 flex items-center gap-2"
                       title="Remove from wishlist"
                     >
                       <Trash2 size={22} className="group-hover/delete:scale-110 transition-transform" />
-                      <span className="text-sm font-semibold md:hidden">Remove</span>
+                      <span className="text-sm font-semibold md:hidden cursor-pointer">Remove</span>
                     </button>
                   </div>
                 </div>
               ))}
-            </div>
-
-            {/* Wishlist Summary */}
-            <div className="w-full lg:w-96 h-fit">
-              <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm sticky top-24">
-                <h2 className="text-lg font-bold text-gray-900 mb-6 font-sans">
-                  Wishlist Summary
-                </h2>
-
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Total Items</span>
-                    <span className="font-semibold text-gray-900">{wishlistItems.length}</span>
-                  </div>
-                  <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
-                    <span className="font-bold text-gray-900">Total Value</span>
-                    <span className="text-2xl font-bold text-blue-600">₹{totalValue}</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => navigate("/courses")}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3"
-                >
-                  Continue Shopping
-                </button>
-                <div className="text-center">
-                  <p className="text-xs text-gray-400">Save courses here to buy them later</p>
-                </div>
-              </div>
             </div>
           </div>
         )}

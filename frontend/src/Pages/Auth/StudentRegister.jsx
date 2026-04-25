@@ -57,6 +57,12 @@ const StudentRegister = () => {
       return;
     }
 
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(fullName.trim())) {
+      toast.error("Name can only contain letters and spaces");
+      return;
+    }
+
     if (!password) {
       toast.error("Password is required");
       return;

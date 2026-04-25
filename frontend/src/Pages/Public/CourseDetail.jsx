@@ -717,7 +717,7 @@ const CourseDetail = () => {
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" /> Lessons
                     </div>
-                    <span>{course.total_lessons || 0}</span>
+                    <span>{course?.total_lessons || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <div className="flex items-center gap-2">

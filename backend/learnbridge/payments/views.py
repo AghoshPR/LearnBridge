@@ -16,8 +16,10 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from notifications.models import *
 from promotions.models import Coupon, CouponUsage
+import logging
 
 channel_layer = get_channel_layer()
+logger = logging.getLogger("payments")
 
 
 class CartDetailView(APIView):
@@ -25,11 +27,13 @@ class CartDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        logger.info("Cart API HIT")
         try:
             cart, _ = Cart.objects.get_or_create(user=request.user)
             serializer = CartSerializer(cart, context={"request": request})
             return Response(serializer.data)
         except Exception as e:
+            logger.exception("Error in CartDetailView")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -248,7 +252,7 @@ class StripePaymentSuccessView(APIView):
                     description=f"Course purchase – Order #{order.id}"
                 )
             except Exception as w_err:
-                print(f"Wallet credit failed: {w_err}")
+                logger.error(f"Wallet credit failed: {w_err}")
 
             # Clear cart
             cart = Cart.objects.filter(user=user).first()
@@ -276,10 +280,11 @@ class StripePaymentSuccessView(APIView):
                     }
                 )
             except Exception as n_err:
-                print(f"Notification failed: {n_err}")
+                logger.error(f"Notification failed: {n_err}")
 
             return Response({"detail": "Payment processed & enrolled"})
         except Exception as e:
+            logger.exception("Error in CreateOrderView")
             return Response({"error": str(e)}, status=500)
 
 

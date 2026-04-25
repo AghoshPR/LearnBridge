@@ -4,9 +4,16 @@ from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
 
-import cloudinary
+import cloudinary,os
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 
 
 SECRET_KEY = config("SECRET_KEY")
@@ -291,3 +298,57 @@ CELERY_BROKER_URL = config(
 DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000
 
+
+
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    # Defines how logs look
+    "formatters": {
+        "detailed": {
+            "format": "[{asctime}] {levelname} {name} {message}",
+            "style": "{",
+        },
+    },
+     # console: prints logs to terminal
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "detailed",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "logs/app.log"),
+            "formatter": "detailed",
+        },
+    },
+
+    "loggers": {
+        # Django internal logs
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+
+       
+        "courses": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "payments": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+
+        # fallback
+        "": {
+            "handlers": ["console"],
+            "level": "WARNING",
+        },
+    },
+}

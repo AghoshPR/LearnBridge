@@ -44,6 +44,12 @@ const TeacherRegister = () => {
       return;
     }
 
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(formData.fullName.trim())) {
+      toast.error("Name can only contain letters and spaces");
+      return;
+    }
+
     if (!formData.email.trim()) {
       toast.error("Email is required");
       return;

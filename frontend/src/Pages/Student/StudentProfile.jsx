@@ -37,6 +37,7 @@ const StudentProfile = () => {
   const [previewImage, setPreviewImage] = useState(null);
 
   // Data
+  const [initialProfileData, setInitialProfileData] = useState(null);
   const [profileData, setProfileData] = useState({
     username: "",
     email: "",
@@ -57,14 +58,16 @@ const StudentProfile = () => {
   const fetchProfile = async () => {
     try {
       const res = await Api.get("/student/profile/");
-      setProfileData({
+      const data = {
         username: res.data.username,
         email: res.data.email,
         phone: res.data.phone || "",
         address: res.data.address || "",
         avatar: res.data.profile_image || null,
         stats: res.data.stats || { enrolled: 0, completed: 0, in_progress: 0 },
-      });
+      };
+      setProfileData(data);
+      setInitialProfileData(data);
     } catch (err) {
       toast.error("Failed to load profile");
     } finally {
@@ -93,7 +96,21 @@ const StudentProfile = () => {
         },
       });
 
-      toast.success("Profile updated successfully");
+      const updatedFields = [];
+      if (initialProfileData && profileData.phone !== initialProfileData.phone) updatedFields.push("Phone number");
+      if (initialProfileData && profileData.address !== initialProfileData.address) updatedFields.push("Address");
+      if (selectedImage) updatedFields.push("Profile photo");
+
+      let successMessage = "Profile updated successfully";
+      if (updatedFields.length === 1) {
+        successMessage = `${updatedFields[0]} updated successfully`;
+      } else if (updatedFields.length > 1) {
+        successMessage = `${updatedFields.join(" and ")} updated successfully`;
+      } else {
+        successMessage = "No changes were made";
+      }
+
+      toast.success(successMessage);
       setIsEditModalOpen(false);
       setSelectedImage(null);
       setPreviewImage(null);
@@ -143,8 +160,12 @@ const StudentProfile = () => {
   };
 
   const validateForm = () => {
-    if (profileData.phone && profileData.phone.length !== 10) {
-      toast.error("Phone number must be exactly 10 digits");
+    if (!profileData.phone) {
+      toast.error("Phone number is required");
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(profileData.phone)) {
+      toast.error("Enter a valid 10-digit phone number");
       return false;
     }
     return true;
@@ -199,7 +220,7 @@ const StudentProfile = () => {
             </button>
 
             <button
-              onClick={() => navigate("/student/wishlist")}
+              onClick={() => navigate("/wishlist")}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative"
             >
               <Heart className="w-5 h-5" />
@@ -318,9 +339,7 @@ const StudentProfile = () => {
             >
               Explore
             </button>
-            <a href="#" className="text-gray-700 font-medium">
-              Q&A Community
-            </a>
+           <Link to="/question-community" className="text-gray-700 font-medium">Q&A Community</Link>
             <Link to="/student/liveclass" className="text-gray-700 font-medium">
               Live Classes
             </Link>

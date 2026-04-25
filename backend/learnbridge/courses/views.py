@@ -17,6 +17,10 @@ from notifications.models import Notification
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from rest_framework.parsers import MultiPartParser, FormParser
+import logging
+
+logger = logging.getLogger("courses")
+
 # Create your views here.
 
 
@@ -523,7 +527,7 @@ class TeacherLessonCreateView(APIView):
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                print("FULL ERROR:", str(e))
+                logger.exception("Video upload failed")
                 return Response(
                     {"error": "Video upload failed"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -568,7 +572,7 @@ class TeacherLessonCreateView(APIView):
                         }
                     )
             except Exception as e:
-                print("Notification/Socket error:", e)
+                logger.error(f"Notification/Socket error: {e}")
 
             return Response(
                 {"message": "Lesson uploaded successfully"},
@@ -636,13 +640,14 @@ class TeacherLessonDetailView(APIView):
                         }
                     )
             except Exception as n_err:
-                print("Notification error:", n_err)
+                logger.error(f"Notification error: {n_err}")
 
             return Response(
                 {"message": "Lesson updated successfully"},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
+            logger.exception("Error in AdminCategoryView GET")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, lesson_id):
@@ -666,8 +671,10 @@ class PublicCourseListView(APIView):
 
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [AllowAny]
+    
 
     def get(self, request):
+        logger.info(" PUBLIC COURSE LIST API HIT")
         try:
             search = request.GET.get("search")
             category = request.GET.get("category")
