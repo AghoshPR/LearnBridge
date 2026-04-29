@@ -20,8 +20,8 @@ jobs:
         run: |
           docker build \
           -t ${{ secrets.DOCKER_IMAGE_NAME }}:latest \
-          -f backend/Dockerfile \
-          backend
+          -f backend/learnbridge/Dockerfile \
+          backend/learnbridge
 
       - name: Push Docker Image
         run: docker push ${{ secrets.DOCKER_IMAGE_NAME }}:latest
