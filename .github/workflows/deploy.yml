@@ -37,7 +37,6 @@ jobs:
             cd ~/learnbridge
 
             docker compose pull
-            docker compose down
             docker compose up -d
             docker image prune -f
-            docker system prune -f
+            docker image prune -af
