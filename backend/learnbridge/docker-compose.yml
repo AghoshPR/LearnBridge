@@ -2,7 +2,7 @@ services:
   web:
     build: .
     container_name: learnbridge_backend
-    command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 LearnBridge.asgi:application"
+    command: sh -c "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 learnbridge.asgi:application"
     ports:
       - "8000:8000"
     env_file:
@@ -19,7 +19,7 @@ services:
   celery:
     build: .
     container_name: learnbridge_celery
-    command: celery -A LearnBridge worker -l info
+    command: celery -A learnbridge worker -l info
     env_file:
       - .env
 

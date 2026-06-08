@@ -100,7 +100,7 @@ CSRF_TRUSTED_ORIGINS = config(
     default="http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
 
-ROOT_URLCONF = 'LearnBridge.urls'
+ROOT_URLCONF = 'learnbridge.urls'
 
 TEMPLATES = [
     {
@@ -118,7 +118,7 @@ TEMPLATES = [
 ]
 
 
-WSGI_APPLICATION = 'LearnBridge.wsgi.application'
+WSGI_APPLICATION = 'learnbridge.wsgi.application'
 
 
 # OTP mail
@@ -253,7 +253,7 @@ RAZORPAY_KEY_SECRET = config("RAZORPAY_KEY_SECRET")
 # sockets
 
 
-ASGI_APPLICATION = "LearnBridge.asgi.application"
+ASGI_APPLICATION = "learnbridge.asgi.application"
 
 # CHANNEL_LAYERS = {
 #     "default": {

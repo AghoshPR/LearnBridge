@@ -1,9 +1,9 @@
 import os
 from celery import Celery
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LearnBridge.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'learnbridge.settings')
 
-app = Celery('LearnBridge')
+app = Celery('learnbridge')
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
