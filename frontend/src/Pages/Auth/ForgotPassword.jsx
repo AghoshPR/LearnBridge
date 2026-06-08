@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Shield, Clock, CheckCircle, Mail, Key, ArrowLeft } from "lucide-react";
 import bgImage from "../../assets/otp-background.jpg";
-import logo from "../../assets/learnbridge-logo.png";
+import logo from "../../assets/microtechnique-logo.png";
 import { useNavigate } from "react-router-dom";
 import Api from "../Services/Api";
 import { toast } from "sonner";
@@ -123,7 +123,7 @@ const ForgotPassword = () => {
                 className="w-12 h-12 md:w-16 md:h-16 brightness-0 invert"
               />
               <span className="text-3xl md:text-5xl font-bold tracking-tight">
-                LearnBridge
+                Microtechnique Institute
               </span>
             </div>
           </div>

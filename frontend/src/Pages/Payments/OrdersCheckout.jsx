@@ -19,7 +19,7 @@ import {
   Package,
 } from "lucide-react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import Logo from "../../assets/learnbridge-logo.png";
+import Logo from "../../assets/microtechnique-logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../Store/authSlice";
 import Api from "../Services/Api";
@@ -148,7 +148,7 @@ const OrdersCheckout = () => {
         key: data.key,
         amount: data.amount,
         currency: "INR",
-        name: "LearnBridge",
+        name: "Microtechnique Institute",
         description: "Course Purchase",
         order_id: data.razorpay_order_id,
 
@@ -244,7 +244,7 @@ const OrdersCheckout = () => {
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                LearnBridge
+                Microtechnique Institute
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">

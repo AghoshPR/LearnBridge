@@ -8,7 +8,7 @@ from datetime import datetime
 
 def send_teacher_rejection_email(email, name, reason):
 
-    subject = "LearnBridge – Teacher Application Rejected"
+    subject = "Microtechnique Institute – Teacher Application Rejected"
     from_email = settings.DEFAULT_FROM_EMAIL
     to = [email]
 
@@ -24,7 +24,7 @@ Reason:
 You may update your profile and reapply again.
 
 Regards,
-LearnBridge Team
+Microtechnique Institute Team
 """
 
     html_content = render_to_string(

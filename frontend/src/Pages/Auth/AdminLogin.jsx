@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Crown, Shield, Lock, Key, Eye, EyeOff } from "lucide-react";
+import { Shield, Lock, Key, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Api from "../Services/Api";
 import { useDispatch, useSelector } from "react-redux";
@@ -84,8 +84,8 @@ const AdminLogin = () => {
       <div className="relative z-10 w-full max-w-md">
         {/* Header Branding */}
         <div className="text-center mb-10 space-y-4">
-          <div className="inline-flex items-center justify-center p-3 bg-gradient-to-br from-amber-400/10 to-transparent rounded-2xl border border-amber-500/20 shadow-lg shadow-amber-500/10 mb-2">
-            <Crown className="w-10 h-10 text-amber-500" />
+          <div className="inline-flex items-center justify-center p-2 bg-white rounded-2xl border border-amber-500/30 shadow-lg shadow-amber-500/15 mb-2">
+            <img src="/microtechnique-logo.png" alt="Microtechnique Logo" className="w-12 h-12 object-contain" />
           </div>
           <div>
             <h1 className="text-4xl font-bold text-white tracking-tight">

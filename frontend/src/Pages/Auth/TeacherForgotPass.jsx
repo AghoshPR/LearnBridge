@@ -50,12 +50,7 @@ const TeacherForgotPass = () => {
         {/* Left Side: Info */}
         <div className="space-y-10">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <GraduationCap className="w-8 h-8 text-emerald-600" />
-              <span className="text-2xl font-bold tracking-tight text-gray-900">
-                LearnBridge
-              </span>
-            </div>
+
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
               Reset Your Password
             </h1>

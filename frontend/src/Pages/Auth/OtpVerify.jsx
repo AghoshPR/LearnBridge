@@ -14,7 +14,7 @@ const OtpVerify = () => {
   const [timer, setTimer] = useState(OTP_EXPIRY);
   const [expired, setExpired] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
 
   const navigate = useNavigate();
   const email = sessionStorage.getItem("otp_email");
@@ -61,7 +61,7 @@ const OtpVerify = () => {
 
     const flow = sessionStorage.getItem("otp_flow");
 
-    
+
 
     if (expired) {
       toast.error("OTP has expired. Please request a new one.");
@@ -128,12 +128,12 @@ const OtpVerify = () => {
       setTimer(OTP_EXPIRY);
       setExpired(false);
       toast.success("A new OTP has been sent to your email 📧");
-      
+
     } catch (err) {
       toast.error("Failed to resend OTP. Please try again.");
-      
-    }finally {
-        setLoading(false);
+
+    } finally {
+      setLoading(false);
     }
 
 
@@ -150,7 +150,7 @@ const OtpVerify = () => {
       <div className="relative z-10 flex flex-col items-center w-full">
         {/* Title */}
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 tracking-wide drop-shadow-lg">
-          LearnBridge
+          Microtechnique Institute
         </h1>
 
         {/* Glassmorphism Card */}
@@ -195,7 +195,7 @@ const OtpVerify = () => {
             <p className="text-red-400 mb-4">OTP expired</p>
           )}
 
-         
+
 
           {/* Verify Button */}
 
@@ -203,11 +203,10 @@ const OtpVerify = () => {
             onClick={handleVerifyOtp}
             disabled={expired}
             className={`w-full py-3 rounded-xl font-semibold text-lg mb-4 cursor-pointer
-                        ${
-                          expired
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-gradient-to-r from-teal-500 to-cyan-600 hover:opacity-95"
-                        }`}
+                        ${expired
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-teal-500 to-cyan-600 hover:opacity-95"
+              }`}
           >
             Verify
           </button>

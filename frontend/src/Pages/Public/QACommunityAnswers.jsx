@@ -24,7 +24,7 @@ import {
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../Store/authSlice";
-import Logo from "../../assets/learnbridge-logo.png";
+import Logo from "../../assets/microtechnique-logo.png";
 import { toast } from "sonner";
 import Api from "../Services/Api";
 
@@ -185,7 +185,7 @@ const QACommunityAnswers = () => {
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                LearnBridge
+                Microtechnique Institute
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
@@ -480,7 +480,7 @@ const QACommunityAnswers = () => {
                   </span>
                   <span className="text-gray-500 ml-1">
                     asked {formatDateTime(question?.created_at)}
-                    
+
                   </span>
                 </div>
               </div>
@@ -671,8 +671,8 @@ const QACommunityAnswers = () => {
                                   {reply.user_name
                                     ?.charAt(0)
                                     ?.toUpperCase() || (
-                                    <User className="w-4 h-4" />
-                                  )}
+                                      <User className="w-4 h-4" />
+                                    )}
                                 </div>
                                 <div className="text-xs text-gray-500">
                                   <span className="font-semibold text-gray-700">

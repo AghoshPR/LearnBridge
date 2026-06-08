@@ -10,7 +10,7 @@ import {
   Lock,
 } from "lucide-react";
 import bgImage from "../../assets/otp-background.jpg";
-import logo from "../../assets/learnbridge-logo.png";
+import logo from "../../assets/microtechnique-logo.png";
 import Api from "../Services/Api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -162,14 +162,14 @@ const StudentRegister = () => {
         <div className="w-full max-w-md mx-auto">
           {/* Brand Logo - Centered and Bigger */}
           <div className="flex flex-col items-center justify-center mb-6">
-            <div className="flex items-center gap-4 text-white">
+            <div className="flex items-center gap-4 text-white w-full justify-center">
               <img
                 src={logo}
-                alt="LearnBridge Logo"
-                className="w-12 h-12 md:w-20 md:h-20 brightness-0 invert"
+                alt="Microtechnique Logo"
+                className="w-16 h-16 md:w-24 md:h-24 brightness-0 invert object-contain shrink-0"
               />
-              <span className="text-3xl md:text-5xl font-bold tracking-tight">
-                LearnBridge
+              <span className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
+                Microtechnique Institute
               </span>
             </div>
           </div>

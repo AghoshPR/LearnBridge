@@ -26,7 +26,7 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
-import Logo from "../../assets/learnbridge-logo.png";
+import Logo from "../../assets/microtechnique-logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../Store/authSlice";
 import { useNavigate, Link } from "react-router-dom";
@@ -258,7 +258,7 @@ const QuestionCommunity = () => {
             <a href="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                LearnBridge
+                Microtechnique Institute
               </span>
             </a>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
@@ -285,7 +285,7 @@ const QuestionCommunity = () => {
 
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/student/cart")}
+              onClick={() => navigate("/cart")}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 relative cursor-pointer"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -536,11 +536,10 @@ const QuestionCommunity = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-sm font-semibold transition-colors relative whitespace-nowrap ${
-                activeTab === tab
-                  ? "text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`pb-3 text-sm font-semibold transition-colors relative whitespace-nowrap ${activeTab === tab
+                ? "text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               {tab}
               {activeTab === tab && (
@@ -698,11 +697,10 @@ const QuestionCommunity = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!paginationInfo.previous}
-                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${
-                  !paginationInfo.previous
-                    ? "bg-gray-50 text-gray-300 cursor-not-allowed"
-                    : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
-                }`}
+                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${!paginationInfo.previous
+                  ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
+                  }`}
               >
                 <ChevronRight size={20} className="rotate-180" />
               </button>
@@ -721,11 +719,10 @@ const QuestionCommunity = () => {
                       <button
                         key={pageNumber}
                         onClick={() => handlePageChange(pageNumber)}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all ${
-                          currentPage === pageNumber
-                            ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                            : "bg-white text-gray-600 border border-gray-200 hover:border-blue-500 hover:text-blue-600"
-                        }`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all ${currentPage === pageNumber
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                          : "bg-white text-gray-600 border border-gray-200 hover:border-blue-500 hover:text-blue-600"
+                          }`}
                       >
                         {pageNumber}
                       </button>
@@ -747,11 +744,10 @@ const QuestionCommunity = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!paginationInfo.next}
-                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${
-                  !paginationInfo.next
-                    ? "bg-gray-50 text-gray-300 cursor-not-allowed"
-                    : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
-                }`}
+                className={`flex items-center justify-center p-2 rounded-lg border border-gray-200 transition-all ${!paginationInfo.next
+                  ? "bg-gray-50 text-gray-300 cursor-not-allowed"
+                  : "bg-white text-gray-600 hover:border-blue-500 hover:text-blue-600 shadow-sm"
+                  }`}
               >
                 <ChevronRight size={20} />
               </button>
@@ -876,11 +872,10 @@ const QuestionCommunity = () => {
                         }
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors
-                          ${
-                            tags.includes(tag.tag_name)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
-                          }`}
+                          ${tags.includes(tag.tag_name)
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200"
+                        }`}
                     >
                       {tag.tag_name}
                     </button>

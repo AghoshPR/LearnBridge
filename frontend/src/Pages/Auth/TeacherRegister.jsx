@@ -111,7 +111,7 @@ const TeacherRegister = () => {
               Teaching Community
             </h1>
             <p className="text-gray-500 text-lg">
-              Start your journey as an educator on LearnBridge.
+              Start your journey as an educator on Microtechnique Institute.
               <br />
               Empower students and share your knowledge.
             </p>
