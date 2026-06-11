@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, ShoppingCart, Bell, User, BookOpen, Heart, LogOut, Package, Menu, X, Video, Users, Clock, Calendar, ChevronDown, CheckCircle, Ticket } from 'lucide-react';
-import Logo from '../../assets/microtechnique-logo.png';
+import Logo from '../../assets/learnbridge-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../Store/authSlice';
 import { useNavigate, Link } from 'react-router-dom';
@@ -186,7 +186,7 @@ const LiveClass = () => {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
-              <span className="text-xl font-bold text-gray-900">Microtechnique Institute</span>
+              <span className="text-xl font-bold text-gray-900">LearnBridge</span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link to='/courses' className="hover:text-blue-600 transition-colors">Explore</Link>

@@ -85,7 +85,7 @@ const AdminLogin = () => {
         {/* Header Branding */}
         <div className="text-center mb-10 space-y-4">
           <div className="inline-flex items-center justify-center p-2 bg-white rounded-2xl border border-amber-500/30 shadow-lg shadow-amber-500/15 mb-2">
-            <img src="/microtechnique-logo.png" alt="Microtechnique Logo" className="w-12 h-12 object-contain" />
+            <img src="/learnbridge-logo.png" alt="learnbridge Logo" className="w-12 h-12 object-contain" />
           </div>
           <div>
             <h1 className="text-4xl font-bold text-white tracking-tight">

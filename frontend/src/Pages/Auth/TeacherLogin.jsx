@@ -121,7 +121,7 @@ const TeacherLogin = () => {
         <div className="bg-white rounded-3xl shadow-xl p-6 md:p-12 max-w-md w-full mx-auto lg:ml-auto border border-gray-100">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 rounded-2xl mb-4 text-emerald-600 overflow-hidden p-2">
-              <img src="/microtechnique-logo.png" alt="Microtechnique Logo" className="w-full h-full object-contain" />
+              <img src="/learnbridge-logo.png" alt="Learnbridge Logo" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Teacher Login</h2>
             <p className="text-gray-500 mt-2 text-sm">

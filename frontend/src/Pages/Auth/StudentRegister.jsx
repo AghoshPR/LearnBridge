@@ -10,7 +10,7 @@ import {
   Lock,
 } from "lucide-react";
 import bgImage from "../../assets/otp-background.jpg";
-import logo from "../../assets/microtechnique-logo.png";
+import logo from "../../assets/learnbridge-logo.png";
 import Api from "../Services/Api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -165,11 +165,11 @@ const StudentRegister = () => {
             <div className="flex items-center gap-4 text-white w-full justify-center">
               <img
                 src={logo}
-                alt="Microtechnique Logo"
+                alt="LearnBridge Logo"
                 className="w-16 h-16 md:w-24 md:h-24 brightness-0 invert object-contain shrink-0"
               />
               <span className="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-                Microtechnique Institute
+                LearnBridge
               </span>
             </div>
           </div>

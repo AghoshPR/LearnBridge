@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import Logo from "../../assets/microtechnique-logo.png";
+import Logo from "../../assets/learnbridge-logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { logout } from "../../Store/authSlice";
@@ -143,7 +143,7 @@ const Courses = () => {
             <a href="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                Microtechnique Institute
+                LearnBridge
               </span>
             </a>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">

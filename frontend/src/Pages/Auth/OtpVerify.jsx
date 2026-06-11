@@ -150,7 +150,7 @@ const OtpVerify = () => {
       <div className="relative z-10 flex flex-col items-center w-full">
         {/* Title */}
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 tracking-wide drop-shadow-lg">
-          Microtechnique Institute
+          Learnbridge
         </h1>
 
         {/* Glassmorphism Card */}

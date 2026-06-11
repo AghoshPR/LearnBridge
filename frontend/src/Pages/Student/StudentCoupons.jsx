@@ -15,7 +15,7 @@ import {
   X,
   Ticket,
 } from "lucide-react";
-import Logo from "../../assets/microtechnique-logo.png";
+import Logo from "../../assets/learnbridge-logo.png";
 import Api from "../Services/Api";
 
 const StudentCoupons = () => {
@@ -46,9 +46,9 @@ const StudentCoupons = () => {
         <div className="container mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
-              <img src={Logo} alt="Microtechnique Logo" className="h-8" />
+              <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                Microtechnique Institute
+                LearnBridge
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">

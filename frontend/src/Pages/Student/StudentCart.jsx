@@ -15,7 +15,7 @@ import {
   CreditCard,
   Ticket,
 } from "lucide-react";
-import Logo from "../../assets/microtechnique-logo.png";
+import Logo from "../../assets/learnbridge-logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../Store/authSlice";
 import { useNavigate, Link } from "react-router-dom";
@@ -125,7 +125,7 @@ const StudentCart = () => {
             <Link to="/" className="flex items-center gap-2">
               <img src={Logo} alt="LearnBridge Logo" className="h-8" />
               <span className="text-xl font-bold text-gray-900">
-                Microtechnique Institute
+                LearnBridge
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
@@ -491,9 +491,9 @@ const StudentCart = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div>
               <div className="flex items-center gap-2 mb-6">
-                <img src={Logo} alt="Microtechnique Institute Logo" className="h-8" />
+                <img src={Logo} alt="learnbridge Logo" className="h-8" />
                 <span className="text-xl font-bold text-gray-900">
-                  Microtechnique Institute
+                  LearnBridge
                 </span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6">
@@ -567,7 +567,7 @@ const StudentCart = () => {
           </div>
 
           <div className="border-t border-gray-100 pt-8 text-center text-xs text-gray-400">
-            © 2024 Microtechnique Institute. All rights reserved.
+            © 2026 LearnBridge. All rights reserved.
           </div>
         </div>
       </footer>

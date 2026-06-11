@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen, Users, TrendingUp, Eye, EyeOff } from "lucide-react";
 import bgImage from "../../assets/otp-background.jpg";
-import logo from "../../assets/microtechnique-logo.png";
+import logo from "../../assets/learnbridge-logo.png";
 import { useSelector, useDispatch } from "react-redux";
 import { loginStart, loginSuccess, loginFailure } from "../../Store/authSlice";
 import Api from "../Services/Api";
@@ -179,11 +179,11 @@ const StudentLogin = () => {
             <div className="flex items-center gap-3 text-white w-full justify-center">
               <img
                 src={logo}
-                alt="Microtechnique Logo"
+                alt="LearnBridge logo"
                 className="w-12 h-12 md:w-16 md:h-16 brightness-0 invert object-contain shrink-0"
               />
               <span className="text-2xl md:text-3xl font-bold tracking-tight leading-tight">
-                Microtechnique Institute
+                LearnBridge
               </span>
             </div>
           </div>
