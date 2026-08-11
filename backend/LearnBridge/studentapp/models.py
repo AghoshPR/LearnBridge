@@ -13,7 +13,6 @@ class Wishlist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-
         unique_together = ('user', 'course')
 
 

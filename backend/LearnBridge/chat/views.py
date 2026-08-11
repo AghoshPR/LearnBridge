@@ -17,7 +17,6 @@ class LiveClassMessagesView(APIView):
             start = (page - 1) * limit
             end = start + limit
 
-            
             messages = LiveClassMessage.objects.filter(
                 live_class_id=class_id
             ).select_related("user").order_by("-created_at")[start:end]

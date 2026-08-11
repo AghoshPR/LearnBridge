@@ -17,7 +17,6 @@ class AdminTagSerializer(serializers.ModelSerializer):
 
         return value
 
-
 # Question creation
 
 class QuestionCreateSerializer(serializers.ModelSerializer):
@@ -78,7 +77,6 @@ class QuestionListSerializer(serializers.ModelSerializer):
             "tags"
         ]
 
-
 class QuestionDetailedSerializer(serializers.ModelSerializer):
 
     user_name = serializers.CharField(source="user.username", read_only=True)
@@ -119,7 +117,6 @@ class ReplySerializer(serializers.ModelSerializer):
             "created_at"
         ]
 
-
 class ReplyCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -143,13 +140,11 @@ class AnswerSerializer(serializers.ModelSerializer):
             "replies"
         ]
 
-
 class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
         fields = ["body"]
-
 
 # teacher side
 

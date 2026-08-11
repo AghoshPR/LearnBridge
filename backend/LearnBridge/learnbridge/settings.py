@@ -1,11 +1,8 @@
-
-
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
-
-import cloudinary,os
-
+import cloudinary
+import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -196,7 +193,6 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "authapp.authentication.CookieJWTAuthentication",
@@ -299,9 +295,6 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000
 FILE_UPLOAD_MAX_MEMORY_SIZE = 524288000
 
 
-
-
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -313,7 +306,7 @@ LOGGING = {
             "style": "{",
         },
     },
-     # console: prints logs to terminal
+    # console: prints logs to terminal
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -333,7 +326,7 @@ LOGGING = {
             "level": "INFO",
         },
 
-       
+
         "courses": {
             "handlers": ["console", "file"],
             "level": "DEBUG",

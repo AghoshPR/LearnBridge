@@ -671,7 +671,6 @@ class PublicCourseListView(APIView):
 
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [AllowAny]
-    
 
     def get(self, request):
         logger.info(" PUBLIC COURSE LIST API HIT")

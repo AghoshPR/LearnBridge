@@ -12,8 +12,6 @@ from .pagination import QuestionPagination
 
 
 # admin tag view
-
-
 class AdminTagListView(APIView):
 
     permission_classes = [IsAdmin]

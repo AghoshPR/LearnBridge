@@ -164,11 +164,9 @@ class StudentLiveNowClassesView(APIView):
         try:
             now = timezone.now()
 
-            
             query = Q(status="scheduled") & Q(
                 start_time__lte=now) & Q(end_time__gte=now)
 
-            
             if request.user.is_authenticated:
                 query |= Q(status="scheduled") & Q(
                     registrations__user=request.user)

@@ -3,8 +3,6 @@ from .views import *
 
 urlpatterns = [
 
-
-
     # admin user
 
     path("users/", AdminUsers.as_view()),

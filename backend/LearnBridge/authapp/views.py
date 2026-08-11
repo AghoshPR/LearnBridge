@@ -41,8 +41,6 @@ class TeacherRegisterView(APIView):
             if serializer.is_valid():
                 user = serializer.save()
 
-                
-
                 try:
                     send_teacher_register_otp_task.delay(user.email)
                 except Exception as e:
@@ -193,7 +191,7 @@ class VerifyOTPView(APIView):
                 key="access_token",
                 value=str(refresh.access_token),
                 httponly=True,
-                secure=not settings.DEBUG,     
+                secure=not settings.DEBUG,
                 samesite="Lax"
             )
 
@@ -250,7 +248,6 @@ class ResendOTPView(APIView):
                         send_teacher_reset_otp(email)
                     else:
                         send_student_reset_otp(email)
-
 
             return Response(
                 {"message": "OTP resent successfully"},

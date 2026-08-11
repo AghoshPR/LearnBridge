@@ -15,7 +15,6 @@ from courses.models import Course, CourseReview
 from liveclass.models import LiveClass, LiveClassRegistration
 from studentapp.models import Enrollment
 
-
 class SubmitTeacherProfileView(APIView):
 
     authentication_classes = [

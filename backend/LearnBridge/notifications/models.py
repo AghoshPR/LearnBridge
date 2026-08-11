@@ -2,7 +2,6 @@ from django.db import models
 from authapp.models import *
 # Create your models here.
 
-
 class Notification(models.Model):
 
     user = models.ForeignKey(

@@ -1,10 +1,16 @@
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
 **/LearnBridgeEnv/
 **/venv/
 **/.venv/
 
+# Environment variables
 .env
 */.env
-
 
 # Node / React
 node_modules/
@@ -14,3 +20,7 @@ build/
 # Logs
 *.log
 logs/
+
+# SQLite database
+*.sqlite3
+*.sqlite3-journal

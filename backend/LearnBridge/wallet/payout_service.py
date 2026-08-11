@@ -6,7 +6,6 @@ client = razorpay.Client(
     auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
 
-
 def create_contact(teacher):
     try:
         return client.contact.create({
@@ -18,7 +17,6 @@ def create_contact(teacher):
     except Exception as e:
         print(f"Error creating Razorpay contact: {e}")
         raise e
-
 
 def create_fund_account(contact_id, teacher):
     try:
@@ -35,7 +33,6 @@ def create_fund_account(contact_id, teacher):
     except Exception as e:
         print(f"Error creating Razorpay fund account: {e}")
         raise e
-
 
 def create_payout(fund_account_id, amount):
     try:

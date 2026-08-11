@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import TeacherProfile
 
-
 class TeacherProfileSerializer(serializers.ModelSerializer):
 
     id = serializers.IntegerField(read_only=True)
@@ -9,8 +8,10 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
     profile_image = serializers.ImageField(required=False, allow_null=True)
     resume = serializers.FileField(required=False, allow_null=True)
-    account_number = serializers.CharField(source='bank_account_number', required=False, allow_blank=True)
-    ifsc_code = serializers.CharField(source='ifse_code', required=False, allow_blank=True)
+    account_number = serializers.CharField(
+        source='bank_account_number', required=False, allow_blank=True)
+    ifsc_code = serializers.CharField(
+        source='ifse_code', required=False, allow_blank=True)
 
     class Meta:
 

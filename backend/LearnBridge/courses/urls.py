@@ -4,7 +4,6 @@ from .views import *
 
 urlpatterns = [
 
-
     # admin courses
 
     path('admin/courses/', AdminCourseView.as_view()),
